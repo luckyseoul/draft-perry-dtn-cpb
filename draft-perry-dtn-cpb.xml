@@ -37,10 +37,9 @@
       </address>
     </author>
 
-    <date year="2026" month="May" day="19"/>
+    <date year="2026" month="May" day="22"/>
 
     <area>Internet</area>
-    <workgroup>Delay-Tolerant Networking</workgroup>
 
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
@@ -1626,7 +1625,7 @@ A3                   ; map with 3 entries
             <li><strong>Repository:</strong>
                 <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
                 https://github.com/luckyseoul/draft-perry-dtn-cpb</eref></li>
-            <li><strong>License:</strong> BSD 2-Clause</li>
+            <li><strong>License:</strong> MIT License</li>
             <li><strong>Modules:</strong> cpb.py (encoder/decoder, ~600 LOC),
                 test_cpb.py (23-test conformance suite), config1_sim.py
                 (discrete-event simulator producing the
@@ -2088,7 +2087,7 @@ A3                   ; map with 3 entries
 
       <section anchor="repo">
         <name>Repository</name>
-        <t>Source code is published under the BSD 2-Clause License at:</t>
+        <t>Source code is published under the MIT License License at:</t>
         <t>
           <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
             https://github.com/luckyseoul/draft-perry-dtn-cpb
@@ -2426,17 +2425,27 @@ python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
               implementation status (reference Python implementation +
               simulator-based validation; The ONE and ION installations
               documented but no fabricated results)</li>
-          <li>Incorporates B. Sipos and Grok review feedback on CDDL, BTSD
+          <li>Incorporates review feedback from Brian Sipos on CDDL, BTSD
               embedding, fragmentation pruning, identical-timestamp
               tie-breaker, 8-entry MUST limit, scheme-mismatch SHOULD-log,
-              future-dated MUST-discard, IANA placeholder note</li>
+              future-dated MUST-discard, and IANA considerations</li>
           <li>References <xref target="RFC9713"/> and <xref target="RFC9758"/>
               as post-publication updates to <xref target="RFC9171"/></li>
+          <li>Incorporates verified errata against RFC 9171: EID 7881
+              (Section 6.1.1, CBOR simple value encoding of status indicators),
+              EID 8043 (Section 4.3.1, CRC value bytes zeroed before CBOR
+              encoding), and EID 8376 (Section 5.8, fragmentation and MTU
+              handling addressed by CPB pruning).</li>
           <li><xref target="reference-implementation"/> added: reference
               implementation + GitHub repository</li>
         </ul>
       </section>
     </section>
 
+
   </back>
+
+
+
+
 </rfc>
