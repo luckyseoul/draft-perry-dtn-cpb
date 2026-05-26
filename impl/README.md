@@ -7,25 +7,47 @@ Reference implementation of the Contact Probability Block (CPB) defined in [draf
 | File | Purpose |
 |------|---------|
 | `cpb.py` | Encoder and decoder for the CPB block-type-specific data per §3.2 / §3.4. ~600 LOC. |
-| `test_cpb.py` | 23-test conformance suite covering Sections 3.2 through 3.6 of the draft. |
-| `config1_sim.py` | Discrete-event simulator producing the §11.5 results (4-rover, 4-orbiter Mars relay topology, 10 seeds × 80,507 bundles per arm). |
+| `test_cpb.py` | Conformance suite (original cases + many negative tests + Hypothesis property-based testing). |
+| `config1_sim.py` | Discrete-event simulator producing the §11.5 results (4-rover, 4-orbiter Mars relay topology). Supports `--quick`, `--max-bundles`, etc. |
 | `requirements.txt` | Python dependencies. |
+
+See `../examples/` for small, runnable demonstrations of using the packaged `cpb` module.
 
 ## Quick start
 
 ```sh
+# Option A: traditional
 pip install -r requirements.txt
-
-# Verify the encoder/decoder against draft §3 byte-exact listings:
 python3 test_cpb.py
 
-# Reproduce the experiment results in draft §11.5:
-python3 config1_sim.py
+# Option B: install as a proper package (recommended)
+pip install -e .
+python3 -m pytest -q          # or just: python3 test_cpb.py
+
+# Recommended default for serious baseline comparisons (3 seeds, full load):
+python3 config1_sim.py --battery standard     # (this is now the default)
+
+# Exact reproduction of draft §11.5 results:
+python3 config1_sim.py --battery paper
+
+# Fast smoke test:
+python3 config1_sim.py --quick
+
+# Other useful options:
+python3 config1_sim.py --battery standard --strategy cpb --csv results.csv
 ```
 
-Expected `test_cpb.py` output: 23 `PASS` lines, zero failures, on Python 3.10+ with `cbor2` 5.9.0.
+Expected `test_cpb.py` output: 23+ `PASS` lines (more with Hypothesis installed), zero failures.
 
-Expected `config1_sim.py` output: aggregate delivery rates of 0.99620 (baseline CGR) and 0.99976 (CPB-aware CGR-UCoP), reproducing the numbers cited in §11.5 of the draft to the digit. Walltime is approximately 45 seconds on commodity hardware.
+Expected full `config1_sim.py` output: delivery rates 0.99620 (baseline) / 0.99976 (CPB-aware), reproducing §11.5 exactly. Full run ~45s.
+
+## New in this tree (timeline1 improvements)
+
+- Robust `make` (even on Python 3.12+ / minimal environments)
+- `pip install -e '.[test]'` packaging for the CPB encoder/decoder
+- Much stronger test suite (negative cases + Hypothesis property-based tests)
+- Simulator now has a convenient CLI (`--quick`, `--max-bundles`, etc.)
+- GitHub Actions CI
 
 ## Coverage
 
