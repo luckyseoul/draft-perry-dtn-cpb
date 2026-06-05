@@ -1,1 +1,1 @@
-cat
+the full from dir

@@ -1,1 +1,68 @@
-cat the orin rc
+# ION configuration for orin (node 268485121)
+# Jetson Orin Nano on the DTN testbed.
+# Tailscale IP: 100.70.177.14
+
+m 1000000
+w 1
+pathName /tmp
+
+## begin ionadmin
+
+1 268485121
+s
+
+m production 100000000
+m consumption 100000000
+
+# Contact to peer (268485000 at 100.96.108.37:4556)
+a contact +1 +86400 268485121 268485000 10000000
+a range   +1 +86400 268485121 268485000 1
+
+# Contact to soulkiller (268485122 at 100.107.44.6)
+a contact +1 +86400 268485121 268485122 10000000
+a range   +1 +86400 268485121 268485122 1
+
+## end ionadmin
+
+## begin bpadmin
+1
+
+a scheme ipn 'ipnfw' 'ipnadminep'
+
+a endpoint ipn:268485121.1  q
+a endpoint ipn:268485121.64 q
+a endpoint ipn:268485121.65 q
+
+a protocol udp 1400 100
+a induct udp 0.0.0.0:4556 udpcli
+
+a outduct udp 100.96.108.37:4556 udpclo
+a outduct udp 100.107.44.6:4556 udpclo
+
+s
+## end bpadmin
+
+## begin ipnadmin
+a plan 268485000 udp/100.96.108.37:4556
+a plan 268485122 udp/100.107.44.6:4556
+## end ipnadmin
+
+
+## begin ionsecadmin
+a key default /tmp/default.key
+q
+## end ionsecadmin
+
+## begin cfdpadmin
+1
+
+e 1
+
+m discard 0
+
+m requirecrc 0
+
+m segsize 1400
+
+s "bputa"
+## end cfdpadmin
