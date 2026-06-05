@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "draft-perry-dtn-cpb"
+version = "0.1.0"
+description = "Reference implementation of the Contact Probability Block (CPB) for BPv7 (draft-perry-dtn-cpb)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "BSD-2-Clause"}
+authors = [
+  {name = "Nicholas Perry", email = "nick@perrybrandsllc.com"}
+]
+keywords = ["DTN", "Bundle Protocol", "BPv7", "CBOR", "routing", "CGR"]
+dependencies = [
+  "cbor2>=5.9.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=7.0",
+  "hypothesis>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/luckyseoul/draft-perry-dtn-cpb"
+Repository = "https://github.com/luckyseoul/draft-perry-dtn-cpb"
+"IETF Draft" = "https://datatracker.ietf.org/doc/draft-perry-dtn-cpb/"
+
+[tool.setuptools]
+py-modules = ["cpb"]
+
+[tool.setuptools.package-data]
+"*" = ["*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]

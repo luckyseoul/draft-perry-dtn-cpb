@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test-cpb:
+    name: CPB conformance tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test extras (cbor2 + Hypothesis)
+        run: |
+          python -m pip install --upgrade pip
+          cd impl
+          pip install -e '.[test]'
+
+      - name: Run full CPB conformance tests (including property-based)
+        run: python3 impl/test_cpb.py
+
+      - name: Simulator smoke test (quick mode)
+        run: python3 impl/config1_sim.py --quick
+
+      - name: Verify packaging import
+        run: python3 -c "import cpb; print('cpb package import OK')"
