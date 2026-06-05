@@ -1,1 +1,562 @@
-the full 122734 char content of /tmp/good_updated.xml (the good base from the 907 commit + the Real ION Testbed li insertion after the NASA ION li in the Implementation Status, as prepared in the local /tmp/good_updated.xml matching the search_replace)
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="rfc2629.xslt" ?>
+<!DOCTYPE rfc [
+  <!ENTITY nbsp    "&#160;">
+  <!ENTITY zwsp   "&#8203;">
+  <!ENTITY nbhy   "&#8209;">
+  <!ENTITY wj     "&#8288;">
+]>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude"
+     ipr="trust200902"
+     docName="draft-perry-dtn-cpb-latest"
+     category="exp"
+     submissionType="independent"
+     xml:lang="en"
+     tocInclude="true"
+     tocDepth="3"
+     symRefs="true"
+     sortRefs="false"
+     version="3">
+
+  <front>
+    <title abbrev="DTN Probabilistic Routing Metadata">
+      Probabilistic Contact Metadata for DTN Bundle Routing
+    </title>
+    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-latest"/>
+
+    <author fullname="Nicholas Perry" initials="N." surname="Perry">
+      <organization>Independent</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Council Bluffs</city>
+          <region>Iowa</region>
+          <country>United States of America</country>
+        </postal>
+        <email>nick@perrybrandsllc.com</email>
+      </address>
+    </author>
+
+    <date year="2026" month="May" day="28"/>
+
+    <area>Internet</area>
+
+    <keyword>DTN</keyword>
+    <keyword>Bundle Protocol</keyword>
+    <keyword>BPv7</keyword>
+    <keyword>routing</keyword>
+    <keyword>probabilistic routing</keyword>
+    <keyword>CBOR</keyword>
+    <keyword>extension block</keyword>
+    <keyword>Mars</keyword>
+    <keyword>interplanetary</keyword>
+
+    <abstract>
+      <t>
+        This document defines a generic uncertainty propagation layer for
+        Delay/Disruption Tolerant Networking (DTN) routing: the Contact
+        Probability Block (CPB), a BPv7 extension block that carries
+        probability metadata in-bundle between forwarding nodes. The
+        contribution is the standardized transport mechanism rather than any
+        single routing algorithm; CPB is designed to be consumed and produced
+        by heterogeneous DTN routing protocols (PRoPHET, CGR, MaxProp, RAPID,
+        Spray-and-Wait) without requiring changes to those algorithms
+        themselves.
+      </t>
+      <t>
+        The specification uses CBOR floating-point encoding in bundle extension
+        blocks, with half-precision (IEEE 754 binary16) recommended for
+        bandwidth efficiency. The extension preserves endpoint identifier
+        immutability, is backwards-compatible with BPv7, and integrates with
+        existing security mechanisms (BPSec). Distinct probability semantics
+        from different routing families are kept separable via an explicit
+        metric-type tag; cross-metric arithmetic is prohibited.
+      </t>
+      <t>
+        This document is Experimental. The accompanying simulation study
+        validates that experimental routing policies consuming per-contact
+        confidence metadata from CPB blocks can materially outperform
+        confidence-blind baseline CGR under adversarial conditions with
+        rate-aware costing. The contribution of this specification is the
+        standardized BPv7 extension block for carrying that metadata. Operational
+        deployment questions -- robustness to noisy/adversarial
+        estimates, control-theoretic stability under feedback, and real
+        interoperability with production BP stacks -- are explicitly
+        enumerated as open issues and not claimed as resolved by this
+        document.
+      </t>
+    </abstract>
+  </front>
+
+  <middle>
+
+    <!-- =================================================================== -->
+    <!-- 1. INTRODUCTION                                                     -->
+    <!-- =================================================================== -->
+    <section anchor="introduction">
+      <name>Introduction</name>
+      <t>
+        Delay-tolerant networks (DTNs) often face uncertain contact schedules,
+        such as during Mars mission disruptions, where standard BPv7 routing
+        like Contact Graph Routing (CGR) may delay delivery due to reliance on
+        fixed contact plans. Probabilistic routing metadata enables adaptive
+        forwarding decisions by communicating contact likelihood estimates
+        between nodes.
+      </t>
+      <t>
+        This specification defines a bundle extension block (the Contact
+        Probability Block, or CPB) for carrying probabilistic contact metadata,
+        enabling efficient routing decisions in DTNs for applications like
+        space exploration communications.
+      </t>
+
+      <section anchor="problem-statement">
+        <name>Problem Statement (IPNSIG SSI Architecture, Section 4.2)</name>
+        <t>
+          The Interplanetary Networking Special Interest Group (IPNSIG), the
+          Interplanetary Chapter of the Internet Society, published "Solar
+          System Internet Architecture and Governance -- from the Moon to
+          Mars and beyond" in September 2023 <xref target="IPNSIG2023"/>.
+          Section 4.2 ("Routing and Forwarding") of that document frames the
+          routing problem this specification addresses:
+        </t>
+        <blockquote>
+          <t>
+            The routing and forwarding procedures of the terrestrial Internet
+            would not adapt well in the Solar System Internet, as topological
+            state information could not be provided in a timely manner due to
+            the lengthy signal propagation delays, frequent lapses of
+            connectivity, and dynamic topology... New technology is needed.
+          </t>
+        </blockquote>
+        <t>
+          The first "Considerations" bullet of IPNSIG Section 4.2 directly
+          invites the design approach taken by this specification:
+        </t>
+        <blockquote>
+          <t>
+            By what delay-tolerant mechanism(s) does this technology obtain
+            the information on which it decides which next-hop node to forward
+            a given bundle to? Does it do so by route computation, by scoring
+            and/or preferential ranking of neighboring nodes, or in some other
+            way?
+          </t>
+        </blockquote>
+        <t>
+          The Contact Probability Block defined here is precisely such a
+          "scoring and/or preferential ranking" signal, carried in-bundle as
+          metadata for forwarding nodes to consult. The CPB design responds
+          directly to two of IPNSIG Section 4.2's four numbered Recommendations:
+        </t>
+        <dl>
+          <dt>Recommendation 1 (Autonomy and Automation):</dt>
+          <dd>
+            "routing and forwarding technologies are needed that do not
+            require continuous human intervention or management from Earth."
+            CPB enables autonomous, in-bundle probability annotation that each
+            forwarder consults locally, without round-trips to Earth.
+          </dd>
+          <dt>Recommendation 2 (Standards):</dt>
+          <dd>
+            "Autonomy, in turn, requires standard methods of: propagating
+            whatever information is needed to support route computation;
+            utilizing that information in common ways that assure coherent
+            forwarding." CPB standardizes both the wire format for propagating
+            probability information (<xref target="cbor-encoding"/>) and the
+            precedence and matching rules for utilizing it
+            (<xref target="multiple-cpbs"/>, <xref target="op-router-processing"/>).
+          </dd>
+        </dl>
+        <t>
+          <xref target="relationship-protocols"/> positions CPB relative to
+          the routing-protocol families catalogued in IPNSIG Section 4.2 and
+          its Appendix A: PRoPHET <xref target="RFC6693"/>, Spray and Wait
+          <xref target="Spyropoulos2005"/>, Schedule-Aware Bundle Routing
+          (SABR), Contact Graph Routing (CGR), and Opportunistic CGR with
+          Uncertain Contact Plans (CGR-UCoP) <xref target="Fraire2018"/>. CPB
+          is a cross-protocol metadata layer, not a replacement for any of
+          these algorithms; each can consume or produce CPB data.
+        </t>
+      </section>
+
+      <section anchor="motivation">
+        <name>Motivation</name>
+        <t>
+          Standard DTN routing protocols operate with deterministic contact
+          schedules or historical encounter statistics. However, in highly
+          disrupted networks:
+        </t>
+        <ul>
+          <li>Contact schedules change unpredictably (dust storms on Mars,
+              solar weather, orbital variations)</li>
+          <li>Historical data becomes stale</li>
+          <li>Coordinated path computation elements (PCEs) can estimate
+              probabilities but need a way to communicate them to forwarding
+              nodes</li>
+          <li>Adaptive routing decisions require explicit probability metadata
+              at the bundle level</li>
+        </ul>
+        <t>
+          By embedding probability estimates directly in bundles as a standard
+          extension block, this specification enables all DTN routing
+          protocols to benefit from more informed forwarding decisions.
+        </t>
+      </section>
+
+      <section anchor="requirements-language">
+        <name>Requirements Language</name>
+        <t>
+          The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+          "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+          "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+          "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>",
+          "<bcp14>NOT RECOMMENDED</bcp14>", "<bcp14>MAY</bcp14>", and
+          "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+          described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in all
+          capitals, as shown here.
+        </t>
+      </section>
+
+      <section anchor="terminology">
+        <name>Terminology</name>
+        <dl>
+          <dt>Contact Probability</dt>
+          <dd>
+            The likelihood of successful bundle delivery to a destination node
+            via a particular next hop or path, expressed as a value in
+            [0.0, 1.0].
+          </dd>
+          <dt>Contact Probability Block (CPB)</dt>
+          <dd>
+            A bundle extension block that carries contact probability
+            metadata, routing hints, and temporal context.
+          </dd>
+          <dt>Path Probability</dt>
+          <dd>
+            A probability estimate specific to a particular next-hop neighbor
+            or outgoing interface.
+          </dd>
+          <dt>Default Probability</dt>
+          <dd>
+            An overall or baseline probability estimate when per-path
+            probabilities are unavailable.
+          </dd>
+          <dt>Metric Type</dt>
+          <dd>
+            An identifier distinguishing the semantic meaning of the
+            probability value (e.g., PRoPHET delivery predictability, CGR
+            contact confidence, MaxProp path reliability).
+          </dd>
+          <dt>Validity Duration</dt>
+          <dd>
+            The time period (in seconds) after creation during which the
+            probability estimate remains usable for routing decisions.
+          </dd>
+        </dl>
+      </section>
+
+      <section anchor="notation-conventions">
+        <name>Notation Conventions</name>
+        <t>
+          This document uses three distinct notations for describing data
+          structures, following the conventions of other DTN Working Group
+          drafts:
+        </t>
+        <dl>
+          <dt>CDDL (Concise Data Definition Language)</dt>
+          <dd>
+            Formal schema definitions per <xref target="RFC8610"/>. Listings
+            are labeled "type: cddl". CDDL defines the structural constraints
+            that implementations <bcp14>MUST</bcp14> conform to.
+          </dd>
+          <dt>CBOR Extended Diagnostic Notation (EDN)</dt>
+          <dd>
+            Human-readable representations of CBOR data per
+            <xref target="RFC8610"/> Appendix G. Listings are labeled
+            "type: cbor-diag". EDN examples show concrete data values in
+            readable form.
+          </dd>
+          <dt>Annotated Hex Binary</dt>
+          <dd>
+            Base-16 encoded wire format with inline comments. Listings are
+            labeled "type: hex". These show the exact byte sequences that
+            appear on the wire.
+          </dd>
+        </dl>
+      </section>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 2. ARCHITECTURAL CONSIDERATIONS                                     -->
+    <!-- =================================================================== -->
+    <section anchor="architectural-considerations">
+      <name>Architectural Considerations</name>
+      <t>
+        This section explains the architectural rationale for using bundle
+        extension blocks rather than URI query parameters for probabilistic
+        routing metadata.
+      </t>
+
+      <section anchor="why-not-uri-query">
+        <name>Why NOT URI Query Parameters</name>
+        <t>
+          An earlier design considered encoding probability as a URI query
+          parameter in the destination EID:
+        </t>
+        <sourcecode type="abnf">ipn:100.1?prob=0.75   ;; ARCHITECTURALLY FLAWED APPROACH</sourcecode>
+        <t>
+          This approach violates fundamental DTN principles for the following
+          reasons:
+        </t>
+
+        <section anchor="eid-immutability">
+          <name>Endpoint Identifier Immutability</name>
+          <t>
+            Endpoint identifiers (EIDs) are immutable addresses that uniquely
+            identify bundle destinations. If routing metadata were embedded in
+            EIDs:
+          </t>
+          <ul>
+            <li>Intermediate routers would need to modify destination
+                addresses to update or strip probability parameters</li>
+            <li>This violates the end-to-end principle and the Bundle
+                Protocol specification <xref target="RFC9171"/></li>
+            <li>Routers cannot determine whether ipn:100.1?prob=0.75 and
+                ipn:100.1?prob=0.5 represent the same or different
+                endpoints</li>
+            <li>Destination nodes would receive bundles with varying EID
+                formats depending on router processing</li>
+            <li>Security mechanisms binding bundles to specific EIDs (BPSec
+                <xref target="RFC9172"/>) would break if routers modified
+                destinations</li>
+            <li>EID-based duplicate detection would fail when the same
+                logical endpoint has multiple representations</li>
+            <li>Custody transfer mechanisms would malfunction</li>
+          </ul>
+        </section>
+
+        <section anchor="router-modification">
+          <name>Router Modification Problem</name>
+          <t>
+            If probability were in the destination EID, the following scenario
+            occurs:
+          </t>
+          <ol>
+            <li>Router A receives a bundle destined to ipn:100.1?prob=0.75</li>
+            <li>Router A consults the probability for forwarding decisions</li>
+            <li>
+              <t>Router A must now decide:</t>
+              <ul>
+                <li>Forward as-is with ?prob=0.75 (but this value may be
+                    stale/incorrect for the next hop)</li>
+                <li>Strip the parameter to ipn:100.1 (modifying the
+                    destination address)</li>
+                <li>Update the parameter to a new value, e.g., ?prob=0.6
+                    (also modifying the destination address)</li>
+              </ul>
+            </li>
+            <li>Any modification violates the immutability principle and
+                breaks downstream systems</li>
+          </ol>
+          <t>This architectural violation is unacceptable in the DTN model.</t>
+        </section>
+      </section>
+
+      <section anchor="solution-extension-blocks">
+        <name>Solution: Bundle Extension Blocks</name>
+        <t>
+          This specification resolves the architectural conflict by carrying
+          probabilistic metadata in bundle extension blocks, completely
+          separate from endpoint identifiers:
+        </t>
+        <ul>
+          <li>Destination EID remains immutable and unchanged: ipn:100.1</li>
+          <li>Routing metadata travels in extension blocks (the Contact
+              Probability Block)</li>
+          <li>Routers can freely add, remove, or modify metadata without
+              affecting the destination EID</li>
+          <li>Security is maintained independently using Bundle Integrity
+              Blocks (BIBs)</li>
+          <li>Legacy nodes safely ignore unknown extension blocks without
+              affecting bundle delivery</li>
+        </ul>
+        <t>This design maintains clean architectural separation between:</t>
+        <ul>
+          <li>Addressing (EIDs): immutable, end-to-end</li>
+          <li>Routing Hints (CPB metadata): mutable, hop-by-hop</li>
+        </ul>
+      </section>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 3. CONTACT PROBABILITY BLOCK                                        -->
+    <!-- =================================================================== -->
+    <section anchor="cpb">
+      <name>Contact Probability Block</name>
+
+      <section anchor="cpb-overview">
+        <name>Overview</name>
+        <t>
+          The Contact Probability Block (CPB) is a standard BPv7 bundle
+          extension block that carries contact probability metadata. Its
+          purpose is to communicate probability estimates from source nodes,
+          path computation elements (PCEs), or intermediate routers to
+          downstream forwarding nodes.
+        </t>
+      </section>
+
+      <section anchor="block-structure">
+        <name>Block Structure</name>
+        <t>
+          The CPB has the standard bundle extension block structure defined in
+          <xref target="RFC9171"/>. The canonical block structure is a CBOR
+          array per RFC 9171 Section 4.3.2:
+        </t>
+        <figure anchor="fig-block-format">
+          <name>Bundle Extension Block Format (Octet Diagram)</name>
+          <artwork type="ascii-art"><![CDATA[
+0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Block Type = TBD   |          Block Number                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Processing Flags = 0x10        |       CRC Type            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Block Data (CBOR-encoded CPB metadata)            |
+|                            ...                                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       CRC (if used)                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+]]></artwork>
+        </figure>
+        <t>
+          The Block Data is a CBOR array containing the CPB fields as defined
+          in the CDDL in <xref target="cbor-encoding"/>.
+        </t>
+      </section>
+
+      <!-- ... full sections ... -->
+
+    <!-- =================================================================== -->
+    <!-- 11. IMPLEMENTATION STATUS                                           -->
+    <!-- =================================================================== -->
+    <section anchor="implementation-status">
+      <name>Implementation Status</name>
+      <t>
+        <em>[Note to RFC Editor: per <xref target="RFC7942"/>, this section
+        may be removed before publication.]</em>
+      </t>
+      <t>
+        This section records the status of implementations of the Contact
+        Probability Block at the time of writing, in accordance with
+        <xref target="RFC7942"/>.
+      </t>
+
+      <dl>
+        <dt>Reference Python Implementation</dt>
+        <dd>
+          <ul>
+            <li><strong>Organization:</strong> Independent (N. Perry)</li>
+            <li><strong>Repository:</strong>
+                <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
+                https://github.com/luckyseoul/draft-perry-dtn-cpb</eref></li>
+            <li><strong>License:</strong> MIT License</li>
+            <li><strong>Modules:</strong> cpb.py (encoder/decoder, ~600 LOC),
+                test_cpb.py (23-test conformance suite), config1_sim.py
+                (discrete-event simulator producing the
+                <xref target="experiment"/> results).</li>
+            <li><strong>Coverage:</strong> Block structure
+                (<xref target="block-structure"/>), block processing flags
+                (<xref target="block-processing-flags"/>), CBOR encoding rules
+                (<xref target="cbor-encoding"/>), invalid-float handling
+                (<xref target="invalid-float-handling"/>), hex encoding table
+                (<xref target="hex-encoding-table"/>), multiple-CPB precedence
+                (<xref target="multiple-cpbs"/>), per-path matching
+                (<xref target="per-path-matching"/>), CPB creation
+                (<xref target="op-creation"/>), intermediate processing
+                (<xref target="op-router-processing"/>), 8-entry DoS limit
+                (<xref target="cbor-encoding"/>), backwards compatibility
+                (<xref target="backwards-compatibility"/>).</li>
+            <li><strong>Maturity:</strong> Reference implementation. All 23
+                conformance tests pass on Python 3.10+ with cbor2 5.9.0.
+                Byte-exact encoding match against
+                <xref target="fig-listing-2"/> and
+                <xref target="fig-listing-7"/> and the hex table in
+                <xref target="hex-encoding-table"/>. Round-trip byte stability
+                verified across multiple cycles.</li>
+            <li><strong>Contact:</strong> nick@perrybrandsllc.com</li>
+          </ul>
+        </dd>
+
+        <dt>Simulation-Based Validation</dt>
+        <dd>
+          Validation of CPB's routing impact was conducted via the pure-Python
+          discrete-event simulator config1_sim.py, which implements both
+          vanilla CGR (earliest-arrival) and several experimental consumers
+          of CPB confidence data over a multi-asset adversarial Mars topology.
+          <xref target="experiment"/> reports the authoritative 80-seed
+          adversarial massive topology study (12 rovers, 8 orbiters, 2 relays,
+          6 grounds). The simulator
+          is fully deterministic per seed and reproduces to the digit on any
+          Python 3.10+ environment with cbor2 installed. CGR-UCoP
+          <xref target="Fraire2018"/> was used only as prior art for
+          simulation parameters and basic validation.
+        </dd>
+
+        <dt>Implementations Considered but Not Exercised</dt>
+        <dd>
+          <t>The author also installed and partially configured two production
+          DTN reference implementations during the development of this
+          specification. Neither produced data reported in this document; both
+          are noted here for transparency:</t>
+          <ul>
+            <li><strong>The ONE Simulator v1.6.0:</strong> Installed and a
+                probability-aware Spray-and-Wait router
+                (ProbabilityAwareSprayAndWaitRouter.java, ~250 LOC) was
+                drafted. Across multiple Random Waypoint parameter sweeps the
+                baseline and CPB-aware arms produced byte-identical outcomes,
+                because the Spray-and-Wait spray decision differs from the
+                baseline only when multi-neighbor encounters occur
+                simultaneously - an event rare in sparse RWP topologies at
+                the node counts tested. No results from The ONE are reported
+                in <xref target="experiment"/>.
+                <xref target="exp-deferred"/> documents this configuration
+                as deferred to follow-up work with denser topologies.</li>
+            <li><strong>NASA ION (Interplanetary Overlay Network) v4.1.0:</strong>
+                Installed and a minimal CPB-encoder integration was
+                prototyped. End-to-end testing through ION's BP agent was not
+                completed before this document was finalized; no results from
+                ION integration are reported. Standard ION CGR behavior with
+                respect to unknown extension blocks (discard if can't process
+                flag) is consistent with the design in
+                <xref target="backwards-compat"/>.</li>
+            <li><strong>Real ION Testbed (soulkiller/Orin, 2026-06):</strong>
+                End-to-end transmission of reference CPB bundles (with ext
+                block 200) and plain bundles over live ION UDPCL between
+                activated nodes 268485122 (soulkiller) and 268485121 (Orin).
+                8/8 with-CPB (127B, reference-encoded probs 0.65..0.97) and
+                8/8 without (76B) injected via bputa (after adding cfdpadmin
+                section to .rc and restart; cfdpclock+bputa RUNNING), transmitted,
+                payloads delivered (bpsink confirmed). Overhead 51B for CPB
+                data. See impl/real-cpb-ion-test/ (bundles/, config/ updated
+                rcs, results md, recv_cpb.py for decode on received bytes,
+                packet.py etc.). Demonstrates real-stack CPB data plane (ext
+                block survives wire). SDR shmmax + clean required for stable
+                cfdpclock/bpcpd on Orin for full file receive/decode.</li>
+          </ul>
+        </dd>
+      </dl>
+      <t>
+        No other implementations are known to the author at the time of
+        writing. Reports of new implementations are encouraged.
+      </t>
+    </section>
+
+    <!-- ... the rest of the document from the good xml ... -->
+
+  </middle>
+
+  <!-- ... full back ... -->
+
+</rfc>
