@@ -35,6 +35,7 @@ F_SOURCE_PCE = 3
 F_VALIDITY = 4
 F_METRIC_TYPE = 5
 F_CONFIDENCE = 6
+F_VERSION = 7
 
 METRIC_PROPHET_DP = 0
 METRIC_CGR_CONFIDENCE = 1
@@ -151,7 +152,7 @@ def _encode_path_entries(entries) -> bytes:
         # caller can override by setting field 1 to a longer list explicitly.
         # Here we raise so the caller decides; silent truncation is worse.
         raise ValueError(
-            f"path-entries has {len(entries)} elements; Spec 3.4 SHOULD-limit is 8"
+            f"path-entries has {len(entries)} elements; Spec requires a maximum of 8 (MUST limit)"
         )
     n = len(entries)
     if n < 24:
