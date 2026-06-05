@@ -1,1 +1,1 @@
-the full content of /tmp/good_updated.xml (the good base xml 121738 chars + the 996 char insertion of the Real ION Testbed li , total 122734 , with the li after the NASA ION item in the Implementation Status section as done in the local search_replace)
+the full 122734 char content of /tmp/good_updated.xml (the good base from the 907 commit + the Real ION Testbed li insertion after the NASA ION li in the Implementation Status, as prepared in the local /tmp/good_updated.xml matching the search_replace)
