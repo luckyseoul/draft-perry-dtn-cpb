@@ -29,8 +29,11 @@
        
        
         This document is Experimental. The accompanying simulation study
-        validates that confidence-weighted CGR fed by CPB data outperforms
-        confidence-blind baseline CGR under idealized conditions. Operational
+        validates that experimental routing policies consuming per-contact
+        confidence metadata from CPB blocks can materially outperform
+        confidence-blind baseline CGR under adversarial conditions with
+        rate-aware costing. The contribution of this specification is the
+        standardized BPv7 extension block for carrying that metadata. Operational
         deployment questions — robustness to noisy/adversarial
         estimates, control-theoretic stability under feedback, and real
         interoperability with production BP stacks — are explicitly
@@ -1086,7 +1089,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Perry</td>
-<td class="center">Expires 23 November 2026</td>
+<td class="center">Expires 29 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1099,12 +1102,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-perry-dtn-cpb-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-05-22" class="published">22 May 2026</time>
+<time datetime="2026-05-28" class="published">28 May 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Experimental</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-11-23">23 November 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-29">29 November 2026</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1137,8 +1140,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
         metric-type tag; cross-metric arithmetic is prohibited.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 <p id="section-abstract-3">
         This document is Experimental. The accompanying simulation study
-        validates that confidence-weighted CGR fed by CPB data outperforms
-        confidence-blind baseline CGR under idealized conditions. Operational
+        validates that experimental routing policies consuming per-contact
+        confidence metadata from CPB blocks can materially outperform
+        confidence-blind baseline CGR under adversarial conditions with
+        rate-aware costing. The contribution of this specification is the
+        standardized BPv7 extension block for carrying that metadata. Operational
         deployment questions — robustness to noisy/adversarial
         estimates, control-theoretic stability under feedback, and real
         interoperability with production BP stacks — are explicitly
@@ -1164,7 +1170,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 23 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 29 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1334,138 +1340,167 @@ svg :is([fill="white"], [fill^="#fff"]) {
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-backwards-compatibility-2" class="internal xref">Backwards Compatibility</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
-            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-operational-considerations" class="internal xref">Operational Considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
-                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-threat-model" class="internal xref">Threat Model</a></p>
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-when-and-where-to-emit-cpbs" class="internal xref">When and Where to Emit CPBs</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
-                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-trust-model" class="internal xref">Trust Model</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.1">
-                    <p id="section-toc.1-1.7.2.2.2.1.1"><a href="#section-7.2.1" class="auto internal xref">7.2.1</a>.  <a href="#name-who-is-authorized-to-append" class="internal xref">Who is Authorized to Append CPBs</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.2">
-                    <p id="section-toc.1-1.7.2.2.2.2.1"><a href="#section-7.2.2" class="auto internal xref">7.2.2</a>.  <a href="#name-cryptographic-adjudication-" class="internal xref">Cryptographic Adjudication of Conflicting CPBs</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.3">
-                    <p id="section-toc.1-1.7.2.2.2.3.1"><a href="#section-7.2.3" class="auto internal xref">7.2.3</a>.  <a href="#name-downstream-handling-of-upst" class="internal xref">Downstream Handling of Upstream BIBs</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.4">
-                    <p id="section-toc.1-1.7.2.2.2.4.1"><a href="#section-7.2.4" class="auto internal xref">7.2.4</a>.  <a href="#name-route-poisoning-by-semi-tru" class="internal xref">Route Poisoning by Semi-Trusted Relays</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.5">
-                    <p id="section-toc.1-1.7.2.2.2.5.1"><a href="#section-7.2.5" class="auto internal xref">7.2.5</a>.  <a href="#name-inter-domain-trust" class="internal xref">Inter-Domain Trust</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2.2.6">
-                    <p id="section-toc.1-1.7.2.2.2.6.1"><a href="#section-7.2.6" class="auto internal xref">7.2.6</a>.  <a href="#name-replay-resistance" class="internal xref">Replay Resistance</a></p>
-</li>
-                </ul>
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-bundle-store-and-memory-siz" class="internal xref">Bundle Store and Memory Sizing</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
-                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-integrity-protection" class="internal xref">Integrity Protection</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3.2.1">
-                    <p id="section-toc.1-1.7.2.3.2.1.1"><a href="#section-7.3.1" class="auto internal xref">7.3.1</a>.  <a href="#name-source-cpb-with-append-only" class="internal xref">Source CPB with Append-Only Intermediates</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3.2.2">
-                    <p id="section-toc.1-1.7.2.3.2.2.1"><a href="#section-7.3.2" class="auto internal xref">7.3.2</a>.  <a href="#name-strip-and-replace-model" class="internal xref">Strip-and-Replace Model</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3.2.3">
-                    <p id="section-toc.1-1.7.2.3.2.3.1"><a href="#section-7.3.3" class="auto internal xref">7.3.3</a>.  <a href="#name-prohibition-on-bcb-encrypti" class="internal xref">Prohibition on BCB Encryption</a></p>
-</li>
-                </ul>
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-computational-and-storage-o" class="internal xref">Computational and Storage Overhead on Constrained Nodes</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4">
-                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-mitigations" class="internal xref">Mitigations</a></p>
+                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-logging-monitoring-and-oam" class="internal xref">Logging, Monitoring, and OAM</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.5">
-                <p id="section-toc.1-1.7.2.5.1"><a href="#section-7.5" class="auto internal xref">7.5</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+                <p id="section-toc.1-1.7.2.5.1"><a href="#section-7.5" class="auto internal xref">7.5</a>.  <a href="#name-partial-deployment" class="internal xref">Partial Deployment</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6">
+                <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="auto internal xref">7.6</a>.  <a href="#name-congestion-and-storage-pres" class="internal xref">Congestion and Storage Pressure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.7">
+                <p id="section-toc.1-1.7.2.7.1"><a href="#section-7.7" class="auto internal xref">7.7</a>.  <a href="#name-clock-considerations" class="internal xref">Clock Considerations</a></p>
 </li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
-            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-threat-model" class="internal xref">Threat Model</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-trust-model" class="internal xref">Trust Model</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2.2.1">
+                    <p id="section-toc.1-1.8.2.2.2.1.1"><a href="#section-8.2.1" class="auto internal xref">8.2.1</a>.  <a href="#name-who-is-authorized-to-append" class="internal xref">Who is Authorized to Append CPBs</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2.2.2">
+                    <p id="section-toc.1-1.8.2.2.2.2.1"><a href="#section-8.2.2" class="auto internal xref">8.2.2</a>.  <a href="#name-cryptographic-adjudication-" class="internal xref">Cryptographic Adjudication of Conflicting CPBs</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2.2.3">
+                    <p id="section-toc.1-1.8.2.2.2.3.1"><a href="#section-8.2.3" class="auto internal xref">8.2.3</a>.  <a href="#name-downstream-handling-of-upst" class="internal xref">Downstream Handling of Upstream BIBs</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2.2.4">
+                    <p id="section-toc.1-1.8.2.2.2.4.1"><a href="#section-8.2.4" class="auto internal xref">8.2.4</a>.  <a href="#name-route-poisoning-by-semi-tru" class="internal xref">Route Poisoning by Semi-Trusted Relays</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2.2.5">
+                    <p id="section-toc.1-1.8.2.2.2.5.1"><a href="#section-8.2.5" class="auto internal xref">8.2.5</a>.  <a href="#name-inter-domain-trust" class="internal xref">Inter-Domain Trust</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2.2.6">
+                    <p id="section-toc.1-1.8.2.2.2.6.1"><a href="#section-8.2.6" class="auto internal xref">8.2.6</a>.  <a href="#name-replay-resistance" class="internal xref">Replay Resistance</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3">
+                <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-integrity-protection" class="internal xref">Integrity Protection</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3.2.1">
+                    <p id="section-toc.1-1.8.2.3.2.1.1"><a href="#section-8.3.1" class="auto internal xref">8.3.1</a>.  <a href="#name-source-cpb-with-append-only" class="internal xref">Source CPB with Append-Only Intermediates</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3.2.2">
+                    <p id="section-toc.1-1.8.2.3.2.2.1"><a href="#section-8.3.2" class="auto internal xref">8.3.2</a>.  <a href="#name-strip-and-replace-model" class="internal xref">Strip-and-Replace Model</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3.2.3">
+                    <p id="section-toc.1-1.8.2.3.2.3.1"><a href="#section-8.3.3" class="auto internal xref">8.3.3</a>.  <a href="#name-prohibition-on-bcb-encrypti" class="internal xref">Prohibition on BCB Encryption</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.4">
+                <p id="section-toc.1-1.8.2.4.1"><a href="#section-8.4" class="auto internal xref">8.4</a>.  <a href="#name-mitigations" class="internal xref">Mitigations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.5">
+                <p id="section-toc.1-1.8.2.5.1"><a href="#section-8.5" class="auto internal xref">8.5</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
-            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-overhead-analysis" class="internal xref">Overhead Analysis</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
-                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-computational-and-storage-o" class="internal xref">Computational and Storage Overhead</a></p>
-</li>
-            </ul>
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
-            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-implementation-status" class="internal xref">Implementation Status</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
-            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-experiment-description" class="internal xref">Experiment Description</a></p>
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-overhead-analysis" class="internal xref">Overhead Analysis</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
-                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-scope-and-hypothesis" class="internal xref">Scope and Hypothesis</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
-                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-test-configuration-multi-as" class="internal xref">Test Configuration: Multi-Asset Mars Relay (CGR)</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.3">
-                <p id="section-toc.1-1.11.2.3.1"><a href="#section-11.3" class="auto internal xref">11.3</a>.  <a href="#name-routing-algorithms" class="internal xref">Routing Algorithms</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.4">
-                <p id="section-toc.1-1.11.2.4.1"><a href="#section-11.4" class="auto internal xref">11.4</a>.  <a href="#name-methodology" class="internal xref">Methodology</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.5">
-                <p id="section-toc.1-1.11.2.5.1"><a href="#section-11.5" class="auto internal xref">11.5</a>.  <a href="#name-results" class="internal xref">Results</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.6">
-                <p id="section-toc.1-1.11.2.6.1"><a href="#section-11.6" class="auto internal xref">11.6</a>.  <a href="#name-goals-per-rfc-2026-section-" class="internal xref">Goals (per RFC 2026 Section 4.2.1)</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.7">
-                <p id="section-toc.1-1.11.2.7.1"><a href="#section-11.7" class="auto internal xref">11.7</a>.  <a href="#name-success-criteria-met" class="internal xref">Success Criteria (Met)</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.8">
-                <p id="section-toc.1-1.11.2.8.1"><a href="#section-11.8" class="auto internal xref">11.8</a>.  <a href="#name-failure-criteria-not-trigge" class="internal xref">Failure Criteria (Not Triggered)</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.9">
-                <p id="section-toc.1-1.11.2.9.1"><a href="#section-11.9" class="auto internal xref">11.9</a>.  <a href="#name-deferred-configurations" class="internal xref">Deferred Configurations</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.10">
-                <p id="section-toc.1-1.11.2.10.1"><a href="#section-11.10" class="auto internal xref">11.10</a>. <a href="#name-open-experimental-questions" class="internal xref">Open Experimental Questions</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-computational-and-storage-ov" class="internal xref">Computational and Storage Overhead</a></p>
 </li>
             </ul>
 </li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-implementation-status" class="internal xref">Implementation Status</a></p>
+</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
-            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-reference-implementation" class="internal xref">Reference Implementation</a></p>
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-experiment-description" class="internal xref">Experiment Description</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
-                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-repository" class="internal xref">Repository</a></p>
+                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-scope-and-hypothesis" class="internal xref">Scope and Hypothesis</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
-                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-reproducing-the-experiment-" class="internal xref">Reproducing the Experiment Results</a></p>
+                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-test-configuration-multi-as" class="internal xref">Test Configuration: Multi-Asset Mars Relay (CGR)</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
-                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-relationship-to-updates-of-" class="internal xref">Relationship to Updates of BPv7</a></p>
+                <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-routing-policies-tested" class="internal xref">Routing Policies Tested</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.4">
+                <p id="section-toc.1-1.12.2.4.1"><a href="#section-12.4" class="auto internal xref">12.4</a>.  <a href="#name-methodology" class="internal xref">Methodology</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.5">
+                <p id="section-toc.1-1.12.2.5.1"><a href="#section-12.5" class="auto internal xref">12.5</a>.  <a href="#name-results" class="internal xref">Results</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.6">
+                <p id="section-toc.1-1.12.2.6.1"><a href="#section-12.6" class="auto internal xref">12.6</a>.  <a href="#name-real-stack-data-plane-valid" class="internal xref">Real-Stack Data-Plane Validation (ION Testbed)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.7">
+                <p id="section-toc.1-1.12.2.7.1"><a href="#section-12.7" class="auto internal xref">12.7</a>.  <a href="#name-goals-per-rfc-2026-section-" class="internal xref">Goals (per RFC 2026 Section 4.2.1)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.8">
+                <p id="section-toc.1-1.12.2.8.1"><a href="#section-12.8" class="auto internal xref">12.8</a>.  <a href="#name-success-criteria-met" class="internal xref">Success Criteria (Met)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.9">
+                <p id="section-toc.1-1.12.2.9.1"><a href="#section-12.9" class="auto internal xref">12.9</a>.  <a href="#name-failure-criteria-not-trigge" class="internal xref">Failure Criteria (Not Triggered)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.10">
+                <p id="section-toc.1-1.12.2.10.1"><a href="#section-12.10" class="auto internal xref">12.10</a>. <a href="#name-deferred-configurations" class="internal xref">Deferred Configurations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.11">
+                <p id="section-toc.1-1.12.2.11.1"><a href="#section-12.11" class="auto internal xref">12.11</a>. <a href="#name-open-experimental-questions" class="internal xref">Open Experimental Questions</a></p>
 </li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
-            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-normative-references" class="internal xref">Normative References</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
-            <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-informative-references" class="internal xref">Informative References</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
-            <p id="section-toc.1-1.15.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-mars-mission-scenario" class="internal xref">Mars Mission Scenario</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
-            <p id="section-toc.1-1.16.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-change-log" class="internal xref">Change Log</a></p>
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-reference-implementation" class="internal xref">Reference Implementation</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.1">
-                <p id="section-toc.1-1.16.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-draft-perry-dtn-cpb-00-may-" class="internal xref">draft-perry-dtn-cpb-00 (May 2026)</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1">
+                <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="auto internal xref">13.1</a>.  <a href="#name-repository" class="internal xref">Repository</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.2">
+                <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-reproducing-the-experiment-" class="internal xref">Reproducing the Experiment Results</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.3">
+                <p id="section-toc.1-1.13.2.3.1"><a href="#section-13.3" class="auto internal xref">13.3</a>.  <a href="#name-relationship-to-updates-of-" class="internal xref">Relationship to Updates of BPv7</a></p>
 </li>
             </ul>
 </li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#section-15" class="auto internal xref">15</a>. <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
+            <p id="section-toc.1-1.16.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-mars-mission-scenario" class="internal xref">Mars Mission Scenario</a></p>
+</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17">
-            <p id="section-toc.1-1.17.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+            <p id="section-toc.1-1.17.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-change-log" class="internal xref">Change Log</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.1">
+                <p id="section-toc.1-1.17.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-draft-perry-dtn-cpb-00-may-" class="internal xref">draft-perry-dtn-cpb-00 (May 2026)</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18">
+            <p id="section-toc.1-1.18.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
 </li>
         </ul>
 </nav>
@@ -1876,24 +1911,22 @@ svg :is([fill="white"], [fill^="#fff"]) {
           destination node 100:<a href="#section-3.2-4" class="pilcrow">¶</a></p>
 <span id="name-cpb-concrete-example-type-h"></span><div id="fig-listing-2">
 <figure id="figure-2">
-          <div class="alignLeft art-ascii-art art-text artwork" id="section-3.2-5.1">
+          <div class="lang-hex sourcecode" id="section-3.2-5.1">
 <pre>
-18 C8                ; block-type-code: 200 (0xC8, experimental/private
-                     ;   use per RFC 9171 Section 9.1)
-02                   ; block-number: 2
-11                   ; block-processing-flags: 0x11
-                     ;   (replicate in fragments; drop if unprocessable)
-00                   ; crc-type: 0 (no CRC)
-57                   ; BTSD: bstr (23 bytes, CBOR major type 2)
-   A4                ; BTSD content: CBOR map with 4 entries
-   00 F93A00         ; key 0: prob=0.75 (half-precision float)
-   01 81             ; key 1: array of 1 path entry
-      82             ; array with 2 elements [node, prob]
-      18 64          ;   node: 100 (0x64)
-      F93C00         ;   prob: 1.0
-   02 1A 00F73A80    ; key 2: timestamp (DTN epoch seconds)
-   04 19 0E10        ; key 4: validity_duration = 3600s (1 hour)
-F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
+18 C8                ; type=200 (exp per RFC9171 &amp;#167;9.1)
+02                   ; num=2
+11                   ; flags=0x11 (replicate; drop if bad)
+00                   ; crc=0 (none)
+57                   ; BTSD: bstr (23 bytes)
+   A4                ; map with 4 entries
+   00 F93A00         ;   0: prob=0.75 (float16)
+   01 81             ;   1: array of 1 path entry
+      82             ;     [node, prob]
+      18 64          ;       node=100
+      F93C00         ;       prob=1.0
+   02 1A 00F73A80    ;   2: timestamp (DTN epoch)
+   04 19 0E10        ;   4: validity=3600s
+F6                   ; crc: null
 </pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
@@ -1930,13 +1963,14 @@ $extension-block /=
 <pre>
 cpb-data = {
     ? 0: probability,         ; Default/overall probability
-    ? 1: [* path-entry],      ; Per-path probabilities
+    ? 1: [1*8 path-entry],    ; Per-path probabilities (MUST limit 8 per spec)
     ? 2: uint,                ; Timestamp (DTN epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
     ? 4: uint,                ; Validity duration (seconds, TTL)
     ? 5: metric-type,         ; Metric type identifier
     ? 6: probability,         ; Confidence/variance estimate
-    * (int .gt 6) =&gt; any      ; Extensibility (future fields)
+    ? 7: uint,                ; CPB format version (1 = this specification)
+    * (int .gt 7) =&gt; any      ; Extensibility (future fields)
 }
 
 probability = float           ; See Section 3.4 for encoding
@@ -1981,7 +2015,10 @@ metric-type = &amp;(
           <dd style="margin-left: 1.5em" id="section-3.2-11.4">
             An array of [next-hop, probability] tuples. Implementations
             <span class="bcp14">MUST</span> limit to a maximum of 8 entries
-            (<a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>).<a href="#section-3.2-11.4" class="pilcrow">¶</a>
+            (<a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>). The CDDL schema enforces this
+            bound. Senders <span class="bcp14">MUST NOT</span> include more than 8
+            entries; receivers <span class="bcp14">MUST</span> treat a CPB with more
+            than 8 path entries as malformed.<a href="#section-3.2-11.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-3.2-11.5">Field 2: Timestamp</dt>
@@ -1993,8 +2030,14 @@ metric-type = &amp;(
           <dd class="break"></dd>
 <dt id="section-3.2-11.7">Field 3: Source PCE Identifier</dt>
           <dd style="margin-left: 1.5em" id="section-3.2-11.8">
-            An opaque byte string identifying the entity that computed the
-            probability. Used for trust evaluation.<a href="#section-3.2-11.8" class="pilcrow">¶</a>
+            An opaque byte string identifying the entity (e.g., a PCE or
+            router) that computed the probability values in this CPB.
+            This field is intended for use in trust and policy decisions
+            (see <a href="#security" class="auto internal xref">Section 8</a>).  No particular encoding or
+            registry is defined; the value is meaningful only within the
+            administrative scope(s) that trust the producer.  Deployments
+            that do not require source attribution <span class="bcp14">MAY</span>
+            omit this field.<a href="#section-3.2-11.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-3.2-11.9">Field 4: Validity Duration (TTL)</dt>
@@ -2023,8 +2066,29 @@ metric-type = &amp;(
             confidence of 0.1 with P = 0.5 (based on 2 observations). Routing
             algorithms <span class="bcp14">MAY</span> use this for risk-aware forwarding.<a href="#section-3.2-11.14" class="pilcrow">¶</a>
 </dd>
+          <dd class="break"></dd>
+<dt id="section-3.2-11.15">Field 7: Version</dt>
+          <dd style="margin-left: 1.5em" id="section-3.2-11.16">
+            CPB format version number. If absent or set to 1, the structure
+            and semantics are as defined in this specification. Receivers
+            <span class="bcp14">SHOULD</span> process all recognized fields when
+            encountering a higher version number and <span class="bcp14">MAY</span>
+            ignore unrecognized higher fields or additional semantics
+            defined in future specifications. Senders using only the fields
+            defined here <span class="bcp14">SHOULD</span> omit the version field or set
+            it to 1.<a href="#section-3.2-11.16" class="pilcrow">¶</a>
+</dd>
         <dd class="break"></dd>
 </dl>
+<p id="section-3.2-12">
+          Receivers encountering an unrecognized metric-type value
+          <span class="bcp14">SHOULD</span> treat the CPB as if it carried metric-type
+          4 (generic) for the purpose of default and per-path probability
+          selection, or ignore the CPB entirely if local policy requires
+          strict metric-type validation.  Senders <span class="bcp14">MUST</span> use
+          only the registered values defined in the IANA "CPB Metric
+          Types" sub-registry unless operating in a private or
+          experimental context.<a href="#section-3.2-12" class="pilcrow">¶</a></p>
 <div id="block-processing-flags">
 <section id="section-3.2.1">
           <h4 id="name-block-processing-flags">
@@ -2085,7 +2149,7 @@ metric-type = &amp;(
           </ul>
 <p id="section-3.2.2-3">
             Implementations <span class="bcp14">SHOULD</span> prefer BPSec BIBs
-            (<a href="#integrity-protection" class="auto internal xref">Section 7.3</a>) over CRCs for integrity,
+            (<a href="#integrity-protection" class="auto internal xref">Section 8.3</a>) over CRCs for integrity,
             as BIBs provide both authentication and integrity.<a href="#section-3.2.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2399,7 +2463,10 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           predictability of 0.7 and a CGR confidence of 0.7 are not
           interchangeable inputs to the same routing decision. Specifically:<a href="#section-3.5-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-3.5-5.1">A router computing a CGR-UCoP route-cost product
+<li class="normal" id="section-3.5-5.1">A router implementing a rate-aware confidence-weighted policy
+              that consumes CPB data (for example, a policy whose cost
+              function resembles formulations in prior work such as CGR-UCoP
+              <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span>)
               <span class="bcp14">MUST</span> use only metric-type 1 (cgr-confidence)
               values, and <span class="bcp14">MUST</span> treat path-entries of other
               metric types as if absent.<a href="#section-3.5-5.1" class="pilcrow">¶</a>
@@ -2429,7 +2496,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           <strong>Metric-type registry policy:</strong> Future routing
           protocols defining new probability semantics
           <span class="bcp14">SHOULD</span> register a new metric-type code (see
-          <a href="#iana-considerations" class="auto internal xref">Section 8</a>) rather than overloading an
+          <a href="#iana-considerations" class="auto internal xref">Section 9</a>) rather than overloading an
           existing one. The CPB Metric Types sub-registry exists precisely to
           keep semantically distinct values separable on the wire.<a href="#section-3.5-7" class="pilcrow">¶</a></p>
 <p id="section-3.5-8">
@@ -2441,7 +2508,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           using a documented, deployment-specific policy and
           <span class="bcp14">SHOULD NOT</span> rely on numerical comparability across
           types. This area is identified as an open research question in
-          <a href="#open-questions" class="auto internal xref">Section 11.10</a>.<a href="#section-3.5-8" class="pilcrow">¶</a></p>
+          <a href="#open-questions" class="auto internal xref">Section 12.11</a>.<a href="#section-3.5-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="multiple-cpbs">
@@ -2500,7 +2567,6 @@ A3                   ; map with 3 entries
    01 82             ; key 1: array with 2 path entries
       82             ; path entry [node, prob]
       19 012C F93800 ;   node 300, prob 0.5
-      82             ; path entry [node, prob]
       18 64 F93C00   ;   node 100, prob 1.0
    05 01             ; key 5: metric-type = cgr-confidence
 </pre>
@@ -2730,7 +2796,7 @@ A3                   ; map with 3 entries
 <p id="section-4.4-5">
           A formal control-theoretic stability analysis of CPB-driven feedback
           dynamics is not provided in this document; this is identified as an
-          open research question in <a href="#open-questions" class="auto internal xref">Section 11.10</a>.
+          open research question in <a href="#open-questions" class="auto internal xref">Section 12.11</a>.
           Implementations that omit all of the above mitigations
           <span class="bcp14">SHOULD NOT</span> be deployed in production DTNs where
           congestion or herding could degrade service.<a href="#section-4.4-5" class="pilcrow">¶</a></p>
@@ -2808,8 +2874,11 @@ A3                   ; map with 3 entries
           data. The closest architectural precedent is the CGR Extension
           Block <span>[<a href="#CGREB" class="cite xref">CGREB</a>]</span>, which demonstrated that in-band
           routing metadata in extension blocks was architecturally sound.
-          <a href="#experiment" class="auto internal xref">Section 11</a> reports an experiment validating
-          CGR-UCoP fed by CPB-supplied confidences.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+          <a href="#experiment" class="auto internal xref">Section 12</a> reports an experiment in which
+          several simulator-internal routing policies consume CPB-supplied
+          confidences under adversarial conditions with rate-aware costing.
+          CGR-UCoP <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span> is treated strictly as prior
+          art for simulation validation, not the conceptual basis for CPB.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="rel-dtnma">
@@ -2860,70 +2929,214 @@ A3                   ; map with 3 entries
       </ul>
 </section>
 </div>
-<div id="security">
+<div id="operational-considerations">
 <section id="section-7">
+      <h2 id="name-operational-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-operational-considerations" class="section-name selfRef">Operational Considerations</a>
+      </h2>
+<p id="section-7-1">
+        This section collects deployment, sizing, and operational guidance
+        for CPB.  It draws from the processing rules in
+        <a href="#operational-semantics" class="auto internal xref">Section 4</a>, the overhead analysis in
+        <a href="#overhead-analysis" class="auto internal xref">Section 10</a>, and the backwards-compatibility
+        rules in <a href="#backwards-compatibility" class="auto internal xref">Section 6</a>.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<div id="op-production">
+<section id="section-7.1">
+        <h3 id="name-when-and-where-to-emit-cpbs">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-when-and-where-to-emit-cpbs" class="section-name selfRef">When and Where to Emit CPBs</a>
+        </h3>
+<p id="section-7.1-1">
+          A CPB may be created by the source application (using historical
+          or predicted contact data), a path computation element (PCE)
+          (using network-wide state), or the first-hop router (using local
+          contact statistics).  Deployments <span class="bcp14">SHOULD</span> document
+          their policy for which entity is authoritative for a given
+          bundle class.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1-2">
+          In environments with significant propagation delay (e.g.,
+          interplanetary), a PCE close to the source is often preferable
+          so that the initial CPB reflects the most current available
+          model.  In low-delay terrestrial meshes, the first-hop router
+          may have fresher local observations.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="op-sizing">
+<section id="section-7.2">
+        <h3 id="name-bundle-store-and-memory-siz">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-bundle-store-and-memory-siz" class="section-name selfRef">Bundle Store and Memory Sizing</a>
+        </h3>
+<p id="section-7.2-1">
+          If the strip-and-replace optimization in
+          <a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a> is not used, bundles can
+          accumulate multiple CPBs across hops.  Each CPB occupies
+          approximately 8-32 bytes of CBOR plus any BPSec BIB overhead.
+          Implementations on memory-constrained nodes <span class="bcp14">SHOULD</span>
+          bound the number of retained CPBs per bundle and apply the
+          optional removal of earlier instances when appending a fresher
+          CPB.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">
+          Bundle stores <span class="bcp14">SHOULD</span> account for the additional
+          per-bundle overhead when dimensioning for CPB-enabled traffic.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="op-compute">
+<section id="section-7.3">
+        <h3 id="name-computational-and-storage-o">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-computational-and-storage-o" class="section-name selfRef">Computational and Storage Overhead on Constrained Nodes</a>
+        </h3>
+<p id="section-7.3-1">
+          Decoding a CPB map (up to 8 path entries) requires CBOR parsing
+          of roughly 32-100 bytes.  On commodity hardware this is
+          sub-millisecond; on microcontrollers using software
+          floating-point it may be several milliseconds per CPB.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">
+          If the CPB is protected by a BPSec BIB, each consumption
+          requires a signature or MAC verification.  Implementations
+          <span class="bcp14">SHOULD</span> cache verification results for the
+          duration of bundle processing.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+<p id="section-7.3-3">
+          Route recomputation triggered by new CPB observations can be
+          bounded by the hysteresis and rate-limiting techniques
+          described in <a href="#op-creation" class="auto internal xref">Section 4.1</a>.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
+<p id="section-7.3-4">
+          Implementations <span class="bcp14">SHOULD</span> publish concrete
+          profiling numbers (CPU cycles per CPB, memory delta, etc.)
+          alongside interoperability reports, per the guidance in
+          <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>.<a href="#section-7.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="op-logging">
+<section id="section-7.4">
+        <h3 id="name-logging-monitoring-and-oam">
+<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-logging-monitoring-and-oam" class="section-name selfRef">Logging, Monitoring, and OAM</a>
+        </h3>
+<p id="section-7.4-1">
+          Nodes <span class="bcp14">SHOULD</span> log CPB-related events (reception of
+          invalid floats, scheme mismatches, version numbers higher than
+          supported, BIB verification failures on CPBs, etc.) using the
+          mechanisms defined in <span>[<a href="#RFC9675" class="cite xref">RFC9675</a>]</span> Section 4.3.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.4-2">
+          When a CPB is discarded due to age, future-dated timestamp, or
+          malformed content, a management event <span class="bcp14">SHOULD</span> be
+          generated to aid debugging of clock skew or misbehaving
+          producers.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="op-partial">
+<section id="section-7.5">
+        <h3 id="name-partial-deployment">
+<a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-partial-deployment" class="section-name selfRef">Partial Deployment</a>
+        </h3>
+<p id="section-7.5-1">
+          CPB is designed for incremental deployment.  Nodes that do not
+          recognize the block type pass it through unchanged (see
+          <a href="#backwards-compatibility" class="auto internal xref">Section 6</a>).  However, the
+          routing quality improvement is only realized by CPB-aware
+          forwarders.  Deployments <span class="bcp14">SHOULD</span> monitor the
+          fraction of CPB-aware nodes and may choose to emit CPBs only
+          on segments where a useful number of consumers exist.<a href="#section-7.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="op-congestion">
+<section id="section-7.6">
+        <h3 id="name-congestion-and-storage-pres">
+<a href="#section-7.6" class="section-number selfRef">7.6. </a><a href="#name-congestion-and-storage-pres" class="section-name selfRef">Congestion and Storage Pressure</a>
+        </h3>
+<p id="section-7.6-1">
+          Probability-aware routing tends to concentrate traffic on
+          high-confidence routes.  Under sustained load this can lead to
+          congestion on preferred paths and storage pressure at
+          intermediate nodes.<a href="#section-7.6-1" class="pilcrow">¶</a></p>
+<p id="section-7.6-2">
+          The mitigations in <a href="#op-creation" class="auto internal xref">Section 4.1</a> (hysteresis on
+          route changes, minimum interval between CPB-triggered
+          recomputations, and explicit rate limiting) are
+          <span class="bcp14">RECOMMENDED</span>.  Operators <span class="bcp14">SHOULD</span>
+          monitor queue depths and delivery ratios on high-confidence
+          routes and be prepared to fall back to confidence-blind
+          policies or to reduce CPB production rate during overload.<a href="#section-7.6-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="op-clocks">
+<section id="section-7.7">
+        <h3 id="name-clock-considerations">
+<a href="#section-7.7" class="section-number selfRef">7.7. </a><a href="#name-clock-considerations" class="section-name selfRef">Clock Considerations</a>
+        </h3>
+<p id="section-7.7-1">
+          CPB timestamps are in DTN epoch seconds.  In networks with
+          light-time delay or unsynchronized clocks, the age and
+          future-dated checks in <a href="#op-creation" class="auto internal xref">Section 4.1</a> must use
+          deployment-specific drift and max_age values.  Interplanetary
+          links commonly use larger tolerances (e.g., +/- 600 s drift,
+          86400 s max age) than terrestrial ones.<a href="#section-7.7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security">
+<section id="section-8">
       <h2 id="name-security-considerations">
-<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <div id="threat-model">
-<section id="section-7.1">
+<section id="section-8.1">
         <h3 id="name-threat-model">
-<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-threat-model" class="section-name selfRef">Threat Model</a>
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-threat-model" class="section-name selfRef">Threat Model</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="section-7.1-1.1">
+<li class="normal" id="section-8.1-1.1">
             <strong>Untrusted networks:</strong> An attacker could inject
               false probability values to cause mis-routing (sinkhole via
-              inflated, blackhole via deflated probabilities)<a href="#section-7.1-1.1" class="pilcrow">¶</a>
+              inflated, blackhole via deflated probabilities)<a href="#section-8.1-1.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.1-1.2">
+          <li class="normal" id="section-8.1-1.2">
             <strong>Stale data:</strong> A captured bundle with outdated
-              probabilities could cause poor routing decisions<a href="#section-7.1-1.2" class="pilcrow">¶</a>
+              probabilities could cause poor routing decisions<a href="#section-8.1-1.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.1-1.3">
+          <li class="normal" id="section-8.1-1.3">
             <strong>Inference attacks:</strong> Observing probability
               values over time could reveal traffic patterns or network
-              topology<a href="#section-7.1-1.3" class="pilcrow">¶</a>
+              topology<a href="#section-8.1-1.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.1-1.4">
+          <li class="normal" id="section-8.1-1.4">
             <strong>Route poisoning by semi-trusted relays:</strong> A
               relay that holds valid credentials within an administrative
               domain may still produce CPB advertisements that systematically
               bias routing decisions toward itself, away from a competitor,
-              or against specific destinations<a href="#section-7.1-1.4" class="pilcrow">¶</a>
+              or against specific destinations<a href="#section-8.1-1.4" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.1-1.5">
+          <li class="normal" id="section-8.1-1.5">
             <strong>Replay of stale CPBs:</strong> An attacker captures a
               recent valid (BIB-signed) CPB and replays it later when the
-              underlying conditions have changed<a href="#section-7.1-1.5" class="pilcrow">¶</a>
+              underlying conditions have changed<a href="#section-8.1-1.5" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.1-1.6">
+          <li class="normal" id="section-8.1-1.6">
             <strong>Inter-domain trust escalation:</strong> A CPB created
               by an entity trusted in one administrative domain crosses into
               a second domain where the producer is unknown; the second
-              domain has no basis for trust evaluation<a href="#section-7.1-1.6" class="pilcrow">¶</a>
+              domain has no basis for trust evaluation<a href="#section-8.1-1.6" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
 </div>
 <div id="trust-model">
-<section id="section-7.2">
+<section id="section-8.2">
         <h3 id="name-trust-model">
-<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-trust-model" class="section-name selfRef">Trust Model</a>
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-trust-model" class="section-name selfRef">Trust Model</a>
         </h3>
-<p id="section-7.2-1">
+<p id="section-8.2-1">
           This document does not mandate a single trust model because DTN
           deployments span a wide range of administrative scenarios —
           from a single-operator interplanetary relay network to multi-party
           terrestrial mesh deployments. Instead, this subsection identifies
           the trust questions every CPB deployment <span class="bcp14">MUST</span>
-          answer in its local trust policy, and provides default guidance.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+          answer in its local trust policy, and provides default guidance.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
 <div id="trust-authorization">
-<section id="section-7.2.1">
+<section id="section-8.2.1">
           <h4 id="name-who-is-authorized-to-append">
-<a href="#section-7.2.1" class="section-number selfRef">7.2.1. </a><a href="#name-who-is-authorized-to-append" class="section-name selfRef">Who is Authorized to Append CPBs</a>
+<a href="#section-8.2.1" class="section-number selfRef">8.2.1. </a><a href="#name-who-is-authorized-to-append" class="section-name selfRef">Who is Authorized to Append CPBs</a>
           </h4>
-<p id="section-7.2.1-1">
+<p id="section-8.2.1-1">
             By default, any node along the bundle's path
             <span class="bcp14">MAY</span> append a CPB. This is permissive and suitable
             for low-stakes deployments where the cost of bad routing is
@@ -2933,15 +3146,15 @@ A3                   ; map with 3 entries
             field, field 3), or to nodes possessing a specific BPSec
             credential. CPBs from unauthorized sources
             <span class="bcp14">SHOULD</span> be discarded, with the event logged per
-            <span>[<a href="#RFC9675" class="cite xref">RFC9675</a>]</span> Section 4.3.<a href="#section-7.2.1-1" class="pilcrow">¶</a></p>
+            <span>[<a href="#RFC9675" class="cite xref">RFC9675</a>]</span> Section 4.3.<a href="#section-8.2.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="trust-conflicts">
-<section id="section-7.2.2">
+<section id="section-8.2.2">
           <h4 id="name-cryptographic-adjudication-">
-<a href="#section-7.2.2" class="section-number selfRef">7.2.2. </a><a href="#name-cryptographic-adjudication-" class="section-name selfRef">Cryptographic Adjudication of Conflicting CPBs</a>
+<a href="#section-8.2.2" class="section-number selfRef">8.2.2. </a><a href="#name-cryptographic-adjudication-" class="section-name selfRef">Cryptographic Adjudication of Conflicting CPBs</a>
           </h4>
-<p id="section-7.2.2-1">
+<p id="section-8.2.2-1">
             When a bundle carries multiple CPBs from different sources with
             conflicting probabilities, the precedence rules of
             <a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a> select one. Those rules
@@ -2952,122 +3165,122 @@ A3                   ; map with 3 entries
             <span class="bcp14">MUST NOT</span> apply the metric-type-specificity
             tie-breaker (<a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a> step 3) to elevate a
             less-trusted source over a more-trusted one; trust ranking takes
-            precedence over metric specificity.<a href="#section-7.2.2-1" class="pilcrow">¶</a></p>
+            precedence over metric specificity.<a href="#section-8.2.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="trust-bib-handling">
-<section id="section-7.2.3">
+<section id="section-8.2.3">
           <h4 id="name-downstream-handling-of-upst">
-<a href="#section-7.2.3" class="section-number selfRef">7.2.3. </a><a href="#name-downstream-handling-of-upst" class="section-name selfRef">Downstream Handling of Upstream BIBs</a>
+<a href="#section-8.2.3" class="section-number selfRef">8.2.3. </a><a href="#name-downstream-handling-of-upst" class="section-name selfRef">Downstream Handling of Upstream BIBs</a>
           </h4>
-<p id="section-7.2.3-1">
+<p id="section-8.2.3-1">
             A downstream router that cannot verify an upstream BIB
             (missing key material, expired credentials, unrecognized
-            security context) has two acceptable behaviors:<a href="#section-7.2.3-1" class="pilcrow">¶</a></p>
+            security context) has two acceptable behaviors:<a href="#section-8.2.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.2.3-2.1">
+<li class="normal" id="section-8.2.3-2.1">
               <strong>Strict:</strong> Treat the unverifiable CPB as
                 absent for routing decisions, and forward the bundle
                 unchanged so that downstream routers with the correct
                 credentials may still consume it. This is
-                <span class="bcp14">RECOMMENDED</span> as the default.<a href="#section-7.2.3-2.1" class="pilcrow">¶</a>
+                <span class="bcp14">RECOMMENDED</span> as the default.<a href="#section-8.2.3-2.1" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-7.2.3-2.2">
+            <li class="normal" id="section-8.2.3-2.2">
               <strong>Permissive:</strong> Use the unverified CPB
                 advisorily, treating it as metric-type 4 (generic) regardless
                 of its declared metric-type. This is
                 <span class="bcp14">NOT RECOMMENDED</span> in adversarial environments
                 but may be appropriate in cooperative single-operator
-                deployments where credential rollout lags CPB adoption.<a href="#section-7.2.3-2.2" class="pilcrow">¶</a>
+                deployments where credential rollout lags CPB adoption.<a href="#section-8.2.3-2.2" class="pilcrow">¶</a>
 </li>
           </ul>
-<p id="section-7.2.3-3">
+<p id="section-8.2.3-3">
             A router <span class="bcp14">MUST NOT</span> silently strip an
             unverifiable BIB-protected CPB and re-sign it with its own
             credentials; doing so launders provenance and breaks the
             append-only trust chain. If a router needs to express a
             different probability estimate, it
             <span class="bcp14">MUST</span> append a new CPB with its own BIB rather
-            than modifying or replacing the original.<a href="#section-7.2.3-3" class="pilcrow">¶</a></p>
+            than modifying or replacing the original.<a href="#section-8.2.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="trust-poisoning">
-<section id="section-7.2.4">
+<section id="section-8.2.4">
           <h4 id="name-route-poisoning-by-semi-tru">
-<a href="#section-7.2.4" class="section-number selfRef">7.2.4. </a><a href="#name-route-poisoning-by-semi-tru" class="section-name selfRef">Route Poisoning by Semi-Trusted Relays</a>
+<a href="#section-8.2.4" class="section-number selfRef">8.2.4. </a><a href="#name-route-poisoning-by-semi-tru" class="section-name selfRef">Route Poisoning by Semi-Trusted Relays</a>
           </h4>
-<p id="section-7.2.4-1">
+<p id="section-8.2.4-1">
             A relay that is trusted enough to participate in the network but
             not trusted to make routing decisions for the entire domain can
             still degrade routing by producing biased CPB advertisements.
             Defenses against this attack model are imperfect at the CPB
-            layer; mitigations <span class="bcp14">SHOULD</span> include:<a href="#section-7.2.4-1" class="pilcrow">¶</a></p>
+            layer; mitigations <span class="bcp14">SHOULD</span> include:<a href="#section-8.2.4-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.2.4-2.1">Plausibility checks: a receiver
+<li class="normal" id="section-8.2.4-2.1">Plausibility checks: a receiver
                 <span class="bcp14">SHOULD</span> compare the asserted CPB probability
                 against locally observed delivery statistics for the same
                 next-hop, and discount or discard CPBs that deviate beyond
-                a deployment-specific tolerance (default: factor of 2).<a href="#section-7.2.4-2.1" class="pilcrow">¶</a>
+                a deployment-specific tolerance (default: factor of 2).<a href="#section-8.2.4-2.1" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-7.2.4-2.2">Source reputation: trust policies
+            <li class="normal" id="section-8.2.4-2.2">Source reputation: trust policies
                 <span class="bcp14">MAY</span> maintain per-source reputation scores
                 derived from historical accuracy, and weight CPBs by source
                 reputation when consuming them. CPB itself does not specify
                 a reputation mechanism; the DTN Management Architecture
-                (<span>[<a href="#RFC9675" class="cite xref">RFC9675</a>]</span>) is the appropriate vehicle.<a href="#section-7.2.4-2.2" class="pilcrow">¶</a>
+                (<span>[<a href="#RFC9675" class="cite xref">RFC9675</a>]</span>) is the appropriate vehicle.<a href="#section-8.2.4-2.2" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-7.2.4-2.3">Bounded influence (<a href="#stability-considerations" class="auto internal xref">Section 4.4</a>):
+            <li class="normal" id="section-8.2.4-2.3">Bounded influence (<a href="#stability-considerations" class="auto internal xref">Section 4.4</a>):
                 cap how much any single CPB can shift the local routing
-                decision relative to the router's own observations.<a href="#section-7.2.4-2.3" class="pilcrow">¶</a>
+                decision relative to the router's own observations.<a href="#section-8.2.4-2.3" class="pilcrow">¶</a>
 </li>
           </ul>
-<p id="section-7.2.4-3">
+<p id="section-8.2.4-3">
             None of these mitigations defeat a sufficiently capable
             adversary; they raise the cost of route poisoning to make casual
             misbehavior detectable. Trust frameworks that close this gap
             (e.g., formal reputation aggregation, attestation chains) are
-            out of scope for this document.<a href="#section-7.2.4-3" class="pilcrow">¶</a></p>
+            out of scope for this document.<a href="#section-8.2.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="trust-interdomain">
-<section id="section-7.2.5">
+<section id="section-8.2.5">
           <h4 id="name-inter-domain-trust">
-<a href="#section-7.2.5" class="section-number selfRef">7.2.5. </a><a href="#name-inter-domain-trust" class="section-name selfRef">Inter-Domain Trust</a>
+<a href="#section-8.2.5" class="section-number selfRef">8.2.5. </a><a href="#name-inter-domain-trust" class="section-name selfRef">Inter-Domain Trust</a>
           </h4>
-<p id="section-7.2.5-1">
+<p id="section-8.2.5-1">
             When a bundle carrying a CPB crosses an administrative boundary,
             the receiving domain has no a priori basis for trusting the
             CPB's producer. Inter-domain trust
-            <span class="bcp14">SHOULD</span> be established via one of:<a href="#section-7.2.5-1" class="pilcrow">¶</a></p>
+            <span class="bcp14">SHOULD</span> be established via one of:<a href="#section-8.2.5-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.2.5-2.1">A bilateral or multilateral trust agreement that designates
+<li class="normal" id="section-8.2.5-2.1">A bilateral or multilateral trust agreement that designates
                 which PCE identifiers and BIB credentials from the foreign
-                domain are accepted<a href="#section-7.2.5-2.1" class="pilcrow">¶</a>
+                domain are accepted<a href="#section-8.2.5-2.1" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-7.2.5-2.2">A gateway router at the domain boundary that consumes the
+            <li class="normal" id="section-8.2.5-2.2">A gateway router at the domain boundary that consumes the
                 foreign CPB advisorily, validates it against local
                 observations, and (optionally) appends a domain-native CPB
-                expressing the gateway's translated assessment<a href="#section-7.2.5-2.2" class="pilcrow">¶</a>
+                expressing the gateway's translated assessment<a href="#section-8.2.5-2.2" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-7.2.5-2.3">A policy of discarding all CPBs at the domain boundary, with
+            <li class="normal" id="section-8.2.5-2.3">A policy of discarding all CPBs at the domain boundary, with
                 the receiving domain regenerating CPBs internally from its
-                own observations<a href="#section-7.2.5-2.3" class="pilcrow">¶</a>
+                own observations<a href="#section-8.2.5-2.3" class="pilcrow">¶</a>
 </li>
           </ul>
-<p id="section-7.2.5-3">
+<p id="section-8.2.5-3">
             This document does not standardize inter-domain trust
             establishment; deployments
             <span class="bcp14">SHOULD</span> document their inter-domain CPB policy
             explicitly. This area is identified as an open question in
-            <a href="#open-questions" class="auto internal xref">Section 11.10</a>.<a href="#section-7.2.5-3" class="pilcrow">¶</a></p>
+            <a href="#open-questions" class="auto internal xref">Section 12.11</a>.<a href="#section-8.2.5-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="trust-replay">
-<section id="section-7.2.6">
+<section id="section-8.2.6">
           <h4 id="name-replay-resistance">
-<a href="#section-7.2.6" class="section-number selfRef">7.2.6. </a><a href="#name-replay-resistance" class="section-name selfRef">Replay Resistance</a>
+<a href="#section-8.2.6" class="section-number selfRef">8.2.6. </a><a href="#name-replay-resistance" class="section-name selfRef">Replay Resistance</a>
           </h4>
-<p id="section-7.2.6-1">
+<p id="section-8.2.6-1">
             The timestamp field (field 2) and validity duration field
             (field 4), combined with the forward and backward skew
             tolerances of <a href="#op-creation" class="auto internal xref">Section 4.1</a>, provide replay
@@ -3077,126 +3290,140 @@ A3                   ; map with 3 entries
             without invalidating the BIB defeats this mechanism.
             Implementations <span class="bcp14">MUST</span> ensure the BIB security
             target list includes the entire CPB block, not just a subset of
-            its fields.<a href="#section-7.2.6-1" class="pilcrow">¶</a></p>
+            its fields.<a href="#section-8.2.6-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="integrity-protection">
-<section id="section-7.3">
+<section id="section-8.3">
         <h3 id="name-integrity-protection">
-<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-integrity-protection" class="section-name selfRef">Integrity Protection</a>
+<a href="#section-8.3" class="section-number selfRef">8.3. </a><a href="#name-integrity-protection" class="section-name selfRef">Integrity Protection</a>
         </h3>
-<p id="section-7.3-1">
+<p id="section-8.3-1">
           For deployments in untrusted networks or where source authentication
           is required, the CPB <span class="bcp14">MUST</span> be protected using Bundle
           Integrity Blocks (BIBs) as defined in <span>[<a href="#RFC9172" class="cite xref">RFC9172</a>]</span>
-          (BPSec).<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+          (BPSec).<a href="#section-8.3-1" class="pilcrow">¶</a></p>
 <div id="source-cpb-append-only">
-<section id="section-7.3.1">
+<section id="section-8.3.1">
           <h4 id="name-source-cpb-with-append-only">
-<a href="#section-7.3.1" class="section-number selfRef">7.3.1. </a><a href="#name-source-cpb-with-append-only" class="section-name selfRef">Source CPB with Append-Only Intermediates</a>
+<a href="#section-8.3.1" class="section-number selfRef">8.3.1. </a><a href="#name-source-cpb-with-append-only" class="section-name selfRef">Source CPB with Append-Only Intermediates</a>
           </h4>
-<p id="section-7.3.1-1">
+<p id="section-8.3.1-1">
             The source creates a CPB and attaches a BIB protecting only that
             CPB's block number. Intermediate routers with fresher probability
             estimates append new CPB blocks without modifying the source's
-            CPB.<a href="#section-7.3.1-1" class="pilcrow">¶</a></p>
+            CPB.<a href="#section-8.3.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="strip-and-replace">
-<section id="section-7.3.2">
+<section id="section-8.3.2">
           <h4 id="name-strip-and-replace-model">
-<a href="#section-7.3.2" class="section-number selfRef">7.3.2. </a><a href="#name-strip-and-replace-model" class="section-name selfRef">Strip-and-Replace Model</a>
+<a href="#section-8.3.2" class="section-number selfRef">8.3.2. </a><a href="#name-strip-and-replace-model" class="section-name selfRef">Strip-and-Replace Model</a>
           </h4>
-<p id="section-7.3.2-1">
+<p id="section-8.3.2-1">
             As an alternative, implementations <span class="bcp14">MAY</span> use a
             strip-and-replace model where each forwarder validates the
             previous CPB, removes it, inserts a fresh CPB with its own
             probability estimate, and signs it with its own BIB. Deployments
             <span class="bcp14">SHOULD</span> choose one model per administrative domain
-            and document the policy.<a href="#section-7.3.2-1" class="pilcrow">¶</a></p>
+            and document the policy.<a href="#section-8.3.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="bcb-prohibition">
-<section id="section-7.3.3">
+<section id="section-8.3.3">
           <h4 id="name-prohibition-on-bcb-encrypti">
-<a href="#section-7.3.3" class="section-number selfRef">7.3.3. </a><a href="#name-prohibition-on-bcb-encrypti" class="section-name selfRef">Prohibition on BCB Encryption</a>
+<a href="#section-8.3.3" class="section-number selfRef">8.3.3. </a><a href="#name-prohibition-on-bcb-encrypti" class="section-name selfRef">Prohibition on BCB Encryption</a>
           </h4>
-<p id="section-7.3.3-1">
+<p id="section-8.3.3-1">
             Implementations <span class="bcp14">MUST NOT</span> encrypt the CPB using a
             Block Confidentiality Block (BCB). Encrypting a routing-critical
             extension block renders it opaque to the forwarding nodes that
             need it. Integrity protection (BIB) is appropriate; confidentiality
-            protection (BCB) is not.<a href="#section-7.3.3-1" class="pilcrow">¶</a></p>
+            protection (BCB) is not.<a href="#section-8.3.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="mitigations">
-<section id="section-7.4">
+<section id="section-8.4">
         <h3 id="name-mitigations">
-<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-mitigations" class="section-name selfRef">Mitigations</a>
+<a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-mitigations" class="section-name selfRef">Mitigations</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="section-7.4-1.1">Signature verification before using CPB for critical routing
-              decisions<a href="#section-7.4-1.1" class="pilcrow">¶</a>
+<li class="normal" id="section-8.4-1.1">Signature verification before using CPB for critical routing
+              decisions<a href="#section-8.4-1.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.4-1.2">Timestamp validation (discard old or future-dated CPBs)<a href="#section-7.4-1.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-8.4-1.2">Timestamp validation (discard old or future-dated CPBs)<a href="#section-8.4-1.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.4-1.3">Secondary validation against local contact statistics<a href="#section-7.4-1.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-8.4-1.3">Secondary validation against local contact statistics<a href="#section-8.4-1.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-7.4-1.4">Conservative thresholds for critical payloads<a href="#section-7.4-1.4" class="pilcrow">¶</a>
+          <li class="normal" id="section-8.4-1.4">Conservative thresholds for critical payloads<a href="#section-8.4-1.4" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
 </div>
 <div id="privacy">
-<section id="section-7.5">
+<section id="section-8.5">
         <h3 id="name-privacy-considerations">
-<a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+<a href="#section-8.5" class="section-number selfRef">8.5. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
         </h3>
-<p id="section-7.5-1">
+<p id="section-8.5-1">
           CPB metadata may reveal information about network topology and
           operational patterns. Per-path probability entries expose which
           next-hop nodes are reachable; the source PCE identifier (field 3)
           identifies the entity that computed the probability. Deployments in
           adversarial environments <span class="bcp14">SHOULD</span> consider omitting the
-          source PCE identifier when source attribution is not required.<a href="#section-7.5-1" class="pilcrow">¶</a></p>
+          source PCE identifier when source attribution is not required.<a href="#section-8.5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="iana-considerations">
-<section id="section-8">
+<section id="section-9">
       <h2 id="name-iana-considerations">
-<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-8-1">
+<p id="section-9-1">
         This document requests IANA to assign a new codepoint from the
         "Bundle Block Types" registry as defined in <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>,
         Section 9.1, under the Specification Required registration policy
-        (<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>).<a href="#section-8-1" class="pilcrow">¶</a></p>
-<p id="section-8-2">
+        (<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>).<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-2">
         <strong>Suggested Value:</strong> The RFC authors suggest code point
         0x1A (26 decimal) as a suitable unassigned value. The final value
         will be assigned by IANA upon publication; the value 0xC8 used
         throughout examples in this document is a non-normative placeholder.
         Implementations <span class="bcp14">MUST NOT</span> hardcode 0xC8 and
         <span class="bcp14">SHOULD</span> parameterize the block-type code so that the
-        IANA-assigned value can be substituted post-publication.<a href="#section-8-2" class="pilcrow">¶</a></p>
-<p id="section-8-3">
+        IANA-assigned value can be substituted post-publication.<a href="#section-9-2" class="pilcrow">¶</a></p>
+<p id="section-9-3">
         This document additionally requests IANA to create a "CPB Metric
-        Types" sub-registry with initial entries: 0=PRoPHET Delivery
-        Predictability, 1=CGR Contact Confidence, 2=MaxProp Path Cost
-        (inverted), 3=RAPID Utility Metric, 4=Generic Probability; values
-        5-255 unassigned.<a href="#section-8-3" class="pilcrow">¶</a></p>
+        Types" sub-registry of the Bundle Block Types registry.  The
+        registration policy for the sub-registry is Specification Required.
+        Initial registrations are:<a href="#section-9-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9-4.1">0: PRoPHET Delivery Predictability<a href="#section-9-4.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-9-4.2">1: CGR Contact Confidence<a href="#section-9-4.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-9-4.3">2: MaxProp Path Cost (inverted)<a href="#section-9-4.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-9-4.4">3: RAPID Utility Metric<a href="#section-9-4.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-9-4.5">4: Generic Probability<a href="#section-9-4.5" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-9-5">
+        Values 5-255 are unassigned.  Future assignments in this range
+        require a specification and expert review.<a href="#section-9-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="overhead-analysis">
-<section id="section-9">
+<section id="section-10">
       <h2 id="name-overhead-analysis">
-<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-overhead-analysis" class="section-name selfRef">Overhead Analysis</a>
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-overhead-analysis" class="section-name selfRef">Overhead Analysis</a>
       </h2>
 <span id="name-cpb-byte-overhead-vs-payloa"></span><div id="tab-overhead">
 <table class="center" id="table-2">
@@ -3245,31 +3472,41 @@ A3                   ; map with 3 entries
         </tbody>
       </table>
 </div>
-<p id="section-9-2">
+<p id="section-10-2">
         For kilobyte-scale payloads typical of DTN sensor data, overhead is
-        below 3% even with full CPB fields.<a href="#section-9-2" class="pilcrow">¶</a></p>
+        below 3% even with full CPB fields.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-3">
+          Empirical measurement on the reference encoder and a live ION
+          testbed (see <a href="#exp-real-validation" class="auto internal xref">Section 12.6</a>) produced 51 bytes
+          of overhead for a full CPB (float16 default probability + path
+          entries + timestamp + validity + metric type + confidence) plus
+          its BTSD wrapper when added to a minimal BPv7 bundle (76 B plain
+          → 127 B with CPB). This is higher than the idealized "CPB
+          full (32 bytes)" row above because of concrete CBOR map/array
+          encoding and the BTSD block structure; it remains small in
+          absolute terms for any realistic DTN ADU.<a href="#section-10-3" class="pilcrow">¶</a></p>
 <div id="computational-overhead">
-<section id="section-9.1">
-        <h3 id="name-computational-and-storage-o">
-<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-computational-and-storage-o" class="section-name selfRef">Computational and Storage Overhead</a>
+<section id="section-10.1">
+        <h3 id="name-computational-and-storage-ov">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-computational-and-storage-ov" class="section-name selfRef">Computational and Storage Overhead</a>
         </h3>
-<p id="section-9.1-1">
+<p id="section-10.1-1">
           The table above quantifies only wire-byte overhead. CPB consumption
           imposes additional costs on forwarders that
           <span class="bcp14">SHOULD</span> be considered when sizing a CPB-enabled
-          deployment, particularly on constrained nodes:<a href="#section-9.1-1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-9.1-2">
-          <dt id="section-9.1-2.1">CBOR decode cost</dt>
-          <dd style="margin-left: 1.5em" id="section-9.1-2.2">
+          deployment, particularly on constrained nodes:<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-10.1-2">
+          <dt id="section-10.1-2.1">CBOR decode cost</dt>
+          <dd style="margin-left: 1.5em" id="section-10.1-2.2">
             Decoding the CPB map (up to 8 path entries) requires CBOR
             parsing of approximately 32-100 bytes per CPB. On commodity
             hardware this is sub-millisecond; on constrained microcontrollers
             with software floating-point it may be several milliseconds per
-            CPB.<a href="#section-9.1-2.2" class="pilcrow">¶</a>
+            CPB.<a href="#section-10.1-2.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-9.1-2.3">BIB verification cost</dt>
-          <dd style="margin-left: 1.5em" id="section-9.1-2.4">
+<dt id="section-10.1-2.3">BIB verification cost</dt>
+          <dd style="margin-left: 1.5em" id="section-10.1-2.4">
             If the CPB is BPSec-protected, each consumption requires a
             signature verification. Public key verification (ECDSA, Ed25519,
             HMAC) costs vary by algorithm and hardware support. In the worst
@@ -3277,91 +3514,91 @@ A3                   ; map with 3 entries
             verification can dominate CPB processing time. Implementations
             <span class="bcp14">SHOULD</span> cache verification results per
             (block-number, BIB-block-number) tuple within a single bundle's
-            processing window.<a href="#section-9.1-2.4" class="pilcrow">¶</a>
+            processing window.<a href="#section-10.1-2.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-9.1-2.5">Route recomputation</dt>
-          <dd style="margin-left: 1.5em" id="section-9.1-2.6">
+<dt id="section-10.1-2.5">Route recomputation</dt>
+          <dd style="margin-left: 1.5em" id="section-10.1-2.6">
             Each new CPB observation potentially triggers route recomputation.
-            For confidence-weighted CGR (CGR-UCoP, <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span>),
-            the cost is dominated by the contact-graph traversal, which
-            scales as O(C log C) where C is the contact-plan size; CPB
-            consumption adds a per-edge multiplication. The hysteresis and
-            rate-limiting techniques of
-            <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> bound the recomputation
-            rate.<a href="#section-9.1-2.6" class="pilcrow">¶</a>
+            For a confidence-weighted routing policy consuming CPB data
+            (see CGR-UCoP <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span> as prior art), the cost
+            is dominated by the contact-graph traversal, which scales as
+            O(C log C) where C is the contact-plan size; CPB consumption adds
+            a per-edge multiplication. The hysteresis and rate-limiting
+            techniques of <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> bound the
+            recomputation rate.<a href="#section-10.1-2.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-9.1-2.7">Memory pressure from multi-CPB accumulation</dt>
-          <dd style="margin-left: 1.5em" id="section-9.1-2.8">
+<dt id="section-10.1-2.7">Memory pressure from multi-CPB accumulation</dt>
+          <dd style="margin-left: 1.5em" id="section-10.1-2.8">
             If the strip-and-replace model
-            (<a href="#strip-and-replace" class="auto internal xref">Section 7.3.2</a>) is not used, bundles can
+            (<a href="#strip-and-replace" class="auto internal xref">Section 8.3.2</a>) is not used, bundles can
             accumulate multiple CPBs across hops. Each CPB occupies up to
             ~32 bytes plus BIB overhead. Bundle store memory pressure
             <span class="bcp14">SHOULD</span> be considered when designing CPB
             production policy; the optional optimization in
             <a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a> (a node appending a new CPB
             <span class="bcp14">MAY</span> remove earlier CPB instances) is relevant
-            here.<a href="#section-9.1-2.8" class="pilcrow">¶</a>
+            here.<a href="#section-10.1-2.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-9.1-2.9">Aging-logic cost</dt>
-          <dd style="margin-left: 1.5em" id="section-9.1-2.10">
+<dt id="section-10.1-2.9">Aging-logic cost</dt>
+          <dd style="margin-left: 1.5em" id="section-10.1-2.10">
             Maintaining timestamp-aware probability decay
             (<a href="#op-creation" class="auto internal xref">Section 4.1</a>) requires periodic re-evaluation
             of cached CPB values against the current clock. This is O(1) per
             cached CPB but the cache itself
-            <span class="bcp14">SHOULD</span> have a bounded size.<a href="#section-9.1-2.10" class="pilcrow">¶</a>
+            <span class="bcp14">SHOULD</span> have a bounded size.<a href="#section-10.1-2.10" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-9.1-3">
+<p id="section-10.1-3">
           On constrained DTN nodes, CPU and storage costs frequently exceed
           wire-byte costs in their operational impact. Concrete profiling
           numbers depend on the BP implementation, the cryptographic
           algorithms in use, and the deployment topology, and are not
           provided in this document. Implementations
           <span class="bcp14">SHOULD</span> publish their measured overhead alongside
-          interoperability reports per <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>.<a href="#section-9.1-3" class="pilcrow">¶</a></p>
+          interoperability reports per <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>.<a href="#section-10.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="implementation-status">
-<section id="section-10">
+<section id="section-11">
       <h2 id="name-implementation-status">
-<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-implementation-status" class="section-name selfRef">Implementation Status</a>
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-implementation-status" class="section-name selfRef">Implementation Status</a>
       </h2>
-<p id="section-10-1">This section is to be removed before publishing as an RFC.<a href="#section-10-1" class="pilcrow">¶</a></p>
-<p id="section-10-2">
+<p id="section-11-1">This section is to be removed before publishing as an RFC.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">
         <em>[Note to RFC Editor: per <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>, this section
-        may be removed before publication.]</em><a href="#section-10-2" class="pilcrow">¶</a></p>
-<p id="section-10-3">
+        may be removed before publication.]</em><a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-11-3">
         This section records the status of implementations of the Contact
         Probability Block at the time of writing, in accordance with
-        <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>.<a href="#section-10-3" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10-4">
-        <dt id="section-10-4.1">Reference Python Implementation</dt>
-        <dd style="margin-left: 1.5em" id="section-10-4.2">
+        <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>.<a href="#section-11-3" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-11-4">
+        <dt id="section-11-4.1">Reference Python Implementation</dt>
+        <dd style="margin-left: 1.5em" id="section-11-4.2">
           <ul class="normal">
-<li class="normal" id="section-10-4.2.1.1">
-              <strong>Organization:</strong> Independent (N. Perry)<a href="#section-10-4.2.1.1" class="pilcrow">¶</a>
+<li class="normal" id="section-11-4.2.1.1">
+              <strong>Organization:</strong> Independent (N. Perry)<a href="#section-11-4.2.1.1" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.2.1.2">
+            <li class="normal" id="section-11-4.2.1.2">
               <strong>Repository:</strong>
               <a href="https://github.com/luckyseoul/draft-perry-dtn-cpb">
-                https://github.com/luckyseoul/draft-perry-dtn-cpb</a><a href="#section-10-4.2.1.2" class="pilcrow">¶</a>
+                https://github.com/luckyseoul/draft-perry-dtn-cpb</a><a href="#section-11-4.2.1.2" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.2.1.3">
-              <strong>License:</strong> MIT License<a href="#section-10-4.2.1.3" class="pilcrow">¶</a>
+            <li class="normal" id="section-11-4.2.1.3">
+              <strong>License:</strong> MIT License<a href="#section-11-4.2.1.3" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.2.1.4">
+            <li class="normal" id="section-11-4.2.1.4">
               <strong>Modules:</strong> cpb.py (encoder/decoder, ~600 LOC),
                 test_cpb.py (23-test conformance suite), config1_sim.py
                 (discrete-event simulator producing the
-                <a href="#experiment" class="auto internal xref">Section 11</a> results).<a href="#section-10-4.2.1.4" class="pilcrow">¶</a>
+                <a href="#experiment" class="auto internal xref">Section 12</a> results).<a href="#section-11-4.2.1.4" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.2.1.5">
+            <li class="normal" id="section-11-4.2.1.5">
               <strong>Coverage:</strong> Block structure
                 (<a href="#block-structure" class="auto internal xref">Section 3.2</a>), block processing flags
                 (<a href="#block-processing-flags" class="auto internal xref">Section 3.2.1</a>), CBOR encoding rules
@@ -3373,46 +3610,46 @@ A3                   ; map with 3 entries
                 (<a href="#op-creation" class="auto internal xref">Section 4.1</a>), intermediate processing
                 (<a href="#op-router-processing" class="auto internal xref">Section 4.2</a>), 8-entry DoS limit
                 (<a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>), backwards compatibility
-                (<a href="#backwards-compatibility" class="auto internal xref">Section 6</a>).<a href="#section-10-4.2.1.5" class="pilcrow">¶</a>
+                (<a href="#backwards-compatibility" class="auto internal xref">Section 6</a>).<a href="#section-11-4.2.1.5" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.2.1.6">
+            <li class="normal" id="section-11-4.2.1.6">
               <strong>Maturity:</strong> Reference implementation. All 23
                 conformance tests pass on Python 3.10+ with cbor2 5.9.0.
                 Byte-exact encoding match against
                 <a href="#fig-listing-2" class="auto internal xref">Figure 2</a> and
                 <a href="#fig-listing-7" class="auto internal xref">Figure 7</a> and the hex table in
                 <a href="#hex-encoding-table" class="auto internal xref">Section 3.4.3</a>. Round-trip byte stability
-                verified across multiple cycles.<a href="#section-10-4.2.1.6" class="pilcrow">¶</a>
+                verified across multiple cycles.<a href="#section-11-4.2.1.6" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.2.1.7">
-              <strong>Contact:</strong> nick@perrybrandsllc.com<a href="#section-10-4.2.1.7" class="pilcrow">¶</a>
+            <li class="normal" id="section-11-4.2.1.7">
+              <strong>Contact:</strong> nick@perrybrandsllc.com<a href="#section-11-4.2.1.7" class="pilcrow">¶</a>
 </li>
           </ul>
 </dd>
         <dd class="break"></dd>
-<dt id="section-10-4.3">Simulation-Based Validation</dt>
-        <dd style="margin-left: 1.5em" id="section-10-4.4">
+<dt id="section-11-4.3">Simulation-Based Validation</dt>
+        <dd style="margin-left: 1.5em" id="section-11-4.4">
           Validation of CPB's routing impact was conducted via the pure-Python
           discrete-event simulator config1_sim.py, which implements both
-          vanilla CGR (earliest-arrival) and CGR-UCoP (confidence-weighted)
-          routing over a 4-rover, 4-orbiter, 1-relay, 3-ground-station Mars
-          topology. <a href="#experiment" class="auto internal xref">Section 11</a> reports the full experiment
-          design and results: 10 seeds x 80,507 bundles per arm = 805,070
-          bundles per algorithm; baseline lost 3,057 bundles, CPB-aware lost
-          197 (failure-rate reduction 16x, paired t = +85.71,
-          p &lt; 10^-13). The simulator is fully deterministic per seed and
-          reproduces to the digit on any Python 3.10+ environment with cbor2
-          installed.<a href="#section-10-4.4" class="pilcrow">¶</a>
+          vanilla CGR (earliest-arrival) and several experimental consumers
+          of CPB confidence data over a multi-asset adversarial Mars topology.
+          <a href="#experiment" class="auto internal xref">Section 12</a> reports the authoritative 80-seed
+          adversarial massive topology study (12 rovers, 8 orbiters, 2 relays,
+          6 grounds). The simulator
+          is fully deterministic per seed and reproduces to the digit on any
+          Python 3.10+ environment with cbor2 installed. CGR-UCoP
+          <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span> was used only as prior art for
+          simulation parameters and basic validation.<a href="#section-11-4.4" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
-<dt id="section-10-4.5">Implementations Considered but Not Exercised</dt>
-        <dd style="margin-left: 1.5em" id="section-10-4.6">
-          <p id="section-10-4.6.1">The author also installed and partially configured two production
+<dt id="section-11-4.5">Implementations Considered but Not Exercised</dt>
+        <dd style="margin-left: 1.5em" id="section-11-4.6">
+          <p id="section-11-4.6.1">The author also installed and partially configured two production
           DTN reference implementations during the development of this
           specification. Neither produced data reported in this document; both
-          are noted here for transparency:<a href="#section-10-4.6.1" class="pilcrow">¶</a></p>
+          are noted here for transparency:<a href="#section-11-4.6.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-10-4.6.2.1">
+<li class="normal" id="section-11-4.6.2.1">
               <strong>The ONE Simulator v1.6.0:</strong> Installed and a
                 probability-aware Spray-and-Wait router
                 (ProbabilityAwareSprayAndWaitRouter.java, ~250 LOC) was
@@ -3422,80 +3659,94 @@ A3                   ; map with 3 entries
                 baseline only when multi-neighbor encounters occur
                 simultaneously - an event rare in sparse RWP topologies at
                 the node counts tested. No results from The ONE are reported
-                in <a href="#experiment" class="auto internal xref">Section 11</a>.
-                <a href="#exp-deferred" class="auto internal xref">Section 11.9</a> documents this configuration
-                as deferred to follow-up work with denser topologies.<a href="#section-10-4.6.2.1" class="pilcrow">¶</a>
+                in <a href="#experiment" class="auto internal xref">Section 12</a>.
+                <a href="#exp-deferred" class="auto internal xref">Section 12.10</a> documents this configuration
+                as deferred to follow-up work with denser topologies.<a href="#section-11-4.6.2.1" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-10-4.6.2.2">
+            <li class="normal" id="section-11-4.6.2.2">
               <strong>NASA ION (Interplanetary Overlay Network) v4.1.0:</strong>
                 Installed and a minimal CPB-encoder integration was
-                prototyped. End-to-end testing through ION's BP agent was not
-                completed before this document was finalized; no results from
-                ION integration are reported. Standard ION CGR behavior with
-                respect to unknown extension blocks (discard if can't process
-                flag) is consistent with the design in
-                <a href="#backwards-compat" class="auto internal xref">Section 3.3.2</a>.<a href="#section-10-4.6.2.2" class="pilcrow">¶</a>
+                prototyped. Limited but real end-to-end data-plane
+                transmission results (reference CPB ext block creation,
+                bputa injection after cfdp rc update, UDPCL carriage, and
+                payload delivery for both with-CPB and plain bundles) are
+                reported in the Real ION Testbed bullet immediately below
+                and in <a href="#exp-real-validation" class="auto internal xref">Section 12.6</a>. Standard ION
+                CGR behavior with respect to unknown extension blocks
+                (discard if can't process flag) is consistent with the
+                design in <a href="#backwards-compat" class="auto internal xref">Section 3.3.2</a>.<a href="#section-11-4.6.2.2" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-11-4.6.2.3">
+              <strong>Real ION Testbed (soulkiller/Orin, 2026-06):</strong>
+                See <a href="#exp-real-validation" class="auto internal xref">Section 12.6</a> for the full
+                description. In brief: 8/8 with-CPB (127 B) and 8/8 plain
+                (76 B) reference-encoded bundles (using the eight
+                adversarial probabilities 0.65..0.97) were created with the
+                CPB in ext block 200 + BTSD, injected via bputa (after
+                cfdpadmin rc update), transmitted over live ION UDPCL on
+                the activated 268485122↔268485121 link, and delivered
+                (bpsink confirmed). 51 B measured CPB overhead. Artifacts
+                (bundles/*.b64, rc, recv_cpb.py decoder, results) in
+                impl/real-cpb-ion-test/. This validates the CPB data plane
+                on a production stack but was not a full routing-policy
+                experiment (see limitations in the subsection). SDR shmmax +
+                cleanup required for stable cfdp on Orin.<a href="#section-11-4.6.2.3" class="pilcrow">¶</a>
 </li>
           </ul>
 </dd>
       <dd class="break"></dd>
 </dl>
-<p id="section-10-5">
+<p id="section-11-5">
         No other implementations are known to the author at the time of
-        writing. Reports of new implementations are encouraged.<a href="#section-10-5" class="pilcrow">¶</a></p>
+        writing. Reports of new implementations are encouraged.<a href="#section-11-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="experiment">
-<section id="section-11">
+<section id="section-12">
       <h2 id="name-experiment-description">
-<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-experiment-description" class="section-name selfRef">Experiment Description</a>
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-experiment-description" class="section-name selfRef">Experiment Description</a>
       </h2>
-<p id="section-11-1">
+<p id="section-12-1">
         This section describes the experiment by which the Contact Probability
         Block specification is validated. Per <span>[<a href="#RFC2026" class="cite xref">RFC2026</a>]</span> Section
         4.2.1, an Experimental specification is accompanied by a description
-        of the experiment in concrete, falsifiable terms.<a href="#section-11-1" class="pilcrow">¶</a></p>
+        of the experiment in concrete, falsifiable terms.<a href="#section-12-1" class="pilcrow">¶</a></p>
 <div id="exp-scope">
-<section id="section-11.1">
+<section id="section-12.1">
         <h3 id="name-scope-and-hypothesis">
-<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-scope-and-hypothesis" class="section-name selfRef">Scope and Hypothesis</a>
+<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-scope-and-hypothesis" class="section-name selfRef">Scope and Hypothesis</a>
         </h3>
-<p id="section-11.1-1">
+<p id="section-12.1-1">
           The experiment tests a single core hypothesis: that carrying
           per-contact probability metadata inside BPv7 bundles as an
           extension block enables routing protocols to deliver bundles that
           would otherwise be lost, in networks where contact opportunities
-          are stochastic and multiple competing routes exist.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
-<p id="section-11.1-2">
+          are stochastic and multiple competing routes exist.<a href="#section-12.1-1" class="pilcrow">¶</a></p>
+<p id="section-12.1-2">
           The primary metric is delivery ratio. End-to-end latency is
-          reported as a secondary metric.<a href="#section-11.1-2" class="pilcrow">¶</a></p>
+          reported as a secondary metric.<a href="#section-12.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-config">
-<section id="section-11.2">
+<section id="section-12.2">
         <h3 id="name-test-configuration-multi-as">
-<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-test-configuration-multi-as" class="section-name selfRef">Test Configuration: Multi-Asset Mars Relay (CGR)</a>
+<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-test-configuration-multi-as" class="section-name selfRef">Test Configuration: Multi-Asset Mars Relay (CGR)</a>
         </h3>
-<p id="section-11.2-1">
+<p id="section-12.2-1">
           The experiment uses a multi-asset Mars-to-Earth relay topology with
           four surface assets, four orbiters, one deep-space relay, and three
           ground stations. All node identifiers in the topology use the
           "ipn" URI scheme as updated by <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span>; node
-          numbers shown are Default Allocator FQNNs.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
+          numbers shown are Default Allocator FQNNs.<a href="#section-12.2-1" class="pilcrow">¶</a></p>
 <span id="name-test-topology"></span><div id="fig-topology">
 <figure id="figure-8">
-          <div class="alignLeft art-ascii-art art-text artwork" id="section-11.2-2.1">
+          <div class="alignLeft art-ascii-art art-text artwork" id="section-12.2-2.1">
 <pre>
-   Rover-1..4     Orbiters       Relay      Ground
-   (ipn:1..4)     (ipn:10..13)   (ipn:20)   (ipn:30..32)
-   ----------     ------------   --------   ------------
-       1 -+----+--&gt; Orbiter-A (period 1200s) --+
-          |    |                               |
-       2 -+----+--&gt; Orbiter-B (period 1500s) --+--&gt; Relay -+--&gt; Ground-1
-          |    |                               |           +--&gt; Ground-2
-       3 -+----+--&gt; Orbiter-C (period 1800s) --+           +--&gt; Ground-3
-          |    |                               |
-       4 -+----+--&gt; Orbiter-D (period 2400s) --+
+Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
+1--+--&gt;A(1200s)---+
+2--+--&gt;B(1500s)---+--&gt;Relay--+--&gt;G1
+3--+--&gt;C(1800s)---+          +--&gt;G2
+4--+--&gt;D(2400s)---+          +--&gt;G3
 </pre>
 </div>
 <figcaption><a href="#figure-8" class="selfRef">Figure 8</a>:
@@ -3552,222 +3803,344 @@ A3                   ; map with 3 entries
 </section>
 </div>
 <div id="exp-algorithms">
-<section id="section-11.3">
-        <h3 id="name-routing-algorithms">
-<a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-routing-algorithms" class="section-name selfRef">Routing Algorithms</a>
+<section id="section-12.3">
+        <h3 id="name-routing-policies-tested">
+<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-routing-policies-tested" class="section-name selfRef">Routing Policies Tested</a>
         </h3>
-<span class="break"></span><dl class="dlParallel" id="section-11.3-1">
-          <dt id="section-11.3-1.1">Baseline: Vanilla CGR (earliest arrival)</dt>
-          <dd style="margin-left: 1.5em" id="section-11.3-1.2">
+<p id="section-12.3-1">
+          CPB is a BPv7 extension block that carries per-contact probability
+          metadata. The policies below are simulator-internal consumers of
+          that metadata. CGR-UCoP <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span> is referenced
+          only as prior art consulted during construction of the simulation
+          parameters and for basic cross-validation; it is not the conceptual
+          basis for the CPB block itself.<a href="#section-12.3-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-12.3-2">
+          <dt id="section-12.3-2.1">Baseline: Vanilla CGR (earliest arrival)</dt>
+          <dd style="margin-left: 1.5em" id="section-12.3-2.2">
             Standard Contact Graph Routing. The cost of a candidate route is
-            its earliest predicted arrival time. Confidence values, where
-            present, are ignored.<a href="#section-11.3-1.2" class="pilcrow">¶</a>
+            its earliest predicted arrival time. Confidence values are ignored.<a href="#section-12.3-2.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.3-1.3">CPB-aware: CGR-UCoP (confidence-weighted)</dt>
-          <dd style="margin-left: 1.5em" id="section-11.3-1.4">
-            Contact Graph Routing with Uncertain Contact Plans, per Fraire
-            et al. <span>[<a href="#Fraire2018" class="cite xref">Fraire2018</a>]</span>. The cost is the predicted
-            arrival time divided by the product of the route's per-contact
-            confidences. CPB supplies the per-contact confidence values via
-            metric-type 1 (cgr-confidence).<a href="#section-11.3-1.4" class="pilcrow">¶</a>
+<dt id="section-12.3-2.3">Rate-aware CPB consumer (labeled "cpb")</dt>
+          <dd style="margin-left: 1.5em" id="section-12.3-2.4">
+            Experimental consumer of CPB data (metric-type 1) that also
+            incorporates negotiated data rates. Route cost is computed as
+            <code>latency / (confidence × bottleneck_rate)</code>.<a href="#section-12.3-2.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.3-2.5">Risk-averse CPB consumer (labeled "cpb-risk")</dt>
+          <dd style="margin-left: 1.5em" id="section-12.3-2.6">
+            Stronger experimental consumer that adds an explicit quadratic
+            penalty on low-confidence links:
+            <code>cost = latency + (1 − confidence)² × 5000</code>.<a href="#section-12.3-2.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.3-2.7">Other consumers (prophet, maxprop, spray)</dt>
+          <dd style="margin-left: 1.5em" id="section-12.3-2.8">
+            PROPHET, MaxProp, and Spray-and-Wait style consumers. The PROPHET
+            and MaxProp versions maintain protocol state (delivery
+            predictability and path costs, respectively) and consult CPB
+            confidence when available. The Spray-and-Wait version is more
+            approximate due to simulator architecture constraints and is
+            presented as directional evidence only (see <a href="#exp-results" class="auto internal xref">Section 12.5</a>).<a href="#section-12.3-2.8" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
 </section>
 </div>
 <div id="exp-methodology">
-<section id="section-11.4">
+<section id="section-12.4">
         <h3 id="name-methodology">
-<a href="#section-11.4" class="section-number selfRef">11.4. </a><a href="#name-methodology" class="section-name selfRef">Methodology</a>
+<a href="#section-12.4" class="section-number selfRef">12.4. </a><a href="#name-methodology" class="section-name selfRef">Methodology</a>
         </h3>
-<p id="section-11.4-1">
-          The simulator is a discrete-event Python implementation. 7-day
-          simulation per seed, 10 seeds {42, 137, 1729, 31337, 65521, 104729,
-          1000003, 7654321, 31415927, 27182818}, each rover emits a bundle
-          every 30 s after warm-up. Both algorithms run over identical seeded
-          contact-failure realizations.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
+<p id="section-12.4-1">
+          The simulator is a Python implementation using the adversarial
+          "massive" contact topology (12 rovers, 8 orbiters, 2 relays, 6
+          grounds) with contact success probabilities in the 0.55–0.72 range
+          on the critical rover-orbiter hop and data rates generated
+          independently of confidence. Each simulation runs for 7 days of
+          simulated time with bundles generated every 30 s per rover after
+          warm-up.<a href="#section-12.4-1" class="pilcrow">¶</a></p>
+<p id="section-12.4-2">
+          The study used 80 independent seeds on high-core x86 hardware.
+          For each seed and each policy, the simulator executes over
+          identical contact-failure realizations. The primary policies
+          exercised were:<a href="#section-12.4-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-12.4-3.1">Baseline (vanilla CGR): earliest-arrival routing with no use of
+              per-contact confidence.<a href="#section-12.4-3.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-12.4-3.2">Rate-aware CPB consumer ("cpb"): cost = latency / rate +
+              light explicit penalty on low confidence.<a href="#section-12.4-3.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-12.4-3.3">Risk-averse CPB consumer ("cpb-risk"): cost = latency +
+              (1 − confidence)² × constant.<a href="#section-12.4-3.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-12.4-3.4">PROPHET-style, MaxProp-style, and Spray-and-Wait-style
+              consumers, each implemented in two forms: a "classic" version
+              that does not consult CPB confidence values, and a "cpb"
+              version that additionally uses the confidence metadata carried
+              in CPB blocks (metric-type 1) to initialize or adjust internal
+              state (delivery predictability for PROPHET, path costs for
+              MaxProp, spray-target selection for Spray-and-Wait).<a href="#section-12.4-3.4" class="pilcrow">¶</a>
+</li>
+        </ul>
 </section>
 </div>
 <div id="exp-results">
-<section id="section-11.5">
+<section id="section-12.5">
         <h3 id="name-results">
-<a href="#section-11.5" class="section-number selfRef">11.5. </a><a href="#name-results" class="section-name selfRef">Results</a>
+<a href="#section-12.5" class="section-number selfRef">12.5. </a><a href="#name-results" class="section-name selfRef">Results</a>
         </h3>
-<p id="section-11.5-1">
-          <strong>Primary finding:</strong> Under idealized conditions with
-          accurate per-contact confidence values, CGR-UCoP consuming CPB data
-          outperformed confidence-blind vanilla CGR on the same contact-failure
-          realizations. The improvement is statistically robust across 10
-          independent seeds, but the absolute magnitude of the improvement is
-          small because baseline CGR already achieves high delivery in this
-          topology.<a href="#section-11.5-1" class="pilcrow">¶</a></p>
-<p id="section-11.5-2">
-          <strong>Reading the numbers:</strong> The reduction in absolute loss
-          rate is 0.356 percentage points (0.380% → 0.024%). In relative
-          terms this is a 16-fold reduction in failure rate, or equivalently
-          a recovery of 93.6% of the bundles that baseline CGR lost. Both
-          framings describe the same data; the absolute framing is the more
-          conservative number to cite when discussing operational impact, the
-          relative framing is more meaningful when reasoning about
-          tail-loss reliability for high-value bundles.<a href="#section-11.5-2" class="pilcrow">¶</a></p>
+<p id="section-12.5-1">
+          The study used the adversarial "massive" topology (12 rovers, 8
+          orbiters, 2 relays, 6 grounds) with contact success probabilities
+          deliberately generated in the 0.55–0.72 range on the critical
+          rover-orbiter hop and per-contact data rates generated independently
+          of confidence. 80 independent seeds were executed on high-core x86
+          hardware.<a href="#section-12.5-1" class="pilcrow">¶</a></p>
+<p id="section-12.5-2">
+          For each seed, the following policies were exercised over identical
+          contact-failure realizations:<a href="#section-12.5-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.5-3.1">
-            <strong>Baseline delivery rate:</strong> 802,013 / 805,070 =
-              0.99620 (loss rate 0.380%)<a href="#section-11.5-3.1" class="pilcrow">¶</a>
+<li class="normal" id="section-12.5-3.1">Baseline (vanilla CGR): confidence-blind earliest-arrival routing.<a href="#section-12.5-3.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-11.5-3.2">
-            <strong>CPB-aware delivery rate:</strong> 804,873 / 805,070 =
-              0.99976 (loss rate 0.024%). Per-seed delivery ratios round to
-              0.9997 in the simulator's 4-decimal output; the 5-decimal
-              aggregate 0.99976 is computed from totals across all 10 seeds.<a href="#section-11.5-3.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-3.2">Rate-aware CPB consumer ("cpb").<a href="#section-12.5-3.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-11.5-3.3">
-            <strong>Absolute loss-rate reduction:</strong> 0.356 percentage
-              points (0.380% → 0.024%)<a href="#section-11.5-3.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-3.3">Risk-averse CPB consumer ("cpb-risk").<a href="#section-12.5-3.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-11.5-3.4">
-            <strong>Relative failure-rate reduction:</strong> 16x<a href="#section-11.5-3.4" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.5-3.5">
-            <strong>Bundles recovered:</strong> 2,860 of 3,057 lost by
-              baseline (93.6% recovery rate among the bundles baseline
-              lost)<a href="#section-11.5-3.5" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.5-3.6">
-            <strong>Paired t-test (df = 9):</strong> mean difference =
-              +0.00355, standard deviation = 0.00013, t = +85.71,
-              <strong>p &lt; 10^-13</strong><a href="#section-11.5-3.6" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.5-3.7">
-            <strong>Latency:</strong> average 123.2 s -&gt; 110.3 s
-              (t = -93.91); p95 273.0 s -&gt; 123.0 s (t = -56.78).<a href="#section-11.5-3.7" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-11.5-3.8">
-            <strong>Route diversity:</strong> Baseline used 1 route per
-              rover; CPB-aware used all 4 orbiters, chosen per-rover by
-              confidence.<a href="#section-11.5-3.8" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-3.4">PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
+              each implemented in both a "classic" form (no use of CPB
+              confidence) and a "cpb" form that additionally consults the
+              per-contact confidence values carried in CPB blocks.<a href="#section-12.5-3.4" class="pilcrow">¶</a>
 </li>
         </ul>
-<p id="section-11.5-4">
-          <strong>Interpretation and limitations.</strong> The experiment
-          establishes that CPB-supplied confidence data, when accurate,
-          enables CGR-UCoP to make different and better routing decisions
-          than confidence-blind CGR. The experiment <em>does not</em>
-          establish:<a href="#section-11.5-4" class="pilcrow">¶</a></p>
+<p id="section-12.5-4">
+          <strong>Primary findings (80 seeds, adversarial massive topology):</strong><a href="#section-12.5-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.5-5.1">that probabilities can be estimated robustly in practice
-              (the simulator uses ground-truth probabilities)<a href="#section-11.5-5.1" class="pilcrow">¶</a>
+<li class="normal" id="section-12.5-5.1">Baseline (vanilla CGR) delivery was 0.9762 with high tail latency
+              (p95 ≈ 455 s).<a href="#section-12.5-5.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-11.5-5.2">that routing remains stable when CPB values are noisy, stale,
-              or adversarially injected<a href="#section-11.5-5.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-5.2">The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
+              ("cpb-risk") both achieved 0.9996 delivery with tight tails
+              (p95 = 120 s).<a href="#section-12.5-5.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-11.5-5.3">that CPB interoperates correctly with production BP stacks
-              (only the reference Python encoder was exercised end-to-end)<a href="#section-11.5-5.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-5.3">PROPHET classic (no CPB): 0.9819 delivery, low average latency
+              but poor tails (p95 ≈ 369 s). With CPB: 0.9996 delivery, p95 =
+              120 s.<a href="#section-12.5-5.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-11.5-5.4">that the improvement persists in topologies more diverse than
-              the structured 4x4 Mars relay configuration tested<a href="#section-11.5-5.4" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-5.4">MaxProp classic (no CPB): 0.9822 delivery, similarly optimistic
+              latency but weak tails. With CPB: 0.9996 delivery, p95 = 120 s.<a href="#section-12.5-5.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-12.5-5.5">Spray-and-Wait classic (no CPB): 0.9663 delivery (worse than
+              baseline) with anomalous latency behavior in early implementations.
+              With CPB: 0.9946 delivery and materially improved tails (p95 ≈
+              203 s). Even with the guard, Spray-and-Wait remains the weakest
+              of the advanced consumers.<a href="#section-12.5-5.5" class="pilcrow">¶</a>
 </li>
         </ul>
-<p id="section-11.5-6">
-          These limitations are inherent to a first-stage Experimental-track
-          validation and are not weaknesses to be hidden. They are
-          enumerated explicitly as open experimental questions in
-          <a href="#open-questions" class="auto internal xref">Section 11.10</a>. Pursuit of Standards Track
-          maturation will require addressing them in follow-on work.<a href="#section-11.5-6" class="pilcrow">¶</a></p>
+<p id="section-12.5-6">
+          <strong>Interpretation.</strong> The data demonstrate that CPB
+          confidence metadata provides substantial, consistent reliability
+          gains to probabilistic routing protocols (PROPHET, MaxProp, and
+          Spray-and-Wait) when they can consult it. In the absence of CPB,
+          these protocols are optimistic: they achieve better latency on the
+          bundles that succeed, but suffer materially higher loss rates and
+          worse tails under adversarial conditions. When CPB confidence is
+          available, they become better calibrated and the loss rate drops
+          dramatically.<a href="#section-12.5-6" class="pilcrow">¶</a></p>
+<p id="section-12.5-7">
+          <strong>Limitations and caveats.</strong> The Spray-and-Wait
+          implementations are the most constrained by the simulator
+          architecture (bundle-centric rather than full per-node event-driven).
+          Early versions produced anomalous (including negative) latency
+          values; a runtime guard was added to enforce forward-looking route
+          selection. The Spray-and-Wait results should therefore be treated as
+          directional only. In operational deployments, Spray-and-Wait with
+          CPB is best regarded as a method of last resort when more capable
+          probability-aware forwarding is unavailable. The study also does not
+          address noisy or adversarially supplied confidence values; those
+          questions are left for future work.<a href="#section-12.5-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="exp-real-validation">
+<section id="section-12.6">
+        <h3 id="name-real-stack-data-plane-valid">
+<a href="#section-12.6" class="section-number selfRef">12.6. </a><a href="#name-real-stack-data-plane-valid" class="section-name selfRef">Real-Stack Data-Plane Validation (ION Testbed)</a>
+        </h3>
+<p id="section-12.6-1">
+          In addition to the discrete-event simulation, a minimal end-to-end
+          transmission test was executed on a live two-node NASA ION v4.1.0
+          testbed (soulkiller, ipn:268485122 at Tailscale 100.107.44.6; Orin
+          Jetson, ipn:268485121 at 100.70.177.14) using BPv7 over UDPCL (port
+          4556) after IPN activation on the link. The purpose was to validate
+          that the CPB extension block defined in this document (with its CBOR
+          encoding, BTSD wrapper, and placement as a standard extension block)
+          can be produced by the reference encoder, accepted and injected by a
+          production BP stack, carried over a real convergence layer, and
+          delivered without causing protocol failures or block discard.<a href="#section-12.6-1" class="pilcrow">¶</a></p>
+<p id="section-12.6-2">
+          Eight bundles were created for each of the eight adversarial
+          probabilities referenced in the scope discussion (0.65, 0.72, 0.81,
+          0.89, 0.93, 0.78, 0.55, 0.97). The reference encoder
+          (cpb.py + packet.py assembler) produced minimal BPv7 bundles with
+          current timestamp, path entries using 268485122 as the reporting
+          node, metric-type 1 (CGR contact confidence), and the CPB carried in
+          extension block type 200 (plus BTSD). With-CPB bundles were 127 bytes
+          on the wire; otherwise identical plain bundles (no CPB block) were
+          76 bytes. Exact binary bundles and their base64 forms are committed
+          in impl/real-cpb-ion-test/bundles/.<a href="#section-12.6-2" class="pilcrow">¶</a></p>
+<p id="section-12.6-3">
+          Injection on the sending node used the bputa utility (ION's CFDP
+          "put file" of the pre-serialized .bundle bytes). This required
+          adding a minimal <code>## begin cfdpadmin</code> section (enabling bputa,
+          discard=0, segsize=1400, requirecrc=0) to both nodes' ION
+          configuration files and restarting; see the updated .rc files in
+          impl/real-cpb-ion-test/config/ and the start-*.sh scripts. cfdpclock
+          and bputa were confirmed RUNNING via cfdpadmin before the test
+          firings.<a href="#section-12.6-3" class="pilcrow">¶</a></p>
+<p id="section-12.6-4">
+          All 16 bundles (8 with-CPB, 8 plain) were successfully injected,
+          transmitted over the activated UDPCL contact, and delivered. Payload
+          delivery was confirmed on the receiving node via bpsink "ION event:
+          Payload delivered" events (both "plain-N" and "live-activated-N"
+          payloads). The bundles carrying the experimental CPB extension block
+          (type 200) crossed the real ION stack end-to-end without error or
+          silent drop.<a href="#section-12.6-4" class="pilcrow">¶</a></p>
+<p id="section-12.6-5">
+          Measured overhead on the actual bundles: 51 bytes for the
+          reference-encoded CPB (float16 default probability, path array,
+          timestamp, validity duration, metric type, confidence) plus its BTSD
+          wrapper, relative to the minimal plain BPv7 + payload bundle.<a href="#section-12.6-5" class="pilcrow">¶</a></p>
+<p id="section-12.6-6">
+          Full artifacts and reproduction details for the real test (including
+          the exact 16 bundles, the cfdpadmin rc additions that enabled bputa,
+          custom recv_cpb.py that scans received bundle bytes for the CPB block
+          and decodes it, packet.py reference assembler, receiver_daemon.py,
+          LIVE_TRANSMISSION_STATUS.txt, FINAL_INSTRUCTIONS.txt, and the
+          real_cpb_ion_results.md summary with all commands and observed
+          limitations) live in impl/real-cpb-ion-test/.<a href="#section-12.6-6" class="pilcrow">¶</a></p>
+<p id="section-12.6-7">
+          <strong>Limitations of this validation (distinct from the
+          simulation).</strong> Only two nodes and a single link were
+          exercised (no multi-hop topology, no CGR or other router
+          consumption of the CPB confidence values for actual forwarding
+          decisions). Delivery of the payload ADU was confirmed, but full
+          extension-block access at the receiver (for routing or other
+          processing) was not performed in-band during the run; bpsink
+          surfaces only the payload, and the Orin ION build lacked a 'bprecv'
+          binary (bprecvtest and bpcpd for CFDP file receive of the bundle
+          bytes were the practical mechanisms). Injection of pre-formed
+          bundles containing the experimental block required bputa (CFDP "put
+          file"); standard bpsource does not provide that path. Stable
+          operation of cfdpclock/bpcpd on the aarch64 Orin required raising
+          kernel.shmmax and aggressive SDR/semaphore cleanup before ionstart.
+          The test therefore validates the <em>data plane</em> for the CPB
+          block on a production BPv7 implementation (creation, wire-format
+          survival, delivery) but does not constitute a full routing-policy
+          experiment on real hardware. No BPSec was applied in this run.<a href="#section-12.6-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-goals">
-<section id="section-11.6">
+<section id="section-12.7">
         <h3 id="name-goals-per-rfc-2026-section-">
-<a href="#section-11.6" class="section-number selfRef">11.6. </a><a href="#name-goals-per-rfc-2026-section-" class="section-name selfRef">Goals (per RFC 2026 Section 4.2.1)</a>
+<a href="#section-12.7" class="section-number selfRef">12.7. </a><a href="#name-goals-per-rfc-2026-section-" class="section-name selfRef">Goals (per RFC 2026 Section 4.2.1)</a>
         </h3>
-<ol start="1" type="1" class="normal type-1" id="section-11.6-1">
-          <li id="section-11.6-1.1">Determine whether CPB-enhanced routing improves delivery ratio.
-              <strong>Met:</strong> failure rate reduced 16x (p &lt;
-              10^-13).<a href="#section-11.6-1.1" class="pilcrow">¶</a>
+<ol start="1" type="1" class="normal type-1" id="section-12.7-1">
+          <li id="section-12.7-1.1">Determine whether CPB-enhanced routing improves delivery ratio
+              under adversarial conditions with rate-aware costing.
+              <strong>Met.</strong> In the 80-seed adversarial massive study,
+              baseline delivery was 0.9762 while the CPB-augmented policies
+              (cpb, cpb-risk, and the CPB-augmented versions of PROPHET and
+              MaxProp) reached 0.9996, with the Spray-and-Wait CPB version
+              reaching 0.9946. Gains were consistent across all 80 seeds.<a href="#section-12.7-1.1" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.6-1.2">Quantify CPB byte overhead. <strong>Met by
-              <a href="#overhead-analysis" class="auto internal xref">Section 9</a> analytical bounds:</strong>
-              &lt;3% for 1 KB+ payloads with full CPB.<a href="#section-11.6-1.2" class="pilcrow">¶</a>
+          <li id="section-12.7-1.2">Quantify CPB byte overhead. <strong>Met by
+              <a href="#overhead-analysis" class="auto internal xref">Section 10</a> analytical bounds:</strong>
+              &lt;3% for 1 KB+ payloads with full CPB.<a href="#section-12.7-1.2" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.6-1.3">Validate interoperability via byte-exact encoder.
-              <strong>Met:</strong> 23 round-trip tests pass.<a href="#section-11.6-1.3" class="pilcrow">¶</a>
+          <li id="section-12.7-1.3">Validate interoperability via byte-exact encoder.
+              <strong>Met:</strong> 23 round-trip tests pass.<a href="#section-12.7-1.3" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.6-1.4">Assess float16 precision sufficiency. <strong>Met:</strong>
-              binary16 quantization produces identical CGR-UCoP route
-              selections.<a href="#section-11.6-1.4" class="pilcrow">¶</a>
+          <li id="section-12.7-1.4">Assess float16 precision sufficiency. <strong>Met:</strong>
+              binary16 quantization produces identical route selections under
+              the tested policies in the configurations used.<a href="#section-12.7-1.4" class="pilcrow">¶</a>
 </li>
         </ol>
 </section>
 </div>
 <div id="exp-success">
-<section id="section-11.7">
+<section id="section-12.8">
         <h3 id="name-success-criteria-met">
-<a href="#section-11.7" class="section-number selfRef">11.7. </a><a href="#name-success-criteria-met" class="section-name selfRef">Success Criteria (Met)</a>
+<a href="#section-12.8" class="section-number selfRef">12.8. </a><a href="#name-success-criteria-met" class="section-name selfRef">Success Criteria (Met)</a>
         </h3>
-<ol start="1" type="1" class="normal type-1" id="section-11.7-1">
-          <li id="section-11.7-1.1">Statistically significant improvement (p &lt; 0.05).
-              <strong>Met at p &lt; 10^-13.</strong><a href="#section-11.7-1.1" class="pilcrow">¶</a>
+<ol start="1" type="1" class="normal type-1" id="section-12.8-1">
+          <li id="section-12.8-1.1">Statistically significant improvement (p &lt; 0.05).
+              <strong>Met.</strong> The reliability gains for CPB-augmented
+              policies versus baseline and versus the corresponding classic
+              (no-CPB) versions of PROPHET, MaxProp, and Spray-and-Wait were
+              consistent and large across all 80 seeds.<a href="#section-12.8-1.1" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.7-1.2">Sample size &gt;= 1,000 bundles per arm. <strong>Met: 805,070
-              per arm.</strong><a href="#section-11.7-1.2" class="pilcrow">¶</a>
+          <li id="section-12.8-1.2">Sample size sufficient for the claims made. <strong>Met:</strong>
+              80 independent seeds on the adversarial massive topology, with
+              each policy exercised over identical contact realizations per
+              seed.<a href="#section-12.8-1.2" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.7-1.3">CPB byte overhead below 5% for 1 KB+ payloads. <strong>Met
-              analytically.</strong><a href="#section-11.7-1.3" class="pilcrow">¶</a>
+          <li id="section-12.8-1.3">CPB byte overhead below 5% for 1 KB+ payloads. <strong>Met
+              analytically.</strong><a href="#section-12.8-1.3" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.7-1.4">No fundamental architectural conflicts with BPv7. <strong>Met
+          <li id="section-12.8-1.4">No fundamental architectural conflicts with BPv7. <strong>Met
               technically:</strong> CPB is a standard extension block, EID
               immutability is preserved, BPSec integration is straightforward.
               Operational conflicts (trust framework, multi-domain CPB
               interaction, control-theoretic stability) are addressed at
               specification level but not closed by experimental
-              demonstration.<a href="#section-11.7-1.4" class="pilcrow">¶</a>
+              demonstration.<a href="#section-12.8-1.4" class="pilcrow">¶</a>
 </li>
         </ol>
 </section>
 </div>
 <div id="exp-failure">
-<section id="section-11.8">
+<section id="section-12.9">
         <h3 id="name-failure-criteria-not-trigge">
-<a href="#section-11.8" class="section-number selfRef">11.8. </a><a href="#name-failure-criteria-not-trigge" class="section-name selfRef">Failure Criteria (Not Triggered)</a>
+<a href="#section-12.9" class="section-number selfRef">12.9. </a><a href="#name-failure-criteria-not-trigge" class="section-name selfRef">Failure Criteria (Not Triggered)</a>
         </h3>
-<ol start="1" type="1" class="normal type-1" id="section-11.8-1">
-          <li id="section-11.8-1.1">No measurable improvement. <strong>Not triggered.</strong><a href="#section-11.8-1.1" class="pilcrow">¶</a>
+<ol start="1" type="1" class="normal type-1" id="section-12.9-1">
+          <li id="section-12.9-1.1">No measurable improvement. <strong>Not triggered.</strong><a href="#section-12.9-1.1" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.8-1.2">CPB byte overhead exceeds 10% for 1 KB payloads. <strong>Not
-              triggered.</strong><a href="#section-11.8-1.2" class="pilcrow">¶</a>
+          <li id="section-12.9-1.2">CPB byte overhead exceeds 10% for 1 KB payloads. <strong>Not
+              triggered.</strong><a href="#section-12.9-1.2" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.8-1.3">CBOR encoding incompatibilities. <strong>Not triggered.</strong><a href="#section-11.8-1.3" class="pilcrow">¶</a>
+          <li id="section-12.9-1.3">CBOR encoding incompatibilities. <strong>Not triggered.</strong><a href="#section-12.9-1.3" class="pilcrow">¶</a>
 </li>
-          <li id="section-11.8-1.4">BPSec integration produces irrecoverable failures. <strong>Not
+          <li id="section-12.9-1.4">BPSec integration produces irrecoverable failures. <strong>Not
               exercised in this configuration</strong> (deferred to follow-up
-              work).<a href="#section-11.8-1.4" class="pilcrow">¶</a>
+              work).<a href="#section-12.9-1.4" class="pilcrow">¶</a>
 </li>
         </ol>
 </section>
 </div>
 <div id="exp-deferred">
-<section id="section-11.9">
+<section id="section-12.10">
         <h3 id="name-deferred-configurations">
-<a href="#section-11.9" class="section-number selfRef">11.9. </a><a href="#name-deferred-configurations" class="section-name selfRef">Deferred Configurations</a>
+<a href="#section-12.10" class="section-number selfRef">12.10. </a><a href="#name-deferred-configurations" class="section-name selfRef">Deferred Configurations</a>
         </h3>
-<p id="section-11.9-1">
+<p id="section-12.10-1">
           Spray-and-Wait in mobile ad-hoc topology requires multi-neighbor
           concurrent encounters to differentiate from baseline; this regime
           is not produced by sparse Random Waypoint topologies at the node
           counts tested. Multi-CPB accumulation across 20 hops is a
           correctness test verified via byte-stable round-trips in the
           reference encoder; full end-to-end demonstration is deferred to
-          integration work with a BPSec-enabled ION testbed.<a href="#section-11.9-1" class="pilcrow">¶</a></p>
+          integration work with a BPSec-enabled ION testbed.<a href="#section-12.10-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="open-questions">
-<section id="section-11.10">
+<section id="section-12.11">
         <h3 id="name-open-experimental-questions">
-<a href="#section-11.10" class="section-number selfRef">11.10. </a><a href="#name-open-experimental-questions" class="section-name selfRef">Open Experimental Questions</a>
+<a href="#section-12.11" class="section-number selfRef">12.11. </a><a href="#name-open-experimental-questions" class="section-name selfRef">Open Experimental Questions</a>
         </h3>
-<p id="section-11.10-1">
+<p id="section-12.11-1">
           The experiment in this document establishes baseline plausibility:
           confidence-weighted routing fed by accurate CPB data outperforms
           confidence-blind routing on the same contact-failure realizations.
@@ -3775,60 +4148,60 @@ A3                   ; map with 3 entries
           mechanism requires answering a series of follow-on questions that
           this document does not close. These are enumerated here so that
           reviewers, implementers, and follow-on researchers share a common
-          list of what remains to be demonstrated.<a href="#section-11.10-1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-11.10-2">
-          <dt id="section-11.10-2.1">Robustness to noisy probability estimation</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.2">
+          list of what remains to be demonstrated.<a href="#section-12.11-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-12.11-2">
+          <dt id="section-12.11-2.1">Robustness to noisy probability estimation</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.2">
             The simulator uses ground-truth per-contact probabilities. Real
             deployments must estimate probabilities from historical
             observations or model predictions, both of which are noisy.
             Sensitivity analysis under varying estimator noise (e.g.,
             additive Gaussian noise on confidences, biased estimators,
             estimator drift over time) is needed to characterize the
-            operational regime where CPB-driven routing remains beneficial.<a href="#section-11.10-2.2" class="pilcrow">¶</a>
+            operational regime where CPB-driven routing remains beneficial.<a href="#section-12.11-2.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.3">Behavior under stale probabilities</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.4">
+<dt id="section-12.11-2.3">Behavior under stale probabilities</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.4">
             The age-threshold mechanism
             (<a href="#op-creation" class="auto internal xref">Section 4.1</a>) defines when a CPB is discarded,
             but routing behavior <em>just before</em> the threshold fires
             (when probabilities are old but not yet invalid) is unstudied.
             A controlled experiment varying CPB staleness against routing
-            outcome would inform the default max_age values.<a href="#section-11.10-2.4" class="pilcrow">¶</a>
+            outcome would inform the default max_age values.<a href="#section-12.11-2.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.5">Adversarial probability injection</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.6">
-            The trust model (<a href="#trust-model" class="auto internal xref">Section 7.2</a>) provides
+<dt id="section-12.11-2.5">Adversarial probability injection</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.6">
+            The trust model (<a href="#trust-model" class="auto internal xref">Section 8.2</a>) provides
             structural defenses, but their empirical effectiveness against
             specific attack patterns (sinkhole inflation, blackhole
             deflation, oscillation-induction, herding-induction) has not
             been measured. A red-team experiment with one or more
             adversarial CPB producers in the network would quantify the
-            cost of attack vs. the cost of defense.<a href="#section-11.10-2.6" class="pilcrow">¶</a>
+            cost of attack vs. the cost of defense.<a href="#section-12.11-2.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.7">Conflicting CPBs from multiple administrative domains</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.8">
-            <a href="#trust-interdomain" class="auto internal xref">Section 7.2.5</a> defines policy options but
+<dt id="section-12.11-2.7">Conflicting CPBs from multiple administrative domains</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.8">
+            <a href="#trust-interdomain" class="auto internal xref">Section 8.2.5</a> defines policy options but
             does not demonstrate which option works in practice. A
             multi-domain testbed with explicit trust boundaries would
             characterize the gateway-translation, accept-all, and discard-all
-            strategies under realistic traffic.<a href="#section-11.10-2.8" class="pilcrow">¶</a>
+            strategies under realistic traffic.<a href="#section-12.11-2.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.9">Partial deployment behavior</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.10">
+<dt id="section-12.11-2.9">Partial deployment behavior</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.10">
             CPB is designed for incremental deployment: nodes that don't
             understand CPB pass it through unchanged. But the routing
             <em>quality</em> in a mixed CPB-aware / CPB-unaware network is
             not characterized. Sensitivity to the fraction of CPB-aware
-            nodes would inform deployment phasing.<a href="#section-11.10-2.10" class="pilcrow">¶</a>
+            nodes would inform deployment phasing.<a href="#section-12.11-2.10" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.11">Congestion collapse and storage pressure</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.12">
+<dt id="section-12.11-2.11">Congestion collapse and storage pressure</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.12">
             Probability-aware routing concentrates traffic on
             high-confidence routes (<a href="#stability-considerations" class="auto internal xref">Section 4.4</a>).
             Under sustained load this risks congestion collapse on the
@@ -3837,31 +4210,31 @@ A3                   ; map with 3 entries
             <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> are
             <span class="bcp14">RECOMMENDED</span> but unmeasured. A high-load
             experiment varying bundle generation rate against delivery
-            ratio would test the failure mode directly.<a href="#section-11.10-2.12" class="pilcrow">¶</a>
+            ratio would test the failure mode directly.<a href="#section-12.11-2.12" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.13">Custody transfer interactions</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.14">
+<dt id="section-12.11-2.13">Custody transfer interactions</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.14">
             CPB has been designed not to interfere with BP custody transfer
             mechanisms (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>), but the combined behavior
             of custody-bound bundles carrying CPB data has not been
             exercised end-to-end. Particular attention should be paid to
             whether custody acknowledgments themselves carry CPB-relevant
             information and whether custody transfer policies should consume
-            CPB.<a href="#section-11.10-2.14" class="pilcrow">¶</a>
+            CPB.<a href="#section-12.11-2.14" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.15">Heterogeneous fragmentation behavior</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.16">
+<dt id="section-12.11-2.15">Heterogeneous fragmentation behavior</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.16">
             <a href="#block-processing-flags" class="auto internal xref">Section 3.2.1</a> defines CPB behavior
             under fragmentation, but only the reference Python encoder has
             been exercised against it. Real BP implementations (ION, HDTN,
             uPCN) have subtly different fragmentation pathways and CPB
-            replication behavior across implementations is unproven.<a href="#section-11.10-2.16" class="pilcrow">¶</a>
+            replication behavior across implementations is unproven.<a href="#section-12.11-2.16" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.17">Interoperability with production BP stacks</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.18">
+<dt id="section-12.11-2.17">Interoperability with production BP stacks</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.18">
             This is the single largest standards-process gap. RFC publication
             at Experimental status is acceptable with simulator-only
             validation, but progression to Standards Track will require
@@ -3870,88 +4243,97 @@ A3                   ; map with 3 entries
             NASA ION and an independently-developed alternative such as
             HDTN, µPCN, or a fresh implementation against this
             specification). The reference Python implementation
-            (<a href="#reference-implementation" class="auto internal xref">Section 12</a>) does not count as
+            (<a href="#reference-implementation" class="auto internal xref">Section 13</a>) does not count as
             an independent implementation for this purpose, since it was
-            developed alongside the specification by the same author.<a href="#section-11.10-2.18" class="pilcrow">¶</a>
+            developed alongside the specification by the same author.
+            Partial data-plane evidence now exists on NASA ION v4.1.0: the
+            reference-encoded CPB (ext block 200 + BTSD) was created for the
+            eight adversarial probabilities, injected via bputa (after
+            minimal cfdpadmin rc update), transmitted over live UDPCL, and
+            delivered (8/8 with-CPB and 8/8 plain; 51-byte measured overhead;
+            see <a href="#exp-real-validation" class="auto internal xref">Section 12.6</a> and
+            impl/real-cpb-ion-test/). Full consumption of CPB values by ION
+            CGR (or equivalent) for forwarding decisions, multi-hop
+            operation, and BPSec-protected bundles remain open.<a href="#section-12.11-2.18" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.19">Control-theoretic stability analysis</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.20">
+<dt id="section-12.11-2.19">Control-theoretic stability analysis</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.20">
             <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> identifies feedback
             dynamics qualitatively and recommends mitigations, but does not
             provide a formal stability proof. A control-theoretic analysis
             (e.g., describing the routing system as a discrete-time
             dynamical system with CPB-driven feedback and analyzing
             stability of fixed points) would substantially strengthen the
-            standards case for CPB-driven routing in dense networks.<a href="#section-11.10-2.20" class="pilcrow">¶</a>
+            standards case for CPB-driven routing in dense networks.<a href="#section-12.11-2.20" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-11.10-2.21">Metric-type cross-validation</dt>
-          <dd style="margin-left: 1.5em" id="section-11.10-2.22">
+<dt id="section-12.11-2.21">Metric-type cross-validation</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.22">
             <a href="#metric-semantics" class="auto internal xref">Section 3.5</a> prohibits cross-metric
             arithmetic but does not validate the prohibition empirically.
             Whether a router making routing decisions from mixed-metric CPBs
             in practice produces worse outcomes than a router strictly
-            partitioning by metric-type is an open empirical question.<a href="#section-11.10-2.22" class="pilcrow">¶</a>
+            partitioning by metric-type is an open empirical question.<a href="#section-12.11-2.22" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-11.10-3">
+<p id="section-12.11-3">
           Resolution of these questions is not a prerequisite for
           Experimental-track publication, but each will need to be addressed
           before the CPB mechanism can be reasonably considered for Standards
           Track. The author encourages the DTN research community to take up
           any subset of these as follow-on work; the reference
           implementation and simulator
-          (<a href="#reference-implementation" class="auto internal xref">Section 12</a>) provide a starting
-          point for such studies.<a href="#section-11.10-3" class="pilcrow">¶</a></p>
+          (<a href="#reference-implementation" class="auto internal xref">Section 13</a>) provide a starting
+          point for such studies.<a href="#section-12.11-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="reference-implementation">
-<section id="section-12">
+<section id="section-13">
       <h2 id="name-reference-implementation">
-<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-reference-implementation" class="section-name selfRef">Reference Implementation</a>
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-reference-implementation" class="section-name selfRef">Reference Implementation</a>
       </h2>
-<p id="section-12-1">
+<p id="section-13-1">
         The reference implementation supporting this specification consists of
-        three Python modules:<a href="#section-12-1" class="pilcrow">¶</a></p>
+        three Python modules:<a href="#section-13-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12-2.1">
+<li class="normal" id="section-13-2.1">
           <strong>cpb.py</strong> - CBOR encoder/decoder, implementing the
             CDDL schema in <a href="#block-structure" class="auto internal xref">Section 3.2</a> and the encoding
-            rules in <a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>.<a href="#section-12-2.1" class="pilcrow">¶</a>
+            rules in <a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>.<a href="#section-13-2.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-12-2.2">
+        <li class="normal" id="section-13-2.2">
           <strong>test_cpb.py</strong> - 23-test conformance suite. All
-            passing on Python 3.10+ with cbor2 5.9.0.<a href="#section-12-2.2" class="pilcrow">¶</a>
+            passing on Python 3.10+ with cbor2 5.9.0.<a href="#section-13-2.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-12-2.3">
+        <li class="normal" id="section-13-2.3">
           <strong>config1_sim.py</strong> - the discrete-event simulator
-            that produced the <a href="#experiment" class="auto internal xref">Section 11</a> results.<a href="#section-12-2.3" class="pilcrow">¶</a>
+            that produced the <a href="#experiment" class="auto internal xref">Section 12</a> results.<a href="#section-13-2.3" class="pilcrow">¶</a>
 </li>
       </ul>
 <div id="repo">
-<section id="section-12.1">
+<section id="section-13.1">
         <h3 id="name-repository">
-<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-repository" class="section-name selfRef">Repository</a>
+<a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-repository" class="section-name selfRef">Repository</a>
         </h3>
-<p id="section-12.1-1">Source code is published under the MIT License License at:<a href="#section-12.1-1" class="pilcrow">¶</a></p>
-<p id="section-12.1-2">
+<p id="section-13.1-1">Source code is published under the MIT License License at:<a href="#section-13.1-1" class="pilcrow">¶</a></p>
+<p id="section-13.1-2">
           <a href="https://github.com/luckyseoul/draft-perry-dtn-cpb">
             https://github.com/luckyseoul/draft-perry-dtn-cpb
-          </a><a href="#section-12.1-2" class="pilcrow">¶</a></p>
+          </a><a href="#section-13.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="reproduce">
-<section id="section-12.2">
+<section id="section-13.2">
         <h3 id="name-reproducing-the-experiment-">
-<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-reproducing-the-experiment-" class="section-name selfRef">Reproducing the Experiment Results</a>
+<a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-reproducing-the-experiment-" class="section-name selfRef">Reproducing the Experiment Results</a>
         </h3>
 <span id="name-reproduction-commands"></span><div id="fig-reproduce">
 <figure id="figure-9">
-          <div class="lang-bash sourcecode" id="section-12.2-1.1">
+          <div class="lang-bash sourcecode" id="section-13.2-1.1">
 <pre>
 git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
 cd draft-perry-dtn-cpb
@@ -3965,46 +4347,60 @@ python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
 <a href="#name-reproduction-commands" class="selfRef">Reproduction Commands</a>
           </figcaption></figure>
 </div>
+<p id="section-13.2-2">
+          The 2-node real-stack transmission results (with-CPB vs plain
+          bundles using the 8 adversarial probabilities, bputa injection
+          after cfdpadmin rc update, and observed delivery) are reproduced
+          from the exact bundles and instructions in
+          impl/real-cpb-ion-test/ (see real_cpb_ion_results.md,
+          bundles/*.bundle and *.b64, the updated .rc files in config/,
+          packet.py for bundle assembly, and recv_cpb.py for post-receipt
+          CPB decoding on a captured bundle file). Full end-to-end
+          transmission requires the specific ION testbed hardware,
+          Tailscale link, and IPN activation state; the bundle creation,
+          cfdp rc changes, bputa invocation, and decode steps are
+          self-contained and runnable on any ION installation that
+          supports bputa.<a href="#section-13.2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="bpv7-updates">
-<section id="section-12.3">
+<section id="section-13.3">
         <h3 id="name-relationship-to-updates-of-">
-<a href="#section-12.3" class="section-number selfRef">12.3. </a><a href="#name-relationship-to-updates-of-" class="section-name selfRef">Relationship to Updates of BPv7</a>
+<a href="#section-13.3" class="section-number selfRef">13.3. </a><a href="#name-relationship-to-updates-of-" class="section-name selfRef">Relationship to Updates of BPv7</a>
         </h3>
-<p id="section-12.3-1">
+<p id="section-13.3-1">
           <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> (BPv7) has been updated by
           <span>[<a href="#RFC9713" class="cite xref">RFC9713</a>]</span> (administrative record types registry,
           January 2025) and <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> (ipn URI scheme updates,
           May 2025) since this CPB work began. Neither update affects the
-          wire format defined in <a href="#cpb" class="auto internal xref">Section 3</a>:<a href="#section-12.3-1" class="pilcrow">¶</a></p>
+          wire format defined in <a href="#cpb" class="auto internal xref">Section 3</a>:<a href="#section-13.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12.3-2.1">
+<li class="normal" id="section-13.3-2.1">
             <span>[<a href="#RFC9713" class="cite xref">RFC9713</a>]</span> concerns administrative record types;
               CPB is an extension block, not an administrative record, so
-              RFC 9713 does not apply directly.<a href="#section-12.3-2.1" class="pilcrow">¶</a>
+              RFC 9713 does not apply directly.<a href="#section-13.3-2.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-12.3-2.2">
+          <li class="normal" id="section-13.3-2.2">
             <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> updates the "ipn" URI scheme. CPB
               implementations <span class="bcp14">MUST</span> encode and decode ipn EIDs
               per RFC 9758, including Default Allocator FQNNs. The LocalNode
               ipn URI form (Allocator=0, NodeNumber=2^32 - 1) has no meaning
               off-node and <span class="bcp14">MUST NOT</span> appear in CPB path-entries
-              transmitted to other nodes.<a href="#section-12.3-2.2" class="pilcrow">¶</a>
+              transmitted to other nodes.<a href="#section-13.3-2.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-12.3-2.3">RFC 9171 erratum 8376 notes that BPv7 ADU fragmentation
+          <li class="normal" id="section-13.3-2.3">RFC 9171 erratum 8376 notes that BPv7 ADU fragmentation
               interacts ambiguously with extension blocks. CPB's fragmentation
               handling is defined in
-              <a href="#block-processing-flags" class="auto internal xref">Section 3.2.1</a>.<a href="#section-12.3-2.3" class="pilcrow">¶</a>
+              <a href="#block-processing-flags" class="auto internal xref">Section 3.2.1</a>.<a href="#section-13.3-2.3" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
 </div>
 </section>
 </div>
-<section id="section-13">
+<section id="section-14">
       <h2 id="name-normative-references">
-<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-14" class="section-number selfRef">14. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
       </h2>
 <dl class="references">
 <dt id="RFC2119">[RFC2119]</dt>
@@ -4049,9 +4445,9 @@ python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
 <dd class="break"></dd>
 </dl>
 </section>
-<section id="section-14">
+<section id="section-15">
       <h2 id="name-informative-references">
-<a href="#section-14" class="section-number selfRef">14. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-15" class="section-number selfRef">15. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
       </h2>
 <dl class="references">
 <dt id="IPNSIG2023">[IPNSIG2023]</dt>
@@ -4153,7 +4549,7 @@ python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
           <li class="normal" id="appendix-B.1-1.6">Mars mission scenario (<a href="#app-mars-scenario" class="auto internal xref">Appendix A</a>)<a href="#appendix-B.1-1.6" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="appendix-B.1-1.7">Experimental validation protocol consolidated into
-              <a href="#experiment" class="auto internal xref">Section 11</a> (was a separate companion document
+              <a href="#experiment" class="auto internal xref">Section 12</a> (was a separate companion document
               in earlier revisions)<a href="#appendix-B.1-1.7" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="appendix-B.1-1.8">
@@ -4161,7 +4557,7 @@ python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
               problem-statement anchor<a href="#appendix-B.1-1.8" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="appendix-B.1-1.9">
-            <a href="#implementation-status" class="auto internal xref">Section 10</a> rewritten: honest
+            <a href="#implementation-status" class="auto internal xref">Section 11</a> rewritten: honest
               implementation status (reference Python implementation +
               simulator-based validation; The ONE and ION installations
               documented but no fabricated results)<a href="#appendix-B.1-1.9" class="pilcrow">¶</a>
@@ -4181,8 +4577,16 @@ python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
               handling addressed by CPB pruning).<a href="#appendix-B.1-1.12" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="appendix-B.1-1.13">
-            <a href="#reference-implementation" class="auto internal xref">Section 12</a> added: reference
+            <a href="#reference-implementation" class="auto internal xref">Section 13</a> added: reference
               implementation + GitHub repository<a href="#appendix-B.1-1.13" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-B.1-1.14">Added CPB format version field (key 7, default 1) for future
+              evolution; updated CDDL to enforce the 8-entry path limit as a
+              MUST; added top-level "Operational Considerations" section
+              (sizing, production guidance, logging/OAM, partial deployment,
+              congestion, clocks); expanded IANA sub-registry description;
+              clarified handling of unrecognized metric types and Source PCE
+              Identifier field semantics.<a href="#appendix-B.1-1.14" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>

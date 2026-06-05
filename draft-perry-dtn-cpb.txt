@@ -4,8 +4,8 @@
 
 Network Working Group                                           N. Perry
 Internet-Draft                                               Independent
-Intended status: Experimental                                22 May 2026
-Expires: 23 November 2026
+Intended status: Experimental                                28 May 2026
+Expires: 29 November 2026
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
@@ -33,8 +33,11 @@ Abstract
    prohibited.
 
    This document is Experimental.  The accompanying simulation study
-   validates that confidence-weighted CGR fed by CPB data outperforms
-   confidence-blind baseline CGR under idealized conditions.
+   validates that experimental routing policies consuming per-contact
+   confidence metadata from CPB blocks can materially outperform
+   confidence-blind baseline CGR under adversarial conditions with rate-
+   aware costing.  The contribution of this specification is the
+   standardized BPv7 extension block for carrying that metadata.
    Operational deployment questions — robustness to noisy/adversarial
    estimates, control-theoretic stability under feedback, and real
    interoperability with production BP stacks — are explicitly
@@ -56,7 +59,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 23 November 2026.
+   This Internet-Draft will expire on 29 November 2026.
 
 Copyright Notice
 
@@ -112,42 +115,51 @@ Table of Contents
      5.6.  DTNMA (RFC 9675)
      5.7.  Summary: CPB as Cross-Cutting Metadata
    6.  Backwards Compatibility
-   7.  Security Considerations
-     7.1.  Threat Model
-     7.2.  Trust Model
-       7.2.1.  Who is Authorized to Append CPBs
-       7.2.2.  Cryptographic Adjudication of Conflicting CPBs
-       7.2.3.  Downstream Handling of Upstream BIBs
-       7.2.4.  Route Poisoning by Semi-Trusted Relays
-       7.2.5.  Inter-Domain Trust
-       7.2.6.  Replay Resistance
-     7.3.  Integrity Protection
-       7.3.1.  Source CPB with Append-Only Intermediates
-       7.3.2.  Strip-and-Replace Model
-       7.3.3.  Prohibition on BCB Encryption
-     7.4.  Mitigations
-     7.5.  Privacy Considerations
-   8.  IANA Considerations
-   9.  Overhead Analysis
-     9.1.  Computational and Storage Overhead
-   10. Implementation Status
-   11. Experiment Description
-     11.1.  Scope and Hypothesis
-     11.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
-     11.3.  Routing Algorithms
-     11.4.  Methodology
-     11.5.  Results
-     11.6.  Goals (per RFC 2026 Section 4.2.1)
-     11.7.  Success Criteria (Met)
-     11.8.  Failure Criteria (Not Triggered)
-     11.9.  Deferred Configurations
-     11.10. Open Experimental Questions
-   12. Reference Implementation
-     12.1.  Repository
-     12.2.  Reproducing the Experiment Results
-     12.3.  Relationship to Updates of BPv7
-   13. Normative References
-   14. Informative References
+   7.  Operational Considerations
+     7.1.  When and Where to Emit CPBs
+     7.2.  Bundle Store and Memory Sizing
+     7.3.  Computational and Storage Overhead on Constrained Nodes
+     7.4.  Logging, Monitoring, and OAM
+     7.5.  Partial Deployment
+     7.6.  Congestion and Storage Pressure
+     7.7.  Clock Considerations
+   8.  Security Considerations
+     8.1.  Threat Model
+     8.2.  Trust Model
+       8.2.1.  Who is Authorized to Append CPBs
+       8.2.2.  Cryptographic Adjudication of Conflicting CPBs
+       8.2.3.  Downstream Handling of Upstream BIBs
+       8.2.4.  Route Poisoning by Semi-Trusted Relays
+       8.2.5.  Inter-Domain Trust
+       8.2.6.  Replay Resistance
+     8.3.  Integrity Protection
+       8.3.1.  Source CPB with Append-Only Intermediates
+       8.3.2.  Strip-and-Replace Model
+       8.3.3.  Prohibition on BCB Encryption
+     8.4.  Mitigations
+     8.5.  Privacy Considerations
+   9.  IANA Considerations
+   10. Overhead Analysis
+     10.1.  Computational and Storage Overhead
+   11. Implementation Status
+   12. Experiment Description
+     12.1.  Scope and Hypothesis
+     12.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
+     12.3.  Routing Policies Tested
+     12.4.  Methodology
+     12.5.  Results
+     12.6.  Real-Stack Data-Plane Validation (ION Testbed)
+     12.7.  Goals (per RFC 2026 Section 4.2.1)
+     12.8.  Success Criteria (Met)
+     12.9.  Failure Criteria (Not Triggered)
+     12.10. Deferred Configurations
+     12.11. Open Experimental Questions
+   13. Reference Implementation
+     13.1.  Repository
+     13.2.  Reproducing the Experiment Results
+     13.3.  Relationship to Updates of BPv7
+   14. Normative References
+   15. Informative References
    Appendix A.  Mars Mission Scenario
    Appendix B.  Change Log
      B.1.  draft-perry-dtn-cpb-00 (May 2026)
@@ -425,24 +437,22 @@ Table of Contents
    The following annotated hex shows a concrete CPB with prob=0.75 for
    destination node 100:
 
-18 C8                ; block-type-code: 200 (0xC8, experimental/private
-                     ;   use per RFC 9171 Section 9.1)
-02                   ; block-number: 2
-11                   ; block-processing-flags: 0x11
-                     ;   (replicate in fragments; drop if unprocessable)
-00                   ; crc-type: 0 (no CRC)
-57                   ; BTSD: bstr (23 bytes, CBOR major type 2)
-   A4                ; BTSD content: CBOR map with 4 entries
-   00 F93A00         ; key 0: prob=0.75 (half-precision float)
-   01 81             ; key 1: array of 1 path entry
-      82             ; array with 2 elements [node, prob]
-      18 64          ;   node: 100 (0x64)
-      F93C00         ;   prob: 1.0
-   02 1A 00F73A80    ; key 2: timestamp (DTN epoch seconds)
-   04 19 0E10        ; key 4: validity_duration = 3600s (1 hour)
-F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
+   18 C8                ; type=200 (exp per RFC9171 &#167;9.1)
+   02                   ; num=2
+   11                   ; flags=0x11 (replicate; drop if bad)
+   00                   ; crc=0 (none)
+   57                   ; BTSD: bstr (23 bytes)
+      A4                ; map with 4 entries
+      00 F93A00         ;   0: prob=0.75 (float16)
+      01 81             ;   1: array of 1 path entry
+         82             ;     [node, prob]
+         18 64          ;       node=100
+         F93C00         ;       prob=1.0
+      02 1A 00F73A80    ;   2: timestamp (DTN epoch)
+      04 19 0E10        ;   4: validity=3600s
+   F6                   ; crc: null
 
-              Figure 2: CPB Concrete Example (type: hex)
+                 Figure 2: CPB Concrete Example (type: hex)
 
    The CBOR data structure in the block-data field is defined as
    follows.  The BTSD is byte-string-embedded per RFC 9171's canonical
@@ -463,13 +473,14 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
    cpb-data = {
        ? 0: probability,         ; Default/overall probability
-       ? 1: [* path-entry],      ; Per-path probabilities
+       ? 1: [1*8 path-entry],    ; Per-path probabilities (MUST limit 8 per spec)
        ? 2: uint,                ; Timestamp (DTN epoch seconds)
        ? 3: bstr,                ; Source PCE identifier (optional)
        ? 4: uint,                ; Validity duration (seconds, TTL)
        ? 5: metric-type,         ; Metric type identifier
        ? 6: probability,         ; Confidence/variance estimate
-       * (int .gt 6) => any      ; Extensibility (future fields)
+       ? 7: uint,                ; CPB format version (1 = this specification)
+       * (int .gt 7) => any      ; Extensibility (future fields)
    }
 
    probability = float           ; See Section 3.4 for encoding
@@ -505,14 +516,21 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
    Field 1: Per-Path Array  An array of [next-hop, probability] tuples.
       Implementations MUST limit to a maximum of 8 entries
-      (Section 3.4).
+      (Section 3.4).  The CDDL schema enforces this bound.  Senders MUST
+      NOT include more than 8 entries; receivers MUST treat a CPB with
+      more than 8 path entries as malformed.
 
    Field 2: Timestamp  Creation time in DTN epoch seconds (seconds since
       2000-01-01 00:00:00 UTC, per [RFC9171] Section 4.3.1).  Enables
       receivers to compute age and apply probability decay.
 
    Field 3: Source PCE Identifier  An opaque byte string identifying the
-      entity that computed the probability.  Used for trust evaluation.
+      entity (e.g., a PCE or router) that computed the probability
+      values in this CPB.  This field is intended for use in trust and
+      policy decisions (see Section 8).  No particular encoding or
+      registry is defined; the value is meaningful only within the
+      administrative scope(s) that trust the producer.  Deployments that
+      do not require source attribution MAY omit this field.
 
    Field 4: Validity Duration (TTL)  The number of seconds after the
       timestamp during which this probability estimate remains usable.
@@ -532,6 +550,22 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       observations) carries more weight than confidence of 0.1 with P =
       0.5 (based on 2 observations).  Routing algorithms MAY use this
       for risk-aware forwarding.
+
+   Field 7: Version  CPB format version number.  If absent or set to 1,
+      the structure and semantics are as defined in this specification.
+      Receivers SHOULD process all recognized fields when encountering a
+      higher version number and MAY ignore unrecognized higher fields or
+      additional semantics defined in future specifications.  Senders
+      using only the fields defined here SHOULD omit the version field
+      or set it to 1.
+
+   Receivers encountering an unrecognized metric-type value SHOULD treat
+   the CPB as if it carried metric-type 4 (generic) for the purpose of
+   default and per-path probability selection, or ignore the CPB
+   entirely if local policy requires strict metric-type validation.
+   Senders MUST use only the registered values defined in the IANA "CPB
+   Metric Types" sub-registry unless operating in a private or
+   experimental context.
 
 3.2.1.  Block Processing Flags
 
@@ -568,7 +602,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    *  *Optional CRC:* Implementations MAY include CRC type 1 (16-bit
       Fletcher) or type 2 (32-bit CRC).
 
-   Implementations SHOULD prefer BPSec BIBs (Section 7.3) over CRCs for
+   Implementations SHOULD prefer BPSec BIBs (Section 8.3) over CRCs for
    integrity, as BIBs provide both authentication and integrity.
 
 3.2.3.  Hop Count Block Co-Presence
@@ -747,9 +781,11 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    confidence of 0.7 are not interchangeable inputs to the same routing
    decision.  Specifically:
 
-   *  A router computing a CGR-UCoP route-cost product MUST use only
-      metric-type 1 (cgr-confidence) values, and MUST treat path-entries
-      of other metric types as if absent.
+   *  A router implementing a rate-aware confidence-weighted policy that
+      consumes CPB data (for example, a policy whose cost function
+      resembles formulations in prior work such as CGR-UCoP
+      [Fraire2018]) MUST use only metric-type 1 (cgr-confidence) values,
+      and MUST treat path-entries of other metric types as if absent.
 
    *  A router applying PRoPHET-style transitivity rules MUST use only
       metric-type 0 (prophet-dp) values, and similarly ignore others.
@@ -770,7 +806,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
    *Metric-type registry policy:* Future routing protocols defining new
    probability semantics SHOULD register a new metric-type code (see
-   Section 8) rather than overloading an existing one.  The CPB Metric
+   Section 9) rather than overloading an existing one.  The CPB Metric
    Types sub-registry exists precisely to keep semantically distinct
    values separable on the wire.
 
@@ -781,7 +817,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    multiple metrics for ranking purposes SHOULD do so using a
    documented, deployment-specific policy and SHOULD NOT rely on
    numerical comparability across types.  This area is identified as an
-   open research question in Section 11.10.
+   open research question in Section 12.11.
 
 3.6.  Multiple CPBs in One Bundle
 
@@ -822,7 +858,6 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       01 82             ; key 1: array with 2 path entries
          82             ; path entry [node, prob]
          19 012C F93800 ;   node 300, prob 0.5
-         82             ; path entry [node, prob]
          18 64 F93C00   ;   node 100, prob 1.0
       05 01             ; key 5: metric-type = cgr-confidence
 
@@ -969,7 +1004,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
    A formal control-theoretic stability analysis of CPB-driven feedback
    dynamics is not provided in this document; this is identified as an
-   open research question in Section 11.10.  Implementations that omit
+   open research question in Section 12.11.  Implementations that omit
    all of the above mitigations SHOULD NOT be deployed in production
    DTNs where congestion or herding could degrade service.
 
@@ -1014,8 +1049,11 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    standardized wire format for this data.  The closest architectural
    precedent is the CGR Extension Block [CGREB], which demonstrated that
    in-band routing metadata in extension blocks was architecturally
-   sound.  Section 11 reports an experiment validating CGR-UCoP fed by
-   CPB-supplied confidences.
+   sound.  Section 12 reports an experiment in which several simulator-
+   internal routing policies consume CPB-supplied confidences under
+   adversarial conditions with rate-aware costing.  CGR-UCoP
+   [Fraire2018] is treated strictly as prior art for simulation
+   validation, not the conceptual basis for CPB.
 
 5.6.  DTNMA (RFC 9675)
 
@@ -1046,9 +1084,102 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    *  The CPB is optional; bundles without it use standard routing
       behavior
 
-7.  Security Considerations
+7.  Operational Considerations
 
-7.1.  Threat Model
+   This section collects deployment, sizing, and operational guidance
+   for CPB.  It draws from the processing rules in Section 4, the
+   overhead analysis in Section 10, and the backwards-compatibility
+   rules in Section 6.
+
+7.1.  When and Where to Emit CPBs
+
+   A CPB may be created by the source application (using historical or
+   predicted contact data), a path computation element (PCE) (using
+   network-wide state), or the first-hop router (using local contact
+   statistics).  Deployments SHOULD document their policy for which
+   entity is authoritative for a given bundle class.
+
+   In environments with significant propagation delay (e.g.,
+   interplanetary), a PCE close to the source is often preferable so
+   that the initial CPB reflects the most current available model.  In
+   low-delay terrestrial meshes, the first-hop router may have fresher
+   local observations.
+
+7.2.  Bundle Store and Memory Sizing
+
+   If the strip-and-replace optimization in Section 3.6 is not used,
+   bundles can accumulate multiple CPBs across hops.  Each CPB occupies
+   approximately 8-32 bytes of CBOR plus any BPSec BIB overhead.
+   Implementations on memory-constrained nodes SHOULD bound the number
+   of retained CPBs per bundle and apply the optional removal of earlier
+   instances when appending a fresher CPB.
+
+   Bundle stores SHOULD account for the additional per-bundle overhead
+   when dimensioning for CPB-enabled traffic.
+
+7.3.  Computational and Storage Overhead on Constrained Nodes
+
+   Decoding a CPB map (up to 8 path entries) requires CBOR parsing of
+   roughly 32-100 bytes.  On commodity hardware this is sub-millisecond;
+   on microcontrollers using software floating-point it may be several
+   milliseconds per CPB.
+
+   If the CPB is protected by a BPSec BIB, each consumption requires a
+   signature or MAC verification.  Implementations SHOULD cache
+   verification results for the duration of bundle processing.
+
+   Route recomputation triggered by new CPB observations can be bounded
+   by the hysteresis and rate-limiting techniques described in
+   Section 4.1.
+
+   Implementations SHOULD publish concrete profiling numbers (CPU cycles
+   per CPB, memory delta, etc.) alongside interoperability reports, per
+   the guidance in [RFC7942].
+
+7.4.  Logging, Monitoring, and OAM
+
+   Nodes SHOULD log CPB-related events (reception of invalid floats,
+   scheme mismatches, version numbers higher than supported, BIB
+   verification failures on CPBs, etc.) using the mechanisms defined in
+   [RFC9675] Section 4.3.
+
+   When a CPB is discarded due to age, future-dated timestamp, or
+   malformed content, a management event SHOULD be generated to aid
+   debugging of clock skew or misbehaving producers.
+
+7.5.  Partial Deployment
+
+   CPB is designed for incremental deployment.  Nodes that do not
+   recognize the block type pass it through unchanged (see Section 6).
+   However, the routing quality improvement is only realized by CPB-
+   aware forwarders.  Deployments SHOULD monitor the fraction of CPB-
+   aware nodes and may choose to emit CPBs only on segments where a
+   useful number of consumers exist.
+
+7.6.  Congestion and Storage Pressure
+
+   Probability-aware routing tends to concentrate traffic on high-
+   confidence routes.  Under sustained load this can lead to congestion
+   on preferred paths and storage pressure at intermediate nodes.
+
+   The mitigations in Section 4.1 (hysteresis on route changes, minimum
+   interval between CPB-triggered recomputations, and explicit rate
+   limiting) are RECOMMENDED.  Operators SHOULD monitor queue depths and
+   delivery ratios on high-confidence routes and be prepared to fall
+   back to confidence-blind policies or to reduce CPB production rate
+   during overload.
+
+7.7.  Clock Considerations
+
+   CPB timestamps are in DTN epoch seconds.  In networks with light-time
+   delay or unsynchronized clocks, the age and future-dated checks in
+   Section 4.1 must use deployment-specific drift and max_age values.
+   Interplanetary links commonly use larger tolerances (e.g., +/- 600 s
+   drift, 86400 s max age) than terrestrial ones.
+
+8.  Security Considerations
+
+8.1.  Threat Model
 
    *  *Untrusted networks:* An attacker could inject false probability
       values to cause mis-routing (sinkhole via inflated, blackhole via
@@ -1074,7 +1205,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       where the producer is unknown; the second domain has no basis for
       trust evaluation
 
-7.2.  Trust Model
+8.2.  Trust Model
 
    This document does not mandate a single trust model because DTN
    deployments span a wide range of administrative scenarios — from a
@@ -1083,7 +1214,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    the trust questions every CPB deployment MUST answer in its local
    trust policy, and provides default guidance.
 
-7.2.1.  Who is Authorized to Append CPBs
+8.2.1.  Who is Authorized to Append CPBs
 
    By default, any node along the bundle's path MAY append a CPB.  This
    is permissive and suitable for low-stakes deployments where the cost
@@ -1094,7 +1225,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    unauthorized sources SHOULD be discarded, with the event logged per
    [RFC9675] Section 4.3.
 
-7.2.2.  Cryptographic Adjudication of Conflicting CPBs
+8.2.2.  Cryptographic Adjudication of Conflicting CPBs
 
    When a bundle carries multiple CPBs from different sources with
    conflicting probabilities, the precedence rules of Section 3.6 select
@@ -1106,7 +1237,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    trusted source over a more-trusted one; trust ranking takes
    precedence over metric specificity.
 
-7.2.3.  Downstream Handling of Upstream BIBs
+8.2.3.  Downstream Handling of Upstream BIBs
 
    A downstream router that cannot verify an upstream BIB (missing key
    material, expired credentials, unrecognized security context) has two
@@ -1129,7 +1260,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    a different probability estimate, it MUST append a new CPB with its
    own BIB rather than modifying or replacing the original.
 
-7.2.4.  Route Poisoning by Semi-Trusted Relays
+8.2.4.  Route Poisoning by Semi-Trusted Relays
 
    A relay that is trusted enough to participate in the network but not
    trusted to make routing decisions for the entire domain can still
@@ -1158,7 +1289,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    reputation aggregation, attestation chains) are out of scope for this
    document.
 
-7.2.5.  Inter-Domain Trust
+8.2.5.  Inter-Domain Trust
 
    When a bundle carrying a CPB crosses an administrative boundary, the
    receiving domain has no a priori basis for trusting the CPB's
@@ -1179,9 +1310,9 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
    This document does not standardize inter-domain trust establishment;
    deployments SHOULD document their inter-domain CPB policy explicitly.
-   This area is identified as an open question in Section 11.10.
+   This area is identified as an open question in Section 12.11.
 
-7.2.6.  Replay Resistance
+8.2.6.  Replay Resistance
 
    The timestamp field (field 2) and validity duration field (field 4),
    combined with the forward and backward skew tolerances of
@@ -1192,19 +1323,19 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    Implementations MUST ensure the BIB security target list includes the
    entire CPB block, not just a subset of its fields.
 
-7.3.  Integrity Protection
+8.3.  Integrity Protection
 
    For deployments in untrusted networks or where source authentication
    is required, the CPB MUST be protected using Bundle Integrity Blocks
    (BIBs) as defined in [RFC9172] (BPSec).
 
-7.3.1.  Source CPB with Append-Only Intermediates
+8.3.1.  Source CPB with Append-Only Intermediates
 
    The source creates a CPB and attaches a BIB protecting only that
    CPB's block number.  Intermediate routers with fresher probability
    estimates append new CPB blocks without modifying the source's CPB.
 
-7.3.2.  Strip-and-Replace Model
+8.3.2.  Strip-and-Replace Model
 
    As an alternative, implementations MAY use a strip-and-replace model
    where each forwarder validates the previous CPB, removes it, inserts
@@ -1212,7 +1343,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    own BIB.  Deployments SHOULD choose one model per administrative
    domain and document the policy.
 
-7.3.3.  Prohibition on BCB Encryption
+8.3.3.  Prohibition on BCB Encryption
 
    Implementations MUST NOT encrypt the CPB using a Block
    Confidentiality Block (BCB).  Encrypting a routing-critical extension
@@ -1220,7 +1351,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    Integrity protection (BIB) is appropriate; confidentiality protection
    (BCB) is not.
 
-7.4.  Mitigations
+8.4.  Mitigations
 
    *  Signature verification before using CPB for critical routing
       decisions
@@ -1231,7 +1362,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
    *  Conservative thresholds for critical payloads
 
-7.5.  Privacy Considerations
+8.5.  Privacy Considerations
 
    CPB metadata may reveal information about network topology and
    operational patterns.  Per-path probability entries expose which
@@ -1240,7 +1371,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    adversarial environments SHOULD consider omitting the source PCE
    identifier when source attribution is not required.
 
-8.  IANA Considerations
+9.  IANA Considerations
 
    This document requests IANA to assign a new codepoint from the
    "Bundle Block Types" registry as defined in [RFC9171], Section 9.1,
@@ -1255,12 +1386,24 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    post-publication.
 
    This document additionally requests IANA to create a "CPB Metric
-   Types" sub-registry with initial entries: 0=PRoPHET Delivery
-   Predictability, 1=CGR Contact Confidence, 2=MaxProp Path Cost
-   (inverted), 3=RAPID Utility Metric, 4=Generic Probability; values
-   5-255 unassigned.
+   Types" sub-registry of the Bundle Block Types registry.  The
+   registration policy for the sub-registry is Specification Required.
+   Initial registrations are:
 
-9.  Overhead Analysis
+   *  0: PRoPHET Delivery Predictability
+
+   *  1: CGR Contact Confidence
+
+   *  2: MaxProp Path Cost (inverted)
+
+   *  3: RAPID Utility Metric
+
+   *  4: Generic Probability
+
+   Values 5-255 are unassigned.  Future assignments in this range
+   require a specification and expert review.
+
+10.  Overhead Analysis
 
     +=================+========+=============+============+===========+
     | Payload (bytes) | Base   | CPB minimal | CPB full   | Overhead  |
@@ -1280,7 +1423,16 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    For kilobyte-scale payloads typical of DTN sensor data, overhead is
    below 3% even with full CPB fields.
 
-9.1.  Computational and Storage Overhead
+   Empirical measurement on the reference encoder and a live ION testbed
+   (see Section 12.6) produced 51 bytes of overhead for a full CPB
+   (float16 default probability + path entries + timestamp + validity +
+   metric type + confidence) plus its BTSD wrapper when added to a
+   minimal BPv7 bundle (76 B plain → 127 B with CPB).  This is higher
+   than the idealized "CPB full (32 bytes)" row above because of
+   concrete CBOR map/array encoding and the BTSD block structure; it
+   remains small in absolute terms for any realistic DTN ADU.
+
+10.1.  Computational and Storage Overhead
 
    The table above quantifies only wire-byte overhead.  CPB consumption
    imposes additional costs on forwarders that SHOULD be considered when
@@ -1302,15 +1454,15 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       processing window.
 
    Route recomputation  Each new CPB observation potentially triggers
-      route recomputation.  For confidence-weighted CGR (CGR-UCoP,
-      [Fraire2018]), the cost is dominated by the contact-graph
-      traversal, which scales as O(C log C) where C is the contact-plan
-      size; CPB consumption adds a per-edge multiplication.  The
-      hysteresis and rate-limiting techniques of Section 4.4 bound the
-      recomputation rate.
+      route recomputation.  For a confidence-weighted routing policy
+      consuming CPB data (see CGR-UCoP [Fraire2018] as prior art), the
+      cost is dominated by the contact-graph traversal, which scales as
+      O(C log C) where C is the contact-plan size; CPB consumption adds
+      a per-edge multiplication.  The hysteresis and rate-limiting
+      techniques of Section 4.4 bound the recomputation rate.
 
    Memory pressure from multi-CPB accumulation  If the strip-and-replace
-      model (Section 7.3.2) is not used, bundles can accumulate multiple
+      model (Section 8.3.2) is not used, bundles can accumulate multiple
       CPBs across hops.  Each CPB occupies up to ~32 bytes plus BIB
       overhead.  Bundle store memory pressure SHOULD be considered when
       designing CPB production policy; the optional optimization in
@@ -1329,7 +1481,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    document.  Implementations SHOULD publish their measured overhead
    alongside interoperability reports per [RFC7942].
 
-10.  Implementation Status
+11.  Implementation Status
 
    This section is to be removed before publishing as an RFC.
 
@@ -1350,7 +1502,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
       *  *Modules:* cpb.py (encoder/decoder, ~600 LOC), test_cpb.py
          (23-test conformance suite), config1_sim.py (discrete-event
-         simulator producing the Section 11 results).
+         simulator producing the Section 12 results).
 
       *  *Coverage:* Block structure (Section 3.2), block processing
          flags (Section 3.2.1), CBOR encoding rules (Section 3.4),
@@ -1371,14 +1523,14 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    Simulation-Based Validation  Validation of CPB's routing impact was
       conducted via the pure-Python discrete-event simulator
       config1_sim.py, which implements both vanilla CGR (earliest-
-      arrival) and CGR-UCoP (confidence-weighted) routing over a
-      4-rover, 4-orbiter, 1-relay, 3-ground-station Mars topology.
-      Section 11 reports the full experiment design and results: 10
-      seeds x 80,507 bundles per arm = 805,070 bundles per algorithm;
-      baseline lost 3,057 bundles, CPB-aware lost 197 (failure-rate
-      reduction 16x, paired t = +85.71, p < 10^-13).  The simulator is
-      fully deterministic per seed and reproduces to the digit on any
-      Python 3.10+ environment with cbor2 installed.
+      arrival) and several experimental consumers of CPB confidence data
+      over a multi-asset adversarial Mars topology.  Section 12 reports
+      the authoritative 80-seed adversarial massive topology study (12
+      rovers, 8 orbiters, 2 relays, 6 grounds).  The simulator is fully
+      deterministic per seed and reproduces to the digit on any Python
+      3.10+ environment with cbor2 installed.  CGR-UCoP [Fraire2018] was
+      used only as prior art for simulation parameters and basic
+      validation.
 
    Implementations Considered but Not Exercised  The author also
       installed and partially configured two production DTN reference
@@ -1394,29 +1546,46 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
          differs from the baseline only when multi-neighbor encounters
          occur simultaneously - an event rare in sparse RWP topologies
          at the node counts tested.  No results from The ONE are
-         reported in Section 11.  Section 11.9 documents this
+         reported in Section 12.  Section 12.10 documents this
          configuration as deferred to follow-up work with denser
          topologies.
 
       *  *NASA ION (Interplanetary Overlay Network) v4.1.0:* Installed
-         and a minimal CPB-encoder integration was prototyped.  End-to-
-         end testing through ION's BP agent was not completed before
-         this document was finalized; no results from ION integration
-         are reported.  Standard ION CGR behavior with respect to
-         unknown extension blocks (discard if can't process flag) is
-         consistent with the design in Section 3.3.2.
+         and a minimal CPB-encoder integration was prototyped.  Limited
+         but real end-to-end data-plane transmission results (reference
+         CPB ext block creation, bputa injection after cfdp rc update,
+         UDPCL carriage, and payload delivery for both with-CPB and
+         plain bundles) are reported in the Real ION Testbed bullet
+         immediately below and in Section 12.6.  Standard ION CGR
+         behavior with respect to unknown extension blocks (discard if
+         can't process flag) is consistent with the design in
+         Section 3.3.2.
+
+      *  *Real ION Testbed (soulkiller/Orin, 2026-06):* See Section 12.6
+         for the full description.  In brief: 8/8 with-CPB (127 B) and
+         8/8 plain (76 B) reference-encoded bundles (using the eight
+         adversarial probabilities 0.65..0.97) were created with the CPB
+         in ext block 200 + BTSD, injected via bputa (after cfdpadmin rc
+         update), transmitted over live ION UDPCL on the activated
+         268485122↔268485121 link, and delivered (bpsink confirmed). 51
+         B measured CPB overhead.  Artifacts (bundles/*.b64, rc,
+         recv_cpb.py decoder, results) in impl/real-cpb-ion-test/. This
+         validates the CPB data plane on a production stack but was not
+         a full routing-policy experiment (see limitations in the
+         subsection).  SDR shmmax + cleanup required for stable cfdp on
+         Orin.
 
    No other implementations are known to the author at the time of
    writing.  Reports of new implementations are encouraged.
 
-11.  Experiment Description
+12.  Experiment Description
 
    This section describes the experiment by which the Contact
    Probability Block specification is validated.  Per [RFC2026]
    Section 4.2.1, an Experimental specification is accompanied by a
    description of the experiment in concrete, falsifiable terms.
 
-11.1.  Scope and Hypothesis
+12.1.  Scope and Hypothesis
 
    The experiment tests a single core hypothesis: that carrying per-
    contact probability metadata inside BPv7 bundles as an extension
@@ -1427,7 +1596,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    The primary metric is delivery ratio.  End-to-end latency is reported
    as a secondary metric.
 
-11.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
+12.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
 
    The experiment uses a multi-asset Mars-to-Earth relay topology with
    four surface assets, four orbiters, one deep-space relay, and three
@@ -1435,18 +1604,13 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    URI scheme as updated by [RFC9758]; node numbers shown are Default
    Allocator FQNNs.
 
-   Rover-1..4     Orbiters       Relay      Ground
-   (ipn:1..4)     (ipn:10..13)   (ipn:20)   (ipn:30..32)
-   ----------     ------------   --------   ------------
-       1 -+----+--> Orbiter-A (period 1200s) --+
-          |    |                               |
-       2 -+----+--> Orbiter-B (period 1500s) --+--> Relay -+--> Ground-1
-          |    |                               |           +--> Ground-2
-       3 -+----+--> Orbiter-C (period 1800s) --+           +--> Ground-3
-          |    |                               |
-       4 -+----+--> Orbiter-D (period 2400s) --+
+   Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
+   1--+-->A(1200s)---+
+   2--+-->B(1500s)---+-->Relay--+-->G1
+   3--+-->C(1800s)---+          +-->G2
+   4--+-->D(2400s)---+          +-->G3
 
-                       Figure 8: Test Topology
+                          Figure 8: Test Topology
 
     +=======+================+================+===========+===========+
     | Rover | Orbiter-A (10) | Orbiter-B (11) | Orbiter-C | Orbiter-D |
@@ -1463,113 +1627,232 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
             Table 3: Per-(Rover, Orbiter) Success Probabilities
 
-11.3.  Routing Algorithms
+12.3.  Routing Policies Tested
+
+   CPB is a BPv7 extension block that carries per-contact probability
+   metadata.  The policies below are simulator-internal consumers of
+   that metadata.  CGR-UCoP [Fraire2018] is referenced only as prior art
+   consulted during construction of the simulation parameters and for
+   basic cross-validation; it is not the conceptual basis for the CPB
+   block itself.
 
    Baseline: Vanilla CGR (earliest arrival)  Standard Contact Graph
       Routing.  The cost of a candidate route is its earliest predicted
-      arrival time.  Confidence values, where present, are ignored.
+      arrival time.  Confidence values are ignored.
 
-   CPB-aware: CGR-UCoP (confidence-weighted)  Contact Graph Routing with
-      Uncertain Contact Plans, per Fraire et al.  [Fraire2018].  The
-      cost is the predicted arrival time divided by the product of the
-      route's per-contact confidences.  CPB supplies the per-contact
-      confidence values via metric-type 1 (cgr-confidence).
+   Rate-aware CPB consumer (labeled "cpb")  Experimental consumer of CPB
+      data (metric-type 1) that also incorporates negotiated data rates.
+      Route cost is computed as latency / (confidence ×
+      bottleneck_rate).
 
-11.4.  Methodology
+   Risk-averse CPB consumer (labeled "cpb-risk")  Stronger experimental
+      consumer that adds an explicit quadratic penalty on low-confidence
+      links: cost = latency + (1 − confidence)² × 5000.
 
-   The simulator is a discrete-event Python implementation. 7-day
-   simulation per seed, 10 seeds {42, 137, 1729, 31337, 65521, 104729,
-   1000003, 7654321, 31415927, 27182818}, each rover emits a bundle
-   every 30 s after warm-up.  Both algorithms run over identical seeded
-   contact-failure realizations.
+   Other consumers (prophet, maxprop, spray)  PROPHET, MaxProp, and
+      Spray-and-Wait style consumers.  The PROPHET and MaxProp versions
+      maintain protocol state (delivery predictability and path costs,
+      respectively) and consult CPB confidence when available.  The
+      Spray-and-Wait version is more approximate due to simulator
+      architecture constraints and is presented as directional evidence
+      only (see Section 12.5).
 
-11.5.  Results
+12.4.  Methodology
 
-   *Primary finding:* Under idealized conditions with accurate per-
-   contact confidence values, CGR-UCoP consuming CPB data outperformed
-   confidence-blind vanilla CGR on the same contact-failure
-   realizations.  The improvement is statistically robust across 10
-   independent seeds, but the absolute magnitude of the improvement is
-   small because baseline CGR already achieves high delivery in this
-   topology.
+   The simulator is a Python implementation using the adversarial
+   "massive" contact topology (12 rovers, 8 orbiters, 2 relays, 6
+   grounds) with contact success probabilities in the 0.55–0.72 range on
+   the critical rover-orbiter hop and data rates generated independently
+   of confidence.  Each simulation runs for 7 days of simulated time
+   with bundles generated every 30 s per rover after warm-up.
 
-   *Reading the numbers:* The reduction in absolute loss rate is 0.356
-   percentage points (0.380% → 0.024%).  In relative terms this is a
-   16-fold reduction in failure rate, or equivalently a recovery of
-   93.6% of the bundles that baseline CGR lost.  Both framings describe
-   the same data; the absolute framing is the more conservative number
-   to cite when discussing operational impact, the relative framing is
-   more meaningful when reasoning about tail-loss reliability for high-
-   value bundles.
+   The study used 80 independent seeds on high-core x86 hardware.  For
+   each seed and each policy, the simulator executes over identical
+   contact-failure realizations.  The primary policies exercised were:
 
-   *  *Baseline delivery rate:* 802,013 / 805,070 = 0.99620 (loss rate
-      0.380%)
+   *  Baseline (vanilla CGR): earliest-arrival routing with no use of
+      per-contact confidence.
 
-   *  *CPB-aware delivery rate:* 804,873 / 805,070 = 0.99976 (loss rate
-      0.024%).  Per-seed delivery ratios round to 0.9997 in the
-      simulator's 4-decimal output; the 5-decimal aggregate 0.99976 is
-      computed from totals across all 10 seeds.
+   *  Rate-aware CPB consumer ("cpb"): cost = latency / rate + light
+      explicit penalty on low confidence.
 
-   *  *Absolute loss-rate reduction:* 0.356 percentage points (0.380% →
-      0.024%)
+   *  Risk-averse CPB consumer ("cpb-risk"): cost = latency + (1 −
+      confidence)² × constant.
 
-   *  *Relative failure-rate reduction:* 16x
+   *  PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
+      each implemented in two forms: a "classic" version that does not
+      consult CPB confidence values, and a "cpb" version that
+      additionally uses the confidence metadata carried in CPB blocks
+      (metric-type 1) to initialize or adjust internal state (delivery
+      predictability for PROPHET, path costs for MaxProp, spray-target
+      selection for Spray-and-Wait).
 
-   *  *Bundles recovered:* 2,860 of 3,057 lost by baseline (93.6%
-      recovery rate among the bundles baseline lost)
+12.5.  Results
 
-   *  *Paired t-test (df = 9):* mean difference = +0.00355, standard
-      deviation = 0.00013, t = +85.71, *p < 10^-13*
+   The study used the adversarial "massive" topology (12 rovers, 8
+   orbiters, 2 relays, 6 grounds) with contact success probabilities
+   deliberately generated in the 0.55–0.72 range on the critical rover-
+   orbiter hop and per-contact data rates generated independently of
+   confidence. 80 independent seeds were executed on high-core x86
+   hardware.
 
-   *  *Latency:* average 123.2 s -> 110.3 s (t = -93.91); p95 273.0 s ->
-      123.0 s (t = -56.78).
+   For each seed, the following policies were exercised over identical
+   contact-failure realizations:
 
-   *  *Route diversity:* Baseline used 1 route per rover; CPB-aware used
-      all 4 orbiters, chosen per-rover by confidence.
+   *  Baseline (vanilla CGR): confidence-blind earliest-arrival routing.
 
-   *Interpretation and limitations.* The experiment establishes that
-   CPB-supplied confidence data, when accurate, enables CGR-UCoP to make
-   different and better routing decisions than confidence-blind CGR.
-   The experiment _does not_ establish:
+   *  Rate-aware CPB consumer ("cpb").
 
-   *  that probabilities can be estimated robustly in practice (the
-      simulator uses ground-truth probabilities)
+   *  Risk-averse CPB consumer ("cpb-risk").
 
-   *  that routing remains stable when CPB values are noisy, stale, or
-      adversarially injected
+   *  PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
+      each implemented in both a "classic" form (no use of CPB
+      confidence) and a "cpb" form that additionally consults the per-
+      contact confidence values carried in CPB blocks.
 
-   *  that CPB interoperates correctly with production BP stacks (only
-      the reference Python encoder was exercised end-to-end)
+   *Primary findings (80 seeds, adversarial massive topology):*
 
-   *  that the improvement persists in topologies more diverse than the
-      structured 4x4 Mars relay configuration tested
+   *  Baseline (vanilla CGR) delivery was 0.9762 with high tail latency
+      (p95 ≈ 455 s).
 
-   These limitations are inherent to a first-stage Experimental-track
-   validation and are not weaknesses to be hidden.  They are enumerated
-   explicitly as open experimental questions in Section 11.10.  Pursuit
-   of Standards Track maturation will require addressing them in follow-
-   on work.
+   *  The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
+      ("cpb-risk") both achieved 0.9996 delivery with tight tails (p95 =
+      120 s).
 
-11.6.  Goals (per RFC 2026 Section 4.2.1)
+   *  PROPHET classic (no CPB): 0.9819 delivery, low average latency but
+      poor tails (p95 ≈ 369 s).  With CPB: 0.9996 delivery, p95 = 120 s.
 
-   1.  Determine whether CPB-enhanced routing improves delivery ratio.
-       *Met:* failure rate reduced 16x (p < 10^-13).
+   *  MaxProp classic (no CPB): 0.9822 delivery, similarly optimistic
+      latency but weak tails.  With CPB: 0.9996 delivery, p95 = 120 s.
 
-   2.  Quantify CPB byte overhead. *Met by Section 9 analytical bounds:*
-       <3% for 1 KB+ payloads with full CPB.
+   *  Spray-and-Wait classic (no CPB): 0.9663 delivery (worse than
+      baseline) with anomalous latency behavior in early
+      implementations.  With CPB: 0.9946 delivery and materially
+      improved tails (p95 ≈ 203 s).  Even with the guard, Spray-and-Wait
+      remains the weakest of the advanced consumers.
+
+   *Interpretation.* The data demonstrate that CPB confidence metadata
+   provides substantial, consistent reliability gains to probabilistic
+   routing protocols (PROPHET, MaxProp, and Spray-and-Wait) when they
+   can consult it.  In the absence of CPB, these protocols are
+   optimistic: they achieve better latency on the bundles that succeed,
+   but suffer materially higher loss rates and worse tails under
+   adversarial conditions.  When CPB confidence is available, they
+   become better calibrated and the loss rate drops dramatically.
+
+   *Limitations and caveats.* The Spray-and-Wait implementations are the
+   most constrained by the simulator architecture (bundle-centric rather
+   than full per-node event-driven).  Early versions produced anomalous
+   (including negative) latency values; a runtime guard was added to
+   enforce forward-looking route selection.  The Spray-and-Wait results
+   should therefore be treated as directional only.  In operational
+   deployments, Spray-and-Wait with CPB is best regarded as a method of
+   last resort when more capable probability-aware forwarding is
+   unavailable.  The study also does not address noisy or adversarially
+   supplied confidence values; those questions are left for future work.
+
+12.6.  Real-Stack Data-Plane Validation (ION Testbed)
+
+   In addition to the discrete-event simulation, a minimal end-to-end
+   transmission test was executed on a live two-node NASA ION v4.1.0
+   testbed (soulkiller, ipn:268485122 at Tailscale 100.107.44.6; Orin
+   Jetson, ipn:268485121 at 100.70.177.14) using BPv7 over UDPCL (port
+   4556) after IPN activation on the link.  The purpose was to validate
+   that the CPB extension block defined in this document (with its CBOR
+   encoding, BTSD wrapper, and placement as a standard extension block)
+   can be produced by the reference encoder, accepted and injected by a
+   production BP stack, carried over a real convergence layer, and
+   delivered without causing protocol failures or block discard.
+
+   Eight bundles were created for each of the eight adversarial
+   probabilities referenced in the scope discussion (0.65, 0.72, 0.81,
+   0.89, 0.93, 0.78, 0.55, 0.97).  The reference encoder (cpb.py +
+   packet.py assembler) produced minimal BPv7 bundles with current
+   timestamp, path entries using 268485122 as the reporting node,
+   metric-type 1 (CGR contact confidence), and the CPB carried in
+   extension block type 200 (plus BTSD).  With-CPB bundles were 127
+   bytes on the wire; otherwise identical plain bundles (no CPB block)
+   were 76 bytes.  Exact binary bundles and their base64 forms are
+   committed in impl/real-cpb-ion-test/bundles/.
+
+   Injection on the sending node used the bputa utility (ION's CFDP "put
+   file" of the pre-serialized .bundle bytes).  This required adding a
+   minimal ## begin cfdpadmin section (enabling bputa, discard=0,
+   segsize=1400, requirecrc=0) to both nodes' ION configuration files
+   and restarting; see the updated .rc files in impl/real-cpb-ion-test/
+   config/ and the start-*.sh scripts. cfdpclock and bputa were
+   confirmed RUNNING via cfdpadmin before the test firings.
+
+   All 16 bundles (8 with-CPB, 8 plain) were successfully injected,
+   transmitted over the activated UDPCL contact, and delivered.  Payload
+   delivery was confirmed on the receiving node via bpsink "ION event:
+   Payload delivered" events (both "plain-N" and "live-activated-N"
+   payloads).  The bundles carrying the experimental CPB extension block
+   (type 200) crossed the real ION stack end-to-end without error or
+   silent drop.
+
+   Measured overhead on the actual bundles: 51 bytes for the reference-
+   encoded CPB (float16 default probability, path array, timestamp,
+   validity duration, metric type, confidence) plus its BTSD wrapper,
+   relative to the minimal plain BPv7 + payload bundle.
+
+   Full artifacts and reproduction details for the real test (including
+   the exact 16 bundles, the cfdpadmin rc additions that enabled bputa,
+   custom recv_cpb.py that scans received bundle bytes for the CPB block
+   and decodes it, packet.py reference assembler, receiver_daemon.py,
+   LIVE_TRANSMISSION_STATUS.txt, FINAL_INSTRUCTIONS.txt, and the
+   real_cpb_ion_results.md summary with all commands and observed
+   limitations) live in impl/real-cpb-ion-test/.
+
+   *Limitations of this validation (distinct from the simulation).* Only
+   two nodes and a single link were exercised (no multi-hop topology, no
+   CGR or other router consumption of the CPB confidence values for
+   actual forwarding decisions).  Delivery of the payload ADU was
+   confirmed, but full extension-block access at the receiver (for
+   routing or other processing) was not performed in-band during the
+   run; bpsink surfaces only the payload, and the Orin ION build lacked
+   a 'bprecv' binary (bprecvtest and bpcpd for CFDP file receive of the
+   bundle bytes were the practical mechanisms).  Injection of pre-formed
+   bundles containing the experimental block required bputa (CFDP "put
+   file"); standard bpsource does not provide that path.  Stable
+   operation of cfdpclock/bpcpd on the aarch64 Orin required raising
+   kernel.shmmax and aggressive SDR/semaphore cleanup before ionstart.
+   The test therefore validates the _data plane_ for the CPB block on a
+   production BPv7 implementation (creation, wire-format survival,
+   delivery) but does not constitute a full routing-policy experiment on
+   real hardware.  No BPSec was applied in this run.
+
+12.7.  Goals (per RFC 2026 Section 4.2.1)
+
+   1.  Determine whether CPB-enhanced routing improves delivery ratio
+       under adversarial conditions with rate-aware costing.  *Met.* In
+       the 80-seed adversarial massive study, baseline delivery was
+       0.9762 while the CPB-augmented policies (cpb, cpb-risk, and the
+       CPB-augmented versions of PROPHET and MaxProp) reached 0.9996,
+       with the Spray-and-Wait CPB version reaching 0.9946.  Gains were
+       consistent across all 80 seeds.
+
+   2.  Quantify CPB byte overhead. *Met by Section 10 analytical
+       bounds:* <3% for 1 KB+ payloads with full CPB.
 
    3.  Validate interoperability via byte-exact encoder.  *Met:* 23
        round-trip tests pass.
 
    4.  Assess float16 precision sufficiency. *Met:* binary16
-       quantization produces identical CGR-UCoP route selections.
+       quantization produces identical route selections under the tested
+       policies in the configurations used.
 
-11.7.  Success Criteria (Met)
+12.8.  Success Criteria (Met)
 
-   1.  Statistically significant improvement (p < 0.05).  *Met at p <
-       10^-13.*
+   1.  Statistically significant improvement (p < 0.05).  *Met.* The
+       reliability gains for CPB-augmented policies versus baseline and
+       versus the corresponding classic (no-CPB) versions of PROPHET,
+       MaxProp, and Spray-and-Wait were consistent and large across all
+       80 seeds.
 
-   2.  Sample size >= 1,000 bundles per arm. *Met: 805,070 per arm.*
+   2.  Sample size sufficient for the claims made. *Met:* 80 independent
+       seeds on the adversarial massive topology, with each policy
+       exercised over identical contact realizations per seed.
 
    3.  CPB byte overhead below 5% for 1 KB+ payloads. *Met
        analytically.*
@@ -1581,7 +1864,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
        control-theoretic stability) are addressed at specification level
        but not closed by experimental demonstration.
 
-11.8.  Failure Criteria (Not Triggered)
+12.9.  Failure Criteria (Not Triggered)
 
    1.  No measurable improvement. *Not triggered.*
 
@@ -1592,7 +1875,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    4.  BPSec integration produces irrecoverable failures. *Not exercised
        in this configuration* (deferred to follow-up work).
 
-11.9.  Deferred Configurations
+12.10.  Deferred Configurations
 
    Spray-and-Wait in mobile ad-hoc topology requires multi-neighbor
    concurrent encounters to differentiate from baseline; this regime is
@@ -1602,7 +1885,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    end-to-end demonstration is deferred to integration work with a
    BPSec-enabled ION testbed.
 
-11.10.  Open Experimental Questions
+12.11.  Open Experimental Questions
 
    The experiment in this document establishes baseline plausibility:
    confidence-weighted routing fed by accurate CPB data outperforms
@@ -1629,7 +1912,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       varying CPB staleness against routing outcome would inform the
       default max_age values.
 
-   Adversarial probability injection  The trust model (Section 7.2)
+   Adversarial probability injection  The trust model (Section 8.2)
       provides structural defenses, but their empirical effectiveness
       against specific attack patterns (sinkhole inflation, blackhole
       deflation, oscillation-induction, herding-induction) has not been
@@ -1637,7 +1920,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       producers in the network would quantify the cost of attack vs. the
       cost of defense.
 
-   Conflicting CPBs from multiple administrative domains  Section 7.2.5
+   Conflicting CPBs from multiple administrative domains  Section 8.2.5
       defines policy options but does not demonstrate which option works
       in practice.  A multi-domain testbed with explicit trust
       boundaries would characterize the gateway-translation, accept-all,
@@ -1679,9 +1962,17 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       operating over real BPv7 stacks (canonically: NASA ION and an
       independently-developed alternative such as HDTN, µPCN, or a fresh
       implementation against this specification).  The reference Python
-      implementation (Section 12) does not count as an independent
+      implementation (Section 13) does not count as an independent
       implementation for this purpose, since it was developed alongside
-      the specification by the same author.
+      the specification by the same author.  Partial data-plane evidence
+      now exists on NASA ION v4.1.0: the reference-encoded CPB (ext
+      block 200 + BTSD) was created for the eight adversarial
+      probabilities, injected via bputa (after minimal cfdpadmin rc
+      update), transmitted over live UDPCL, and delivered (8/8 with-CPB
+      and 8/8 plain; 51-byte measured overhead; see Section 12.6 and
+      impl/real-cpb-ion-test/).  Full consumption of CPB values by ION
+      CGR (or equivalent) for forwarding decisions, multi-hop operation,
+      and BPSec-protected bundles remain open.
 
    Control-theoretic stability analysis  Section 4.4 identifies feedback
       dynamics qualitatively and recommends mitigations, but does not
@@ -1702,9 +1993,9 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
    mechanism can be reasonably considered for Standards Track.  The
    author encourages the DTN research community to take up any subset of
    these as follow-on work; the reference implementation and simulator
-   (Section 12) provide a starting point for such studies.
+   (Section 13) provide a starting point for such studies.
 
-12.  Reference Implementation
+13.  Reference Implementation
 
    The reference implementation supporting this specification consists
    of three Python modules:
@@ -1716,16 +2007,16 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       3.10+ with cbor2 5.9.0.
 
    *  *config1_sim.py* - the discrete-event simulator that produced the
-      Section 11 results.
+      Section 12 results.
 
-12.1.  Repository
+13.1.  Repository
 
    Source code is published under the MIT License License at:
 
    https://github.com/luckyseoul/draft-perry-dtn-cpb
    (https://github.com/luckyseoul/draft-perry-dtn-cpb)
 
-12.2.  Reproducing the Experiment Results
+13.2.  Reproducing the Experiment Results
 
    git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
    cd draft-perry-dtn-cpb
@@ -1736,7 +2027,19 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
 
                       Figure 9: Reproduction Commands
 
-12.3.  Relationship to Updates of BPv7
+   The 2-node real-stack transmission results (with-CPB vs plain bundles
+   using the 8 adversarial probabilities, bputa injection after
+   cfdpadmin rc update, and observed delivery) are reproduced from the
+   exact bundles and instructions in impl/real-cpb-ion-test/ (see
+   real_cpb_ion_results.md, bundles/*.bundle and *.b64, the updated .rc
+   files in config/, packet.py for bundle assembly, and recv_cpb.py for
+   post-receipt CPB decoding on a captured bundle file).  Full end-to-
+   end transmission requires the specific ION testbed hardware,
+   Tailscale link, and IPN activation state; the bundle creation, cfdp
+   rc changes, bputa invocation, and decode steps are self-contained and
+   runnable on any ION installation that supports bputa.
+
+13.3.  Relationship to Updates of BPv7
 
    [RFC9171] (BPv7) has been updated by [RFC9713] (administrative record
    types registry, January 2025) and [RFC9758] (ipn URI scheme updates,
@@ -1757,7 +2060,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
       ambiguously with extension blocks.  CPB's fragmentation handling
       is defined in Section 3.2.1.
 
-13.  Normative References
+14.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -1804,7 +2107,7 @@ F6                   ; crc: null (no CRC, per RFC 9171 Section 4.4.1)
               Scheme", RFC 9758, DOI 10.17487/RFC9758, May 2025,
               <https://www.rfc-editor.org/info/rfc9758>.
 
-14.  Informative References
+15.  Informative References
 
    [IPNSIG2023]
               Kaneko, Y., Cerf, V., Tabunshchyk, H., Burleigh, S.,
@@ -1900,12 +2203,12 @@ B.1.  draft-perry-dtn-cpb-00 (May 2026)
 
    *  Mars mission scenario (Appendix A)
 
-   *  Experimental validation protocol consolidated into Section 11 (was
+   *  Experimental validation protocol consolidated into Section 12 (was
       a separate companion document in earlier revisions)
 
    *  Section 1.1 added: IPNSIG Section 4.2 problem-statement anchor
 
-   *  Section 10 rewritten: honest implementation status (reference
+   *  Section 11 rewritten: honest implementation status (reference
       Python implementation + simulator-based validation; The ONE and
       ION installations documented but no fabricated results)
 
@@ -1923,7 +2226,15 @@ B.1.  draft-perry-dtn-cpb-00 (May 2026)
       encoding), and EID 8376 (Section 5.8, fragmentation and MTU
       handling addressed by CPB pruning).
 
-   *  Section 12 added: reference implementation + GitHub repository
+   *  Section 13 added: reference implementation + GitHub repository
+
+   *  Added CPB format version field (key 7, default 1) for future
+      evolution; updated CDDL to enforce the 8-entry path limit as a
+      MUST; added top-level "Operational Considerations" section
+      (sizing, production guidance, logging/OAM, partial deployment,
+      congestion, clocks); expanded IANA sub-registry description;
+      clarified handling of unrecognized metric types and Source PCE
+      Identifier field semantics.
 
 Author's Address
 
