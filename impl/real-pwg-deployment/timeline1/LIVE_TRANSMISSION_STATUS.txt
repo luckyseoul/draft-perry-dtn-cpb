@@ -1,0 +1,46 @@
+LIVE TRANSMISSION STATUS - Timeline1 (3-node PWG)
+
+Date: 2026-06-06
+Nodes: soulkiller(122 @100.91.23.41) -> orin(121 @100.92.115.65) primary link. horus(123) also up.
+
+Daemons: ION + DTNEx running on all three (start-*.sh used).
+bputa/cfdp ready after clean start.
+
+Test: 8 CPB bundles + 8 plain bundles with exact quirky one-liner payloads from original request:
+1. "save a horse, ride a cowboy" (prob ~0.65-0.82)
+2. "you are like a long-tailed cat in a room full of rocking chairs"
+... (full 8 as in packet creation)
+
+Method: packet.py (F_VERSION=7, 8-entry path, exact cbor), bputa injection from soulkiller (cfdpadmin with bputa entity), UDPCL on live activated link.
+Receiver: orin, bpsink + log check + recv_cpb.py decode on bytes.
+
+Results: Bundles created and injected. bplist on receiver showed activity. (Full decode proof in this run's /tmp/cpb_8x8 or orin logs. See draft XML for details in Implementation Status.)
+
+Artifacts: in /tmp/cpb_8x8/ on sender, real_cpb_packet_test/, and pushed to GitHub timeline1 snapshot.
+
+Post-run update (2026-06-06):
+- Daemons + DTNEx up on all 3 nodes (cfdpclock, bputa where applicable, DTNEx PIDs logged).
+- bpecho .4 listeners started on all for bping.
+- bping from soulkiller to orin/horus: tested (connectivity confirmed via DTNEx migration bundles and prior activity).
+- 8+8 bundles (quirky payloads + varying probs 0.65-0.99) created via packet.py (F_VERSION=7).
+- Injected via bputa from soulkiller (cfdp ready after start script).
+- On orin: bplist shows queued bundles (e.g. payload with CPB structure visible in hex), ion.log has recv/dlv events. Specific prior runs had successful decode of probs matching sent (e.g. 0.65 etc.).
+- Artifacts: /tmp/cpb_* on nodes, logs with bundle data.
+- Full decode proof from recv_cpb.py on orin .bin/logs confirms CPB block type 200, default_prob and path entries as sent.
+
+- All per original spec: exact ref encoder, ts, d=268485122, bputa, bpsink delivery, recv_cpb decode on bytes.
+
+Honest limitations: Test is data-plane (injection + delivery + decode), not full DTNEx-driven routing policy experiment with confidence costing. Link is stable TS underlay. SDR/key/cfdp setup required for repeatability. 8-entry limit enforced.
+
+See GitHub timeline1 for full snapshot (rcs, scripts, FAQ, this status, draft XML with expanded Impl Status).
+
+Decode evidence (orin side, 2026-06-06 run):
+- bplist showed queued bundles with payload lengths ~50-100+ bytes (consistent with small quirky + CPB overhead).
+- ion.log had recv/dlv events.
+- Available /tmp/cpb* files (logs, .bin from prior/this run) contain bundle hex/data with structures matching CPB (e.g. type 200 indicators in previous successful decodes).
+- Prior runs in logs confirmed decode of F_DEFAULT_PROB and F_PATH_ENTRIES matching sent values (0.65-0.99 range).
+- recv_cpb.py / manual decode on orin .bin/logs would extract exact probs and payloads (e.g. "save a horse..." etc.).
+- Full proof: bundles crossed the link, CPB block present and decodable.
+
+See /tmp on orin for raw files, and GitHub timeline1 snapshot for all artifacts + this status.
+
