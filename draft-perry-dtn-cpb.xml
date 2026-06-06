@@ -1693,65 +1693,11 @@ A3                   ; map with 3 entries
           are noted here for transparency:</t>
           <ul>
             <li><strong>The ONE Simulator v1.6.0:</strong> Installed and a
-                probability-aware Spray-and-Wait router
-                (ProbabilityAwareSprayAndWaitRouter.java, ~250 LOC) was
-                drafted. Across multiple Random Waypoint parameter sweeps the
-                baseline and CPB-aware arms produced byte-identical outcomes,
-                because the Spray-and-Wait spray decision differs from the
-                baseline only when multi-neighbor encounters occur
-                simultaneously - an event rare in sparse RWP topologies at
-                the node counts tested. No results from The ONE are reported
-                in <xref target="experiment"/>.
-                <xref target="exp-deferred"/> documents this configuration
-                as deferred to follow-up work with denser topologies.</li>
-            <li><strong>NASA ION (Interplanetary Overlay Network) v4.1.0:</strong>
-                Installed and a minimal CPB-encoder integration was
-                prototyped. Limited but real end-to-end data-plane
-                transmission results (reference CPB ext block creation,
-                bputa injection after cfdp rc update, UDPCL carriage, and
-                payload delivery for both with-CPB and plain bundles) are
-                reported in the Real ION Testbed bullet immediately below
-                and in <xref target="exp-real-validation"/>. Standard ION
-                CGR behavior with respect to unknown extension blocks
-                (discard if can't process flag) is consistent with the
-                design in <xref target="backwards-compat"/>.</li>
-            <li><strong>Real ION Testbed (PWG 3-node: soulkiller/Orin/Horus, 2026-06, timeline1):</strong>
-                Full three-node deployment on the IPNSIG PWG Tailscale mesh
-                (samo.grasic@ account): soulkiller (268485122, TS 100.91.23.41),
-                orin (Jetson Orin Nano, 268485121, TS 100.92.115.65), horus
-                (268485123, TS 100.65.168.37), plus the public gateway
-                (268485000 / 268550657 reachability via 100.96.108.37).
-                All nodes run ION (UDPCL :4556) with long-duration bidirectional
-                contacts (+1 +8640000), cfdp + bputa support for CPB injection,
-                ionsec default key, and DTNEx for dynamic CBOR contact/probability
-                exchange on .12160/.12161. Exact current rcs, robust start-*.sh
-                (killm + shm clean + sysctl shmmax=268435456 + key ensure +
-                ionstart + cfdpadmin), systemd templates, and the short
-                ION-PWG-DTN-FAQ.pdf live in ion-config/ (also backed up to
-                nicknite and orin/horus).
-                <p>
-                Primary validation (see <xref target="exp-real-validation"/>):
-                8/8 with-CPB (127 B) and 8/8 plain (76 B) bundles using the
-                eight adversarial probabilities (0.65..0.97) plus the exact
-                quirky one-liner payloads ("save a horse, ride a cowboy",
-                "you're like a long-tailed cat in a room full of rocking chairs",
-                etc.) were created via the reference packet.py + cpb.py (F_VERSION=7,
-                8-entry F_PATH_ENTRIES), injected with bputa after cfdpadmin
-                update, carried over the live activated 268485122&#x2194;268485121
-                link, and delivered (bpsink + recv_cpb.py decode on the wire bytes).
-                51 B CPB overhead measured. Artifacts under impl/real-cpb-ion-test/
-                and real_cpb_packet_test/ at the top of the working tree.
-                </p>
-                This remains a data-plane + integration validation on a
-                real activated link rather than a full multi-node routing-policy
-                experiment with DTNEx-updated graphs. SDR shmmax, key, and
-                cfdp bputa entity setup are required for repeatable runs.
-                Current deployment details (how to ping with bping .3/.4,
-                how to start/stop, dashboard, common SDR/key/plan issues,
-                exact rc sections, Tailscale underlay notes) are captured in
-                the generated ION-PWG-DTN-FAQ.pdf and the three host*.rc +
-                start-*.sh files (also in this repo under impl/real-pwg-deployment/
-                for the timeline1 snapshot).</li>
+                probability-aware Spray-and-Wait router was drafted. No results
+                from The ONE are reported in <xref target="experiment"/>.</li>
+            <li><strong>NASA ION v4.1.0:</strong> Limited real end-to-end
+                data-plane transmission results are reported in the Real ION
+                Testbed entry above and in <xref target="exp-real-validation"/>.</li>
           </ul>
         </dd>
       </dl>
@@ -1971,84 +1917,171 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
       </section>
 
       <section anchor="exp-real-validation">
-        <name>Real-Stack Data-Plane Validation (ION Testbed)</name>
+        <name>Real-Stack Data-Plane Validation (ION PWG Testbed)</name>
         <t>
-          In addition to the discrete-event simulation, a minimal end-to-end
-          transmission test was executed on a live two-node NASA ION v4.1.0
-          testbed (soulkiller, ipn:268485122 at Tailscale 100.107.44.6; Orin
-          Jetson, ipn:268485121 at 100.70.177.14) using BPv7 over UDPCL (port
-          4556) after IPN activation on the link. The purpose was to validate
-          that the CPB extension block defined in this document (with its CBOR
-          encoding, BTSD wrapper, and placement as a standard extension block)
-          can be produced by the reference encoder, accepted and injected by a
-          production BP stack, carried over a real convergence layer, and
-          delivered without causing protocol failures or block discard.
+          In addition to the discrete-event simulation, an expanded end-to-end
+          data-plane validation was executed on a live three-node NASA ION
+          v4.1.0 testbed on the IPNSIG PWG Tailscale mesh (samo.grasic@ account)
+          plus dedicated emulated targets. The nodes were soulkiller
+          (268485122 at 100.91.23.41), orin (268485121 at 100.92.115.65), and
+          horus (268485123 at 100.65.168.37), with emulated Moon (268484801),
+          Mars (268484820), and gateway (268485000) reached via plans to the
+          public gateway IP 100.96.108.37. All reals used UDPCL on port 4556
+          with long-duration bidirectional contacts, cfdp + bputa for CPB
+          injection (cfdp entities configured for the emulated EIDs), ionsec
+          default key, and DTNEx for dynamic CBOR contact/probability exchange
+          on .12160/.12161. UFW was enabled on all three hosts (default deny
+          incoming) with explicit allows for UDP 4556 (core UDPCL), 4557, and
+          12160 (DTNEx/CBOR) from the 100.0.0.0/8 and 100.64.0.0/10 Tailscale
+          ranges plus on the tailscale0 interface (executed after explicit
+          operator instruction to make any needed firewall exemptions).
         </t>
         <t>
-          Eight bundles were created for each of the eight adversarial
-          probabilities referenced in the scope discussion (0.65, 0.72, 0.81,
-          0.89, 0.93, 0.78, 0.55, 0.97). The reference encoder
-          (cpb.py + packet.py assembler) produced minimal BPv7 bundles with
-          current timestamp, path entries using 268485122 as the reporting
-          node, metric-type 1 (CGR contact confidence), and the CPB carried in
-          extension block type 200 (plus BTSD). With-CPB bundles were 127 bytes
-          on the wire; otherwise identical plain bundles (no CPB block) were
-          76 bytes. Exact binary bundles and their base64 forms are committed
-          in impl/real-cpb-ion-test/bundles/.
+          Two phases were executed using the reference packet.py + cpb.py
+          (minimal CPB map with F_DEFAULT_PROB + F_PATH_ENTRIES using IEEE
+          binary16 float per draft Section 3.4 canonical CBOR encoding; the
+          deployed cpb.py did not insert an F_VERSION key).
         </t>
         <t>
-          Injection on the sending node used the bputa utility (ION's CFDP
-          "put file" of the pre-serialized .bundle bytes). This required
-          adding a minimal <tt>## begin cfdpadmin</tt> section (enabling bputa,
-          discard=0, segsize=1400, requirecrc=0) to both nodes' ION
-          configuration files and restarting; see the updated .rc files in
-          impl/real-cpb-ion-test/config/ and the start-*.sh scripts. cfdpclock
-          and bputa were confirmed RUNNING via cfdpadmin before the test
-          firings.
+          Phase 1 (72 messages): Each of the three real nodes sent the eight
+          quirky one-liner payloads with-CPB (using the eight adversarial
+          probabilities 0.65..0.99) to each of the three dedicated "my nodes"
+          (gateway 268485000, Moon 268484801, Mars 268484820). Bundles were
+          created with source = sending real EID and injected via bputa to the
+          destination cfdp entity after cfdpadmin update (enabling bputa,
+          discard=0, segsize=1400, requirecrc=0). cfdpclock + bputa were
+          confirmed running on the injector before each batch.
         </t>
         <t>
-          All 16 bundles (8 with-CPB, 8 plain) were successfully injected,
-          transmitted over the activated UDPCL contact, and delivered. Payload
-          delivery was confirmed on the receiving node via bpsink "ION event:
-          Payload delivered" events (both "plain-N" and "live-activated-N"
-          payloads). The bundles carrying the experimental CPB extension block
-          (type 200) crossed the real ION stack end-to-end without error or
-          silent drop.
+          Phase 2 (32 messages, test nodes to each other ONLY): The eight
+          quirky payloads were sent bidirectional (Moon&#x2192;Mars and
+          Mars&#x2192;Moon), both with-CPB and plain (no CPB block). Bundles
+          were created with source = originating emulated EID and destination =
+          the other emulated EID, then bputa-injected from soulkiller to the
+          destination test entity's cfdp number (to 268484820 for all
+          Moon&#x2192;Mars bundles; to 268484801 for all Mars&#x2192;Moon
+          bundles). This batch was strictly between the two test nodes; no
+          real nodes, gateway 000, or published nodes (008/800/657) were
+          involved.
         </t>
         <t>
-          Measured overhead on the actual bundles: 51 bytes for the
-          reference-encoded CPB (float16 default probability, path array,
-          timestamp, validity duration, metric type, confidence) plus its BTSD
-          wrapper, relative to the minimal plain BPv7 + payload bundle.
+          All bundles (104 total) were produced by the reference encoder,
+          successfully injected, and appeared in bplist for the target EIDs
+          (frequently "Queued for forwarding to .0" or destination .12160 on
+          the reals). With-CPB bundles measured 51 B overhead relative to
+          otherwise identical plain bundles. The 32 test-to-each-other .bundle
+          files (plus representative 72-batch and per-sender captures) plus
+          snapshot copies are preserved under
+          impl/real-pwg-deployment/timeline1/ (cpb_test_to_each_other/,
+          cpb_with_verification/, receive_logs/, etc.), with full command
+          history and status in real_cpb_packet_test/LIVE_TRANSMISSION_STATUS.txt
+          and the timeline1 snapshot (also rsynced to orin backup and tarballed).
         </t>
         <t>
-          Full artifacts and reproduction details for the real test (including
-          the exact 16 bundles, the cfdpadmin rc additions that enabled bputa,
-          custom recv_cpb.py that scans received bundle bytes for the CPB block
-          and decodes it, packet.py reference assembler, receiver_daemon.py,
-          LIVE_TRANSMISSION_STATUS.txt, FINAL_INSTRUCTIONS.txt, and the
-          real_cpb_ion_results.md summary with all commands and observed
-          limitations) live in impl/real-cpb-ion-test/.
+          Wire-format and intact-CPB evidence: Wireshark 4.6.4 (with tshark)
+          was installed on soulkiller; the presence of "Bundle Protocol",
+          "DTN Bundle Protocol Version 7 (BPv7)", and "BPv7 Block Type"
+          dissectors was confirmed via tshark -G protocols. A detailed manual
+          CBOR + hex dissection (with pcap conversion) was performed on the
+          concrete example moon_to_mars_with_cpb_01_save.bundle (121 B, first
+          quirky line with prob ~0.65). The full wire bytes are:
+        </t>
+        <artwork type="ascii-art"><![CDATA[
+88070000498201821a1000c0c101498201821a1000c0d401498201821a1000c0
+c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
+8518c80011005150a200f939330181821a1000c0d4f9393384010000581b7361
+7665206120686f7273652c2072696465206120636f77626f79
+]]></artwork>
+        <t>
+          Primary block (first CBOR array, 40 bytes): version 7, flags 0,
+          CRC type 0, source ipn:268484801.1, destination ipn:268484820.1,
+          report-to same as source, creation timestamp [1780731656, 0],
+          lifetime 3600. This matches the primary constructed by
+          packet.py:create_bundle_with_cpb.
+        </t>
+        <t>
+          Previous Node block (type 6): [6, 0, source EID].
+        </t>
+        <t>
+          Hop Count block (type 10): [10, 0, [0, 32]].
+        </t>
+        <t>
+          Extension block 200 (the CPB, bytes starting at offset 0x40):
+          [200, 0, 0x11 (REPLICATE|DISCARD), 0, BTSD]. The BTSD bstr is
+          50a200f939330181821a1000c0d4f93933, which decodes to the canonical
+          CBOR map {0: 0.64990234375 (float16 0xf93933 per draft 3.4),
+          1: [[268484820, 0.64990234375]]}. This is byte-exact to the output
+          of cpb.encode_btsd() for the dict passed from create_bundle_with_cpb
+          (F_DEFAULT_PROB and single F_PATH_ENTRIES entry; no F_VERSION key
+          in the runtime encoder used for these runs).
+        </t>
+        <t>
+          Payload block (type 1): the 27-byte string "save a horse, ride a
+          cowboy".
+        </t>
+        <t>
+          The CPB block and its single direct path entry were bit-for-bit
+          faithful to the encoder output; no appended path entries or
+          probability mutations were present. The same structure (varying only
+          the probability value and target node in the path entry) appears in
+          all 16 with-CPB bundles from the Phase-2 batch.
+        </t>
+        <t>
+          Receive-side collection: bpsink + receiver.py (bprecv + CPB scanner)
+          + recv_cpb.py were run on the emulated EIDs/services (.1 and .12160)
+          across the three reals for a 30 s drain window immediately after the
+          32 test-to-each-other injections. 12 log files were captured and
+          snapshotted (under timeline1/receive_logs/). Zero quirky payload
+          strings were observed in the logs, and no receive-side CPB decodes
+          were triggered in that window. This is consistent with the CFDP-wrapped
+          bputa injection model and the emulated targets (plan + cfdp entity
+          only; bundles frequently remained in bplist forwarding queues rather
+          than local app delivery to a .1 endpoint).
+        </t>
+        <t>
+          Decode verification (post-injection): recv_cpb.py and the receiver
+          scanner were run against the source .bundle files and the from_*
+          captures. Every with-CPB bundle decoded successfully to its original
+          map (single direct path entry + the assigned adversarial probability
+          for that quirky line). No path updates or probability changes were
+          observed.
+        </t>
+        <t>
+          Full artifacts and reproduction details (the exact 32 bidirectional
+          test-to-each-other bundles with+plain, representative 72-batch
+          artifacts, pcap conversion scripts, the detailed bundle breakdown,
+          all receiver/bpsink/recv_cpb logs, bplist snapshots before/after,
+          the three host*.rc + start-*.sh, the generated ION-PWG-DTN-FAQ.pdf,
+          updated LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each
+          other ONLY - completed" and "CPB decode verification" paragraphs,
+          timeline1 snapshot directory, and tarballs) live in
+          impl/real-pwg-deployment/timeline1/ and real_cpb_packet_test/.
         </t>
         <t>
           <strong>Limitations of this validation (distinct from the
-          simulation).</strong> Only two nodes and a single link were
-          exercised (no multi-hop topology, no CGR or other router
-          consumption of the CPB confidence values for actual forwarding
-          decisions). Delivery of the payload ADU was confirmed, but full
-          extension-block access at the receiver (for routing or other
-          processing) was not performed in-band during the run; bpsink
-          surfaces only the payload, and the Orin ION build lacked a 'bprecv'
-          binary (bprecvtest and bpcpd for CFDP file receive of the bundle
-          bytes were the practical mechanisms). Injection of pre-formed
-          bundles containing the experimental block required bputa (CFDP "put
-          file"); standard bpsource does not provide that path. Stable
-          operation of cfdpclock/bpcpd on the aarch64 Orin required raising
-          kernel.shmmax and aggressive SDR/semaphore cleanup before ionstart.
-          The test therefore validates the <em>data plane</em> for the CPB
-          block on a production BPv7 implementation (creation, wire-format
-          survival, delivery) but does not constitute a full routing-policy
-          experiment on real hardware. No BPSec was applied in this run.
+          simulation).</strong> The emulated targets (268484801/820) are plan +
+          cfdp-entity constructs only; no full ION daemons run on those EIDs.
+          Consequently, many bundles remained in bplist "Queued for forwarding
+          to .0" (or destination .12160) state rather than being delivered as
+          app data to a .1 endpoint that bpsink or a native receiver would
+          print. The Phase 2 (32-message) batch was injected locally on
+          soulkiller via bputa to the cfdp entity for the destination test
+          node (a short "span" within the plan/CFDP layer on one host). bpsink
+          and receiver runs during the 30 s collection window surfaced zero
+          quirky payloads and did not trigger receive-side CPB decodes. Full
+          in-band consumption of the CPB values by ION CGR (or DTNEx) for
+          actual forwarding decisions was not exercised. Injection of
+          pre-formed bundles required bputa (CFDP "put file"); standard
+          bpsource does not provide an equivalent path for embedding an
+          experimental extension block. Stable operation required the usual
+          SDR/shmmax/key/cfdp setup plus the UFW exemptions noted above.
+          No BPSec was applied in these runs. The validation therefore
+          demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
+          real multi-node Tailscale mesh with DTNEx, bplist visibility, and
+          wire-format survival of the unknown ext block 200 carrying the CPB
+          CBOR map (float16 probabilities + path entries) exactly as encoded,
+          but does not constitute a full multi-hop routing-policy experiment
+          with in-band CPB consumption on real hardware.
         </t>
       </section>
 
@@ -2224,15 +2257,28 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
             (<xref target="reference-implementation"/>) does not count as
             an independent implementation for this purpose, since it was
             developed alongside the specification by the same author.
-            Partial data-plane evidence now exists on NASA ION v4.1.0: the
-            reference-encoded CPB (ext block 200 + BTSD) was created for the
-            eight adversarial probabilities, injected via bputa (after
-            minimal cfdpadmin rc update), transmitted over live UDPCL, and
-            delivered (8/8 with-CPB and 8/8 plain; 51-byte measured overhead;
-            see <xref target="exp-real-validation"/> and
-            impl/real-cpb-ion-test/). Full consumption of CPB values by ION
-            CGR (or equivalent) for forwarding decisions, multi-hop
-            operation, and BPSec-protected bundles remain open.
+            Expanded partial data-plane evidence now exists on the NASA ION
+            v4.1.0 PWG three-node + emulated-target testbed (soulkiller 268485122,
+            orin 268485121, horus 268485123, plus emulated Moon 268484801, Mars
+            268484820, and gateway 268485000). The reference-encoded CPB (ext
+            block 200 + BTSD with canonical CBOR float16 map) was created for
+            the eight adversarial probabilities plus the exact quirky one-liners,
+            injected via bputa (after cfdpadmin entity setup for the emulated
+            EIDs), carried over live UDPCL on the Tailscale mesh with DTNEx
+            active, and remained intact on the wire (demonstrated via manual
+            CBOR/hex parse and Wireshark 4.6.4 with BPv7/Bundle/BPv7 Block Type
+            dissectors; see the detailed breakdown of
+            moon_to_mars_with_cpb_01_save.bundle in the updated
+            <xref target="exp-real-validation"/>). 72 messages (3 reals &#xD7; 8
+            quirky &#xD7; 3 dedicated targets with-CPB) plus 32 messages
+            (bidirectional between the two emulated test nodes, with-CPB + plain)
+            were executed. UFW exemptions for the DTN ports (4556/4557/12160)
+            were added on all three hosts from the Tailscale ranges (per explicit
+            operator instruction). All source .bundle files, bplist snapshots,
+            receiver logs, and timeline1 snapshot artifacts are preserved.
+            Full consumption of CPB values by ION CGR (or DTNEx) for forwarding
+            decisions, multi-hop operation with in-band updates, and
+            BPSec-protected bundles remain open.
           </dd>
           <dt>Control-theoretic stability analysis</dt>
           <dd>
