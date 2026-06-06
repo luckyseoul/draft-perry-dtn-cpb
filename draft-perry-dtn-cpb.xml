@@ -1715,20 +1715,63 @@ A3                   ; map with 3 entries
                 CGR behavior with respect to unknown extension blocks
                 (discard if can't process flag) is consistent with the
                 design in <xref target="backwards-compat"/>.</li>
-            <li><strong>Real ION Testbed (soulkiller/Orin, 2026-06):</strong>
-                See <xref target="exp-real-validation"/> for the full
-                description. In brief: 8/8 with-CPB (127 B) and 8/8 plain
-                (76 B) reference-encoded bundles (using the eight
-                adversarial probabilities 0.65..0.97) were created with the
-                CPB in ext block 200 + BTSD, injected via bputa (after
-                cfdpadmin rc update), transmitted over live ION UDPCL on
-                the activated 268485122&#x2194;268485121 link, and delivered
-                (bpsink confirmed). 51 B measured CPB overhead. Artifacts
-                (bundles/*.b64, rc, recv_cpb.py decoder, results) in
-                impl/real-cpb-ion-test/. This validates the CPB data plane
-                on a production stack but was not a full routing-policy
-                experiment (see limitations in the subsection). SDR shmmax +
-                cleanup required for stable cfdp on Orin.</li>
+            <li><strong>Real ION Testbed (PWG 3-node: soulkiller/Orin/Horus, 2026-06, timeline1):</strong>
+                Full three-node deployment on the IPNSIG PWG Tailscale mesh
+                (samo.grasic@ account): soulkiller (268485122, TS 100.91.23.41),
+                orin (Jetson Orin Nano, 268485121, TS 100.92.115.65), horus
+                (268485123, TS 100.65.168.37), plus the public gateway
+                (268485000 / 268550657 reachability via 100.96.108.37).
+                All nodes run ION (UDPCL :4556) with long-duration bidirectional
+                contacts (+1 +8640000), cfdp + bputa support for CPB injection,
+                ionsec default key, and DTNEx for dynamic CBOR contact/probability
+                exchange on .12160/.12161. Exact current rcs, robust start-*.sh
+                (killm + shm clean + sysctl shmmax=268435456 + key ensure +
+                ionstart + cfdpadmin), systemd templates, and the short
+                ION-PWG-DTN-FAQ.pdf live in ion-config/ (also backed up to
+                nicknite and orin/horus).
+                <p>
+                Primary validation (see <xref target="exp-real-validation"/>):
+                8/8 with-CPB (127 B) and 8/8 plain (76 B) bundles using the
+                eight adversarial probabilities (0.65..0.97) plus the exact
+                quirky one-liner payloads ("save a horse, ride a cowboy",
+                "you're like a long-tailed cat in a room full of rocking chairs",
+                etc.) were created via the reference packet.py + cpb.py (F_VERSION=7,
+                8-entry F_PATH_ENTRIES), injected with bputa after cfdpadmin
+                update, carried over the live activated 268485122&#x2194;268485121
+                link, and delivered (bpsink + recv_cpb.py decode on the wire bytes).
+                51 B CPB overhead measured. Artifacts under impl/real-cpb-ion-test/
+                and real_cpb_packet_test/ at the top of the working tree.
+                </p>
+                <p>
+                Side experiment (HDTN high-rate bulk transfer on the same
+                Tailscale underlay): Attempted to send a 527 MB public-domain
+                1080p "Night of the Living Dead" (split to ~66 8 MiB chunks)
+                using HDTN one-process cut-through TCPCLv4 (soulkiller in
+                pinned docker on alt ports 4557/4558, orin native) + bpsendfile
+                with fallback opportunistic TCPCL + contact plans at 1 Gbps
+                rate / 0 owlt. The TCPCL link came up (keepalives, port open),
+                but data-plane delivery was 0 bundles received in HDTN stats
+                (opportunistic links created then "closed cleanly by peer";
+                bpsendfile processes accumulated with no egress of the file
+                payloads). After repeated attempts the entire HDTN experiment
+                (docker image/container, full source trees on all hosts,
+                chunks, launch/send scripts, contact-plan JSONs, receive dirs)
+                was deliberately and completely removed to return the setup to
+                a stable, maintainable ION + DTNEx + CPB configuration on the
+                live PWG network (per explicit request to avoid further
+                build/debug pain around the DTNEx side and keep things
+                production-like for the CPB work).
+                </p>
+                This remains a data-plane + integration validation on a
+                real activated link rather than a full multi-node routing-policy
+                experiment with DTNEx-updated graphs. SDR shmmax, key, and
+                cfdp bputa entity setup are required for repeatable runs.
+                Current deployment details (how to ping with bping .3/.4,
+                how to start/stop, dashboard, common SDR/key/plan issues,
+                exact rc sections, Tailscale underlay notes) are captured in
+                the generated ION-PWG-DTN-FAQ.pdf and the three host*.rc +
+                start-*.sh files (also in this repo under impl/real-pwg-deployment/
+                for the timeline1 snapshot).</li>
           </ul>
         </dd>
       </dl>
