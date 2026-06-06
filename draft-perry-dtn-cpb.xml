@@ -1742,26 +1742,6 @@ A3                   ; map with 3 entries
                 51 B CPB overhead measured. Artifacts under impl/real-cpb-ion-test/
                 and real_cpb_packet_test/ at the top of the working tree.
                 </p>
-                <p>
-                Side experiment (HDTN high-rate bulk transfer on the same
-                Tailscale underlay): Attempted to send a 527 MB public-domain
-                1080p "Night of the Living Dead" (split to ~66 8 MiB chunks)
-                using HDTN one-process cut-through TCPCLv4 (soulkiller in
-                pinned docker on alt ports 4557/4558, orin native) + bpsendfile
-                with fallback opportunistic TCPCL + contact plans at 1 Gbps
-                rate / 0 owlt. The TCPCL link came up (keepalives, port open),
-                but data-plane delivery was 0 bundles received in HDTN stats
-                (opportunistic links created then "closed cleanly by peer";
-                bpsendfile processes accumulated with no egress of the file
-                payloads). After repeated attempts the entire HDTN experiment
-                (docker image/container, full source trees on all hosts,
-                chunks, launch/send scripts, contact-plan JSONs, receive dirs)
-                was deliberately and completely removed to return the setup to
-                a stable, maintainable ION + DTNEx + CPB configuration on the
-                live PWG network (per explicit request to avoid further
-                build/debug pain around the DTNEx side and keep things
-                production-like for the CPB work).
-                </p>
                 This remains a data-plane + integration validation on a
                 real activated link rather than a full multi-node routing-policy
                 experiment with DTNEx-updated graphs. SDR shmmax, key, and
