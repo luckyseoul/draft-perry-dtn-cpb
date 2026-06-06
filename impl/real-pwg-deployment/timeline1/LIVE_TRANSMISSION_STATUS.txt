@@ -1,0 +1,8 @@
+LIVE_TRANSMISSION_STATUS (from real_cpb_packet_test/)
+
+8 real bundles with probs 0.65/0.72/... injected via bputa on the activated link.
+Decode on receiver with recv_cpb.py.
+
+Blocker was UDPCL not delivering in some runs; fixed with start-*.sh + bprecvtest + bputa loop + entity setup.
+
+Current (post all work): the 3-node PWG setup with the exact rcs and start scripts in this snapshot is the stable base for repeating the 8/8 CPB vs plain with the quirky one-liner payloads.
