@@ -1,0 +1,19 @@
+To: samo@grasic.net
+Subject: Request: Add three new PWG nodes (soulkiller/orin/horus) for DTN/CPB experiments
+
+Hi Samo,
+
+Request to add three new nodes to the PWG Tailscale mesh for DTN experiments:
+
+- soulkiller: 100.91.23.41 , node 268485122
+- orin: 100.92.115.65 , node 268485121 (Jetson Orin Nano)
+- horus: 100.65.168.37 , node 268485123 (third host)
+
+Proposed static long contacts (+1 +8640000) and plans via the gateway 268485000 for published reachability, plus direct TS UDPCL between the three for the mesh.
+
+Goal: real CPB (draft-perry-dtn-cpb-00) 8/8 vs plain bundles on live ION with exact ref encoder, bputa injection, bpsink delivery + decode. Also exploring HDTN side-by-side for high-rate bulk (public domain movies) on the 1 Gbps TS underlay while keeping the ION/DTNEx side stable.
+
+Happy to share logs, pcaps, artifacts, and results.
+
+Thanks,
+Nick (luckyseoul / nick@perrybrandsllc.com)
