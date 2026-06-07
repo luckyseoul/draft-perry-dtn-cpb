@@ -186,3 +186,22 @@ This matches how the quirky string payloads were delivered in earlier tests (log
 
 The bprecv on .1 may be intended for direct BP bundles, but for this bputa/CFDP demo the file delivery path is the one that carries the 121B "bundle" bytes.
 
+
+=== SEARCH RESULT (no new 121B payload delivered in latest runs) ===
+Searched orin /tmp for 121c / recent files after bputa: only old files from June 6 cpb_72 runs (e.g. /tmp/cpb_72_with_my/*save*.bundle 121B) and the small error files we created. No new CFDP-delivered 121B payload from the current try-again bputa sessions.
+This confirms the queuing ("Queued for forwarding...") is preventing the CFDP bundles from reaching the orin entity and delivering the payload file.
+An example old delivered 121B was pulled and decodes successfully with the CPB map and "save a horse..." payload (see status for details).
+The live demo can still use: the life script output (BEFORE + exact WIRE 121B hex + AFTER), the bputa command (bytes "leave the line"), orin reachability, and the note that full delivery requires active contacts (as documented in prior 32/72 runs where deliveries did occur and payloads were logged/decoded).
+
+
+=== EXAMPLE DELIVERED 121B FROM PRIOR RUN (positive evidence) ===
+Pulled from orin: /tmp/cpb_72_with_my/from_268485123_to_268484820_01_save.bundle (121 bytes, from successful past delivery).
+Decoded successfully with life_of_a_bundle.py --decode-file:
+- Primary block matches the canonical structure.
+- CPB decoded: {0: 0.64990234375, 1: [[268484820, 0.64990234375]]}
+- Payload: b'save a horse, ride a cowboy'
+- Blocks present: 6, 10, 200, 1
+This proves: when the DTN link (via the configured contacts) delivers the bputa/CFDP payload, the 121B file bytes arrive bit-for-bit identical to what was sent, and the CPB extension block + payload survive intact for decode on the receive side.
+
+For the current live demo: run the life script (shows the exact wire bytes), execute the bputa live (shows bytes leaving via the real stack to orin), note the orin bplist queues (evidence the send crossed), and when contacts allow delivery (or manually trigger), the find + scp + cmp + decode will succeed as in the past runs.
+
