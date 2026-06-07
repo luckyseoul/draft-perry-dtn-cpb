@@ -224,3 +224,28 @@ Test nodes (Moon 268484801 <-> Mars 268484820) to each other ONLY - completed (2
 - 32 .bundle copied to snapshot/cpb_test_to_each_other/.
 - Status, orin backup, tarball updated.
 
+
+=== 2026-06-07 life-of-bundle live demo (filling in) ===
+- Orin reachable via nick@orin (TS 100.92.115.65, idle but ssh worked).
+- Ran full quickref sequence: bprecv listener on ipn:268485121.1, python life_of_a_bundle.py --dst 268485121 --write-bundle (produced exact 121B canonical with BEFORE/INTERNAL/WIRE hex matching draft artwork + AFTER decode of CPB {0:0.6499, 1:[[268484820,0.6499]]} + "save a horse..." payload).
+- bputa /tmp/live_demo_....bundle ipn:268485121.64 (and note on trying .1).
+- No file landed in short window (bplist on orin: bundles "Queued for forwarding to 'ipn:268484800.0'", report count 75; long contacts / plan state).
+- quickref updated in place + copied to snapshot with attempt + self-demo notes.
+- Committed to timeline1 as 3131c27 (quickref 7301B + two 121B .bundle files).
+- Push blocked by "Could not resolve host: github.com" (recurring DNS in this env; local commit is the artifact).
+- The 121B trace + quickref is the ready terminal reference for pptx live demo. cmp will close when a contact is active or CFDP file delivery dir is used on orin for the bputa payload.
+
+Reference files now in snapshot:
+  life_of_a_bundle_quickref.txt
+  live_demo_20260607_083850.bundle (121B)
+  proof_simple.bundle (121B)
+
+
+=== 2026-06-07 life-of-bundle: 10h post-attempt check (max_runtime task) ===
+Long background status task (started after the bputa + listener sequence) ended after 10h.
+At check time on orin: cpb_live empty, bundles still queued (to 268484801.0 this time), no log hits for our payload/EID.
+No 121B file appeared from the send (confirmed by find for 121c and recent *received*/*live* files -- only prior test logs).
+Local 121B canonicals persisted.
+This confirms the contact plan state for test/emulated EIDs was not draining during that period.
+Action: the reproducible 121B trace (via life_of script) + successful bputa while orin reachable + queued evidence is the data-plane record. cmp proof waits for hot contact or CFDP file path on orin.
+
