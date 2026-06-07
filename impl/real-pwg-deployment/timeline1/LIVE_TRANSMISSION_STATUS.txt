@@ -261,3 +261,15 @@ Executed full sequence again per user "try again":
 - Updated quickref with details + synced to snapshot.
 - This run confirms: local trace + bputa injection work; cross-node raw capture blocked by routing queues and env (bprecv not found in non-login ssh).
 
+
+=== 2026-06-07 life demo: bprecv discovery + CFDP file path (keep at it) ===
+Multiple "try again" runs:
+- Listener setup with bprecv produced only small error files (45-71 bytes containing "bprecv: No such file or directory").
+- Discovery on orin: which bprecv = NONE; find /usr/local -name bprecv empty; ls /usr/local/bin shows bpadmin/bpclock etc but no bprecv.
+- bputa / CFDP transfer of the 121B file as payload happens, but the raw bprecv capture on .1 doesn't work because the binary is not present on orin.
+- Queues persist ("Queued for forwarding...", report counts static or slow).
+- Updated quickref with orin-specific capture instructions: use find for ~121c files in /tmp (the CFDP delivered payload file should be the exact bytes of the sent .bundle).
+- Synced quickref + status to snapshot.
+- Committed on timeline1.
+- The script's 121B canonical (BEFORE/WIRE hex/AFTER) + bputa execution while orin reachable is the demonstrated part. Full cmp awaits either bprecv install on orin or successful CFDP file delivery + pull of the 121B payload file.
+
