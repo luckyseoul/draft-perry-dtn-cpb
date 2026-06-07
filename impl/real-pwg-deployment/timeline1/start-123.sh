@@ -21,3 +21,13 @@ ionstart -I "$RC_FILE" > "$LOG_FILE" 2>&1 &
 sleep 5
 ps aux | grep -E '[b]pclock|[i]pnfw|[u]dpclo|[c]fdpclock|[b]puta' | cat || true
 tail -10 "$LOG_FILE" || true
+
+# Launch DTNEx for dynamic contact graph (after ION)
+if [ -x /usr/local/bin/dtnex ] && [ -f /home/nick/ion-dtn-dtnex/dtnex-horus.conf ]; then
+  pkill -x dtnex 2>/dev/null || true
+  sleep 1
+  echo "Starting DTNEx for horus..."
+  cd /home/nick/ion-dtn-dtnex
+  nohup /usr/local/bin/dtnex -c dtnex-horus.conf >> /tmp/dtnex-horus.log 2>&1 &
+  echo "DTNEx horus PID $!"
+fi

@@ -30,6 +30,16 @@ a range   +1 +8640000 268485121 268485123 1
 a contact +1 +8640000 268485123 268485121 10000000
 a range   +1 +8640000 268485123 268485121 1
 
+# Dedicated emulated Moon (268484801) and Mars (268484820) IPNs (user provided)
+a contact +1 +8640000 268485121 268484801 10000000
+a range   +1 +8640000 268485121 268484801 1
+a contact +1 +8640000 268484801 268485121 10000000
+a range   +1 +8640000 268484801 268485121 1
+a contact +1 +8640000 268485121 268484820 10000000
+a range   +1 +8640000 268485121 268484820 1
+a contact +1 +8640000 268484820 268485121 10000000
+a range   +1 +8640000 268484820 268485121 1
+
 ## end ionadmin
 
 ## begin bpadmin
@@ -62,6 +72,9 @@ a plan 268485123 udp/100.65.168.37:4556
 a plan 268485008 udp/100.96.108.37:4556
 a plan 268484800 udp/100.96.108.37:4556
 a plan 268550657 udp/100.96.108.37:4556
+# Dedicated emulated Moon (268484801) and Mars (268484820) IPNs (via gateway, per user emulation)
+a plan 268484801 udp/100.96.108.37:4556
+a plan 268484820 udp/100.96.108.37:4556
 ## end ipnadmin
 
 ## begin ionsecadmin
@@ -77,4 +90,12 @@ m discard 0
 m requirecrc 0
 m segsize 1400
 s "bputa"
+# Entities for published IPN nodes (268485008, 268484800, 268550657) to send the .bundle files via bputa
+a entity 268485008 bp ipn:268485008.64 5 0 0
+a entity 268484800 bp ipn:268484800.64 5 0 0
+a entity 268550657 bp ipn:268550657.64 5 0 0
+# Entities for dedicated emulated Moon (268484801) and Mars (268484820), and gateway 268485000
+a entity 268485000 bp ipn:268485000.64 5 0 0
+a entity 268484801 bp ipn:268484801.64 5 0 0
+a entity 268484820 bp ipn:268484820.64 5 0 0
 ## end cfdpadmin
