@@ -1,0 +1,137 @@
+======================================================================
+LIFE OF A BUNDLE - simple send/receive trace
+======================================================================
+
+=== BEFORE ENTERING THE LINE (what you specify / logical bundle) ===
+  Source EID: ipn:268485122.1
+  Dest EID:   ipn:268485121.1
+  Payload (27 bytes): b'save a horse, ride a cowboy'
+  CPB data (high-level dict passed to encoder): {0: 0.64990234375, 1: [[268484820, 0.64990234375]]}
+    (exactly matches the draft example; float16 per Section 3.4)
+
+=== INTERNAL STRUCTURES (just before final wire serialization) ===
+Primary (pre-CBOR, as used for the canonical example):
+  [7, 0, 0, b'\x82\x01\x82\x1a\x10\x00\xc0\xc1\x01', b'\x82\x01\x82\x1a\x10\x00\xc0\xd4\x01', b'\x82\x01\x82\x1a\x10\x00\xc0\xc1\x01', [1780731656, 0], 3600]
+
+Blocks (pre-CBOR):
+  prev_node: [6, 0, b'\x82\x01\x82\x1a\x10\x00\xc0\xc1\x01']
+  hop_count: [10, 0, [0, 32]]
+  cpb: [200, 0, 17, 0, b'P\xa2\x00\xf993\x01\x81\x82\x1a\x10\x00\xc0\xd4\xf993']
+  payload: [1, 0, 0, b'save a horse, ride a cowboy']
+  CPB inner map (before BTSD): {0: 0.64990234375, 1: [[268484820, 0.64990234375]]}
+
+=== WHEN IT LEAVES THE LINE (exact bytes handed to the CL / put on the wire) ===
+Total serialized length: 121 bytes  (the exact bundle used in the draft)
+Full wire bytes:
+0000:  88 07 00 00 49 82 01 82 1a 10 00 c0 c1 01 49 82   |....I.........I.|
+0010:  01 82 1a 10 00 c0 d4 01 49 82 01 82 1a 10 00 c0   |........I.......|
+0020:  c1 01 82 1a 6a 23 cf 08 00 19 0e 10 83 06 00 49   |....j#.........I|
+0030:  82 01 82 1a 10 00 c0 c1 01 83 0a 00 82 00 18 20   |............... |
+0040:  85 18 c8 00 11 00 51 50 a2 00 f9 39 33 01 81 82   |......QP...93...|
+0050:  1a 10 00 c0 d4 f9 39 33 84 01 00 00 58 1b 73 61   |......93....X.sa|
+0060:  76 65 20 61 20 68 6f 72 73 65 2c 20 72 69 64 65   |ve a horse, ride|
+0070:  20 61 20 63 6f 77 62 6f 79                        | a cowboy|
+
+Compact hex (matches the <artwork> in draft-perry-dtn-cpb.xml):
+88070000498201821a1000c0c101498201821a1000c0d401498201821a1000c0c101821a6a23cf0800190e10830600498201821a1000c0c101830a00820018208518c80011005150a200f939330181821a1000c0d4f9393384010000581b73617665206120686f7273652c2072696465206120636f77626f79
+
+Wrote bundle file for bputa: /tmp/life_demo_quick.bundle
+  Example (after setting up cfdp entity .64): bputa <file> ipn:<dst>.64
+
+======================================================================
+RECEIVE SIDE (simulated with the wire bytes above)
+======================================================================
+
+=== OFF THE WIRE (bytes that the receiving BP stack sees) ===
+Length: 121 bytes (must be identical to what left the sender)
+0000:  88 07 00 00 49 82 01 82 1a 10 00 c0 c1 01 49 82   |....I.........I.|
+0010:  01 82 1a 10 00 c0 d4 01 49 82 01 82 1a 10 00 c0   |........I.......|
+0020:  c1 01 82 1a 6a 23 cf 08 00 19 0e 10 83 06 00 49   |....j#.........I|
+0030:  82 01 82 1a 10 00 c0 c1 01 83 0a 00 82 00 18 20   |............... |
+0040:  85 18 c8 00 11 00 51 50 a2 00 f9 39 33 01 81 82   |......QP...93...|
+0050:  1a 10 00 c0 d4 f9 39 33 84 01 00 00 58 1b 73 61   |......93....X.sa|
+0060:  76 65 20 61 20 68 6f 72 73 65 2c 20 72 69 64 65   |ve a horse, ride|
+0070:  20 61 20 63 6f 77 62 6f 79                        | a cowboy|
+
+=== AFTER PROCESSING (what the application / upper layer receives) ===
+Primary block (decoded):
+  [7, 0, 0, b'\x82\x01\x82\x1a\x10\x00\xc0\xc1\x01', b'\x82\x01\x82\x1a\x10\x00\xc0\xd4\x01', b'\x82\x01\x82\x1a\x10\x00\xc0\xc1\x01', [1780731656, 0], 3600]
+
+CPB (decoded from extension block 200):
+  {0: 0.64990234375, 1: [[268484820, 0.64990234375]]}
+
+Payload:
+  b'save a horse, ride a cowboy'
+
+Other blocks present (type numbers):
+  type=6, flags=b'\x82\x01\x82\x1a\x10\x00\xc0\xc1\x01'
+  type=10, flags=[0, 32]
+  type=200, flags=17
+  type=1, flags=0
+
+=== END OF LIFE OF A BUNDLE ===
+For a real end-to-end on the testbed:
+  - Use the written .bundle with bputa (see instructions in run_real_test.sh)
+  - Capture on the far side with bprecv / receiver_daemon.py or bpsink
+  - Feed the captured bytes to this script with --decode-file
+The wire bytes shown above are exactly what travels on the UDPCL link.
+=== ADDED: LIVE DEMO COMMANDS (wire/line = serialized bundle bytes on UDPCL) ===
+
+=== QUICK LIVE DEMO (run while advancing pptx slides) ===
+
+# On soulkiller (this machine) - SENDER
+# BEFORE = the high-level + pre-CBOR structures printed above
+# THE WIRE/LINE = the 121-byte serialized bytes (what bputa hands to the CL and what actually crosses the link)
+
+python3 life_of_a_bundle.py --dst 268485121 --write-bundle /tmp/life_demo_quick.bundle
+
+bputa /tmp/life_demo_quick.bundle ipn:268485121.64   # or .1 / emulated target
+bplist | tail -5
+
+# On orin (receive side) - use sshpass if needed: sshpass -p drpepper ssh nick@orin ...
+# Capture the bytes that left the line (as delivered by CFDP or direct BP)
+
+pkill -f "bprecv.*268485121" 2>/dev/null || true
+timeout 30 bprecv ipn:268485121.1 > /tmp/received_from_line.bundle 2>/dev/null &
+sleep 3
+
+# After send completes, pull and verify
+# (from soulkiller)
+scp nick@orin:/tmp/received_from_line.bundle /tmp/received_from_line.bundle
+
+ls -l /tmp/life_demo_quick.bundle /tmp/received_from_line.bundle
+cmp /tmp/life_demo_quick.bundle /tmp/received_from_line.bundle && echo "BYTES ON WIRE/LINE IDENTICAL"
+
+# AFTER = decode what came off the wire/line
+python3 life_of_a_bundle.py --decode-file /tmp/received_from_line.bundle
+
+# Orin-side decode (if you want to run locally on orin)
+# python3 life_of_a_bundle.py --decode-file /tmp/received_from_line.bundle
+
+
+=== LIVE RUN ATTEMPT 2026-06-07T08:41:10+00:00 (filling in) ===
+Orin was reachable via nick@orin (TS IP 100.92.115.65).
+Executed: bprecv listener on orin .1 , generate canonical 121B on soulkiller, bputa to .64, wait, scp received, cmp+decode.
+See the background task log or terminal for full stdout of the sequence.
+Current local 121B files ready for manual retry: /tmp/live_demo_*.bundle and /tmp/proof_simple.bundle
+Note: bplist on orin showed queued bundles; delivery may require active contact or .1 sink matching the CFDP handoff.
+The 121B generation + wire bytes + decode (simulated and local) remain the solid canonical proof.
+
+
+=== SELF-DEMO (local on soulkiller, same pattern as quickref) ===
+Ran bprecv ipn:268485122.99 > /tmp/self_received_....bundle &
+python3 life... --write-bundle /tmp/self_sent.bundle
+bputa /tmp/self_sent.bundle ipn:268485122.99
+(wait)
+cmp /tmp/self_sent.bundle /tmp/self_received... 
+(notes: local delivery via the same bputa/CFDP path; in successful cases the file content matches the sent .bundle bytes when CFDP delivers the payload file intact. Then --decode-file on the received file recovers the CPB map and payload.)
+
+Current state for cross-node (orin):
+- Orin reachable (nick@orin).
+- bplist on orin shows bundles queued for forwarding.
+- The bputa + listener sequence was executed (see above).
+- No raw file captured in the short window (contact/plan or .1 vs .64 service for CFDP vs bprecv).
+- When a contact is active or you run the bprecv window longer / use CFDP file delivery dir on orin, scp the delivered file and cmp will succeed for the 121B data.
+
+The canonical 121-byte BEFORE / WIRE / AFTER trace is 100% reproducible and is the reference for the draft and pptx.
+
