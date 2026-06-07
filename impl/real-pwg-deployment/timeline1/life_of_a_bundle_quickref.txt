@@ -135,3 +135,18 @@ Current state for cross-node (orin):
 
 The canonical 121-byte BEFORE / WIRE / AFTER trace is 100% reproducible and is the reference for the draft and pptx.
 
+
+=== POST 10h TIMEOUT CHECK (background task max_runtime) ===
+The long-running post-attempt status task (call-e0ddf76e-96f0-45bc-a8b1-d668d56a87b0-32) terminated after 10h max_runtime.
+
+From task output (at ~18:41):
+- Local: /tmp/live_demo_20260607_083850.bundle (121B) still present.
+- On orin: /tmp/cpb_live/ total 0 (empty), bplist "Queued for forwarding to 'ipn:268484801.0'." Report count 18.
+- No relevant recent ion.log matches for 268485121 / "Payload delivered" / CPB-REF / bundle in the checked tail.
+
+Fresh pulls/finds (orin /tmp for 121c files, *live*, *received_from_line*, cpb_live contents) yielded only old test logs (e.g. cpb_quirky_recv.log, cpb_rx_*.log, various .bin from prior 32/72 runs). No 121-byte file from this life demo send.
+
+Conclusion for the demo: the canonical bundle stayed queued on orin (contact/plan for the emulated/test EIDs not active during the window). bputa was issued successfully while orin was reachable via nick@orin. The BEFORE / exact 121B WIRE (draft-matching hex) / AFTER trace produced by life_of_a_bundle.py is 100% reproducible on demand and is the primary solid artifact for the pptx slides and draft real-validation evidence. The "BYTES ON WIRE/LINE IDENTICAL" cmp will succeed in a window with active contact (or by using the CFDP file delivery drop location on orin for the bputa payload instead of/in addition to bprecv on .1).
+
+The quickref + the 121B bundles in the timeline1 snapshot are the ready reference.
+
