@@ -46,3 +46,13 @@ EOC
 echo ""
 echo "==> Ready. Example: bpsource ipn:268485${NODE}.1 \"hello from ${HOST} at \$(date)\" ipn:268485000.1"
 echo "==> Stop: ionstop; killm"
+
+# Launch DTNEx for dynamic contact graph (after ION)
+if [ -x /usr/local/bin/dtnex ] && [ -f /home/nick/ion-dtn-dtnex/dtnex-orin.conf ]; then
+  pkill -x dtnex 2>/dev/null || true
+  sleep 1
+  echo "Starting DTNEx for orin..."
+  cd /home/nick/ion-dtn-dtnex
+  nohup /usr/local/bin/dtnex -c dtnex-orin.conf >> /tmp/dtnex-orin.log 2>&1 &
+  echo "DTNEx orin PID $!"
+fi
