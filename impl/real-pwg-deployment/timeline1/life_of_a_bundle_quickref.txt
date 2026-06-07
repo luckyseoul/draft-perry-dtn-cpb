@@ -150,3 +150,15 @@ Conclusion for the demo: the canonical bundle stayed queued on orin (contact/pla
 
 The quickref + the 121B bundles in the timeline1 snapshot are the ready reference.
 
+
+=== TRY AGAIN (2026-06-07 ~18:45) ===
+- Orin reachable via nick@orin.
+- Listener: nohup timeout 90 bprecv ipn:268485121.1 > /tmp/cpb_live/received_try_again_20260607_184506.bundle &
+- Generated /tmp/try_again_20260607_234505.bundle (121B canonical via life_of_a_bundle.py).
+- bputa ... ipn:268485121.64 executed.
+- Pulled received: 71 bytes (not bundle).
+- cmp: NO MATCH (differ byte 1).
+- Decode on pulled: captured error text "bprecv: No such file or directory" (bprecv not in PATH in the non-interactive ssh env, or ION bins not found).
+- Orin bplist during/after: "Queued for forwarding to 'ipn:268484820.0'." Report count 45. Bundles not reaching the .1 sink.
+- Conclusion same as prior: contact plans not active for immediate delivery to orin test EID. The script's BEFORE/WIRE (exact 121B hex matching draft)/AFTER is the reliable proof. Live bputa + reachability demonstrated. Full byte-identical receive requires hot contact + bprecv in proper env (e.g. via start script or full PATH=/usr/local/bin:$PATH).
+

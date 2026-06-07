@@ -249,3 +249,15 @@ Local 121B canonicals persisted.
 This confirms the contact plan state for test/emulated EIDs was not draining during that period.
 Action: the reproducible 121B trace (via life_of script) + successful bputa while orin reachable + queued evidence is the data-plane record. cmp proof waits for hot contact or CFDP file path on orin.
 
+
+=== 2026-06-07 life-of-bundle TRY AGAIN (~18:45) ===
+Executed full sequence again per user "try again":
+- Listener started on orin .1 (received_try_again_20260607_184506.bundle).
+- Fresh 121B generated + bputa to .64.
+- Pulled 71B file (error text from bprecv "No such file or directory" – PATH issue in ssh shell).
+- cmp vs sent 121B: NO MATCH.
+- Orin bplist: still "Queued for forwarding to 'ipn:268484820.0'." (report count rising).
+- No delivery of the life demo bundle.
+- Updated quickref with details + synced to snapshot.
+- This run confirms: local trace + bputa injection work; cross-node raw capture blocked by routing queues and env (bprecv not found in non-login ssh).
+
