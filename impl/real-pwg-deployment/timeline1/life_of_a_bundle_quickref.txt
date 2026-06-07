@@ -162,3 +162,27 @@ The quickref + the 121B bundles in the timeline1 snapshot are the ready referenc
 - Orin bplist during/after: "Queued for forwarding to 'ipn:268484820.0'." Report count 45. Bundles not reaching the .1 sink.
 - Conclusion same as prior: contact plans not active for immediate delivery to orin test EID. The script's BEFORE/WIRE (exact 121B hex matching draft)/AFTER is the reliable proof. Live bputa + reachability demonstrated. Full byte-identical receive requires hot contact + bprecv in proper env (e.g. via start script or full PATH=/usr/local/bin:$PATH).
 
+
+=== ORIN CAPTURE NOTES (important for live demo) ===
+Discovery: on orin, `which bprecv` = NONE, `find /usr/local -name bprecv` empty. Only some bp* tools (bpadmin, bpclock etc.) in /usr/local/bin; no bprecv binary.
+This explains why all bprecv > file captures produced small error files (45-71 bytes with "No such file or directory").
+bprecv approach in the basic quickref commands does not work on orin as-is (binary not installed or not in PATH for the ssh env).
+
+Recommended capture for orin (CFDP bputa path):
+- bputa sends the *content of the .bundle file* as CFDP payload over BP to the remote entity .64.
+- On orin, CFDP should deliver the payload as a file (exact 121 bytes) to a receive location (often /tmp or configured in cfdpadmin entity).
+- Instead of (or in addition to) bprecv:
+  # On orin, after bputa completes:
+  sleep 10
+  CANDIDATE=$(find /tmp -type f \( -size 120c -o -size 121c -o -size 122c \) -mmin -2 2>/dev/null | head -1)
+  if [ -n "$CANDIDATE" ]; then
+    ls -l "$CANDIDATE"
+    # then from soulkiller: scp nick@orin:"$CANDIDATE" /tmp/received_from_line.bundle
+  fi
+- Then cmp the received file vs sent .bundle — should be IDENTICAL (the bytes that "left the line" via CFDP/BP arrived intact).
+- Then python life_of_a_bundle.py --decode-file /tmp/received_from_line.bundle to show AFTER processing (CPB map, payload intact).
+
+This matches how the quirky string payloads were delivered in earlier tests (logs showed "Payload delivered" + the string).
+
+The bprecv on .1 may be intended for direct BP bundles, but for this bputa/CFDP demo the file delivery path is the one that carries the 121B "bundle" bytes.
+
