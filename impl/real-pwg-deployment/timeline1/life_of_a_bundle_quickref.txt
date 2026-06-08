@@ -71,10 +71,12 @@ Other blocks present (type numbers):
 
 === END OF LIFE OF A BUNDLE ===
 For a real end-to-end on the testbed:
-  - Use the written .bundle with bputa (see instructions in run_real_test.sh)
-  - Capture on the far side with bprecv / receiver_daemon.py or bpsink
+  - Use the written .bundle with bputa (see instructions in run_real_test.sh — note this launcher is marked LEGACY; current work uses life_of_a_bundle.py + bputa to .64)
+  - Capture on the far side with bprecv / receiver_daemon.py or bpsink (or the CFDP file path + find recipe below when tools are partial)
   - Feed the captured bytes to this script with --decode-file
 The wire bytes shown above are exactly what travels on the UDPCL link.
+
+NOTE (2026-06-08 snapshot): The key supporting scripts (life_of_a_bundle.py, cpb.py, packet.py, make_life_pptx.py, receiver_daemon.py) are now included directly in this timeline1/ directory for self-contained reproduction. When you are inside the snapshot, you can run `python3 life_of_a_bundle.py ...` directly (no external /home/nick/real_cpb_packet_test/ path needed). See the new README.md at the root of this directory for a high-level manifest and usage summary.
 === ADDED: LIVE DEMO COMMANDS (wire/line = serialized bundle bytes on UDPCL) ===
 
 === QUICK LIVE DEMO (run while advancing pptx slides) ===
