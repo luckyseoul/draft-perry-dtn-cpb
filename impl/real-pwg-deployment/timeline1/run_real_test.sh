@@ -1,8 +1,17 @@
 #!/bin/bash
 # End-to-end real bundle + CPB test launcher (run on sender side)
+#
+# NOTE: This script is LEGACY from an earlier phase of the project
+# (pre "life of a bundle" canonical 121B work and the 72/32 bputa campaigns).
+# It references older tools (sender.py, receiver.py --listen, CUDA batching,
+# and a C sender via make). For the current canonical proof and live demo,
+# see life_of_a_bundle.py (now included in this snapshot), the
+# life_of_a_bundle_quickref.txt, and the start-*.sh + bputa workflows.
+#
+# This file is retained in the snapshot for historical completeness.
 
 set -e
-echo "=== Real CPB Bundle Creation + Receipt Test ==="
+echo "=== Real CPB Bundle Creation + Receipt Test ===" (legacy script)
 echo "CUDA batch generation: $(python3 -c 'from packet import has_cuda; print(has_cuda())')"
 
 echo ""
