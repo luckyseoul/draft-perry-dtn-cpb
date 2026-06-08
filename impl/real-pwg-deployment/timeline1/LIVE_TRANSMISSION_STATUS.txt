@@ -273,3 +273,23 @@ Multiple "try again" runs:
 - Committed on timeline1.
 - The script's 121B canonical (BEFORE/WIRE hex/AFTER) + bputa execution while orin reachable is the demonstrated part. Full cmp awaits either bprecv install on orin or successful CFDP file delivery + pull of the 121B payload file.
 
+=== 2026-06-08 Minimum bar of proof for CPB RFC (detailed lab notes kept in quickref) ===
+
+Appended a full "Minimum Bar of Proof for CPB RFC + Detailed Lab Notes" section to life_of_a_bundle_quickref.txt (per "keep the lab notes detailed, but stay to minimum bar of proof for cpb rfc, if something needs followup, we can have that ready").
+
+Key points added for the RFC minimum bar:
+- Reproducible canonical 121B (exact draft example, full BEFORE/WIRE 121-byte hex matching XML artwork / AFTER decode) via life_of_a_bundle.py, with fresh generation + bputa of /tmp/live_cpb_20260608_001833.bundle.
+- Live bputa injection to remote orin .64 (CFDP) demonstrated; bundles reach the remote ION stack (orin bplist "Queued for forwarding to 'ipn:268484820.0'." and similar for 801.0 etc., high report counts observed).
+- Prior real deliveries (from 72/32 runs) produced identical 121B files on orin that decode with the exact CPB map + "save a horse..." payload intact (positive evidence pulled and verified; copies in snapshot under cpb_72_with_my/ and cpb_test_to_each_other/).
+- All reproduction artifacts, commands, orin CFDP find recipe (find ~121c -mmin -2), start scripts, and honest limitations are in the quickref + timeline1/ snapshot (including the new 121B bundle).
+
+Detailed lab notes (kept in quickref for depth):
+- Exact long emulated contact text from orin ionadmin l contact (June 6 06:14:51 to Sep 14 06:14:50, 10MB/s confidence 1.0 between 121<->801, 121<->820, 121<->000 gateway; DTNEx process from Jun 06, dtnex-orin.conf).
+- bprecv discovery (none on orin; only partial bp* tools; direct listeners produced 45-71B error text).
+- Post-bputa searches: no new 121c CFDP files in the attempt windows (only old June 6 deliveries or our small error files); consistent with queuing.
+- Followup items listed and ready (shorter contact windows, full ION tools on orin for bprecv, manual ionadmin contacts, longer CFDP monitoring + the documented find/scp/cmp sequence).
+
+This keeps the status as concise project history while the quickref holds the detailed, reviewer-ready lab notes and minimum-proof framing. The data-plane evidence (canonical wire format + live real-stack injection + prior intact CPB deliveries + queuing as cross-link proof) meets the pragmatic "prove it works" bar for the debut RFC without requiring custom-tuned gear or perfect receive in every short window. Limitations are scoped and documented so followup (contact timing or orin tooling) can be executed quickly if asked.
+
+Snapshot refreshed with updated quickref, this status, and /tmp/live_cpb_20260608_001833.bundle. Committed on timeline1 (push attempted; DNS blocks common in env).
+
