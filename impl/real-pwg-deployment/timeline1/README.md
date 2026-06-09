@@ -57,10 +57,10 @@ The supporting Python tools that generate/decode the canonical bundles (`life_of
   - `receiver_daemon.py`
 
 - **Node configs & launchers**:
-  - `host26848512{1,2,3}.rc`
+  - `host26848512{1,2,3}.rc` (IPN-based; 123 is horus)
   - `start-dtn.sh` — **primary unified launcher** (run this from *any* node; auto-detects soulkiller/122, orin/121 or horus/123 via hostname or Tailscale IP, does full robust ION clean+start + explicit cfdpclock/bputa + DTNEx)
-  - `start-*.sh` (soulkiller/122, orin/121, horus/123) — thin wrappers that delegate to `start-dtn.sh` (kept for systemd service templates and familiarity)
-  - `*.service.template` (systemd units; note the soulkiller one was corrected in this snapshot)
+  - `start-horus.sh` (horus/123), `start-orin.sh`, `start-soulkiller.sh` — thin wrappers that delegate to `start-dtn.sh`. `start-123.sh` is a symlink to `start-horus.sh` for backward compat.
+  - `*.service.template` (systemd units for all three nodes, using the matching start-*.sh; corrected/added for consistency)
   - `update-rc-ips.sh`
   - `run_real_test.sh` (marked LEGACY — see header comment)
 
