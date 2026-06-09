@@ -58,7 +58,8 @@ The supporting Python tools that generate/decode the canonical bundles (`life_of
 
 - **Node configs & launchers**:
   - `host26848512{1,2,3}.rc`
-  - `start-*.sh` (soulkiller/122, orin/121, horus/123)
+  - `start-dtn.sh` — **primary unified launcher** (run this from *any* node; auto-detects soulkiller/122, orin/121 or horus/123 via hostname or Tailscale IP, does full robust ION clean+start + explicit cfdpclock/bputa + DTNEx)
+  - `start-*.sh` (soulkiller/122, orin/121, horus/123) — thin wrappers that delegate to `start-dtn.sh` (kept for systemd service templates and familiarity)
   - `*.service.template` (systemd units; note the soulkiller one was corrected in this snapshot)
   - `update-rc-ips.sh`
   - `run_real_test.sh` (marked LEGACY — see header comment)
@@ -71,10 +72,15 @@ The supporting Python tools that generate/decode the canonical bundles (`life_of
 
 1. `cd` into this directory.
 2. Read `life_of_a_bundle_quickref.txt` (top sections for the canonical BEFORE/WIRE/AFTER; "LIVE DEMO COMMANDS" and "ORIN CAPTURE NOTES" for the practical steps).
-3. Generate a fresh canonical: `python3 life_of_a_bundle.py --dst 268485121 --write-bundle /tmp/my_121.bundle`
-4. On a running ION node with cfdp entity .64 configured: `bputa /tmp/my_121.bundle ipn:268485121.64`
-5. On receiver side, use the CFDP find recipe (or bprecv if full tools are installed) and `python3 life_of_a_bundle.py --decode-file <file>` to show the AFTER decode.
-6. For slides: `python3 make_life_pptx.py` (adjust as needed).
+3. On the target node, bring up the full DTN stack with the unified launcher (works from any of the three nodes):
+   ```
+   bash /home/nick/ion-config/start-dtn.sh
+   ```
+   (It auto-detects by hostname/Tailscale IP, runs the pre-clean, ionstart with the correct .rc, forces cfdpclock + bputa RUNNING, and starts the right DTNEx instance. The old `start-soulkiller.sh` etc. still work as thin wrappers.)
+4. Generate a fresh canonical: `python3 life_of_a_bundle.py --dst 268485121 --write-bundle /tmp/my_121.bundle`
+5. On a running ION node with cfdp entity .64 configured: `bputa /tmp/my_121.bundle ipn:268485121.64`
+6. On receiver side, use the CFDP find recipe (or bprecv if full tools are installed) and `python3 life_of_a_bundle.py --decode-file <file>` to show the AFTER decode.
+7. For slides: `python3 make_life_pptx.py` (adjust as needed).
 
 See the quickref for the exact "minimum bar" evidence list, the long-emulated contact diagnosis, and the prepared followup items (shorter contacts, orin tooling completion, etc.).
 

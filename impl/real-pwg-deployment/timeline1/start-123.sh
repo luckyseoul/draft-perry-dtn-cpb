@@ -1,33 +1,10 @@
 #!/bin/bash
-# Robust start for third node 268485123 (future host at 192.168.1.85)
-set -euo pipefail
-NODE="123"
-HOST="third-host"
-CONFIG_DIR="/home/nick/ion-config"
-RC_FILE="$CONFIG_DIR/host268485${NODE}.rc"
-LOG_FILE="$CONFIG_DIR/ion.log"
+# Robust start for third node 268485123 / horus (manual or via systemd)
+# bash /home/nick/ion-config/start-123.sh
+#
+# Now a thin wrapper around the unified any-node launcher (start-dtn.sh).
+# The unified script auto-detects the current host and brings up the full
+# stack (ION + explicit cfdpclock/bputa + DTNEx). This keeps systemd service
+# templates and old habits working while centralizing the real logic.
 
-echo "==> [${HOST} ${NODE}] Pre-clean..."
-ionstop 2>/dev/null || true; sleep 1; killm 2>/dev/null || true
-rm -f /tmp/ion* /dev/shm/sem.*ion* 2>/dev/null || true
-sudo sysctl -w kernel.shmmax=268435456 >/dev/null 2>&1 || true
-
-if [ ! -f /tmp/default.key ]; then dd if=/dev/urandom of=/tmp/default.key bs=32 count=1 2>/dev/null || true; chmod 600 /tmp/default.key; fi
-echo "a key default /tmp/default.key" | ionsecadmin 2>/dev/null || true
-
-echo "==> Starting ION 268485123 ..."
-ionstart -I "$RC_FILE" > "$LOG_FILE" 2>&1 &
-
-sleep 5
-ps aux | grep -E '[b]pclock|[i]pnfw|[u]dpclo|[c]fdpclock|[b]puta' | cat || true
-tail -10 "$LOG_FILE" || true
-
-# Launch DTNEx for dynamic contact graph (after ION)
-if [ -x /usr/local/bin/dtnex ] && [ -f /home/nick/ion-dtn-dtnex/dtnex-horus.conf ]; then
-  pkill -x dtnex 2>/dev/null || true
-  sleep 1
-  echo "Starting DTNEx for horus..."
-  cd /home/nick/ion-dtn-dtnex
-  nohup /usr/local/bin/dtnex -c dtnex-horus.conf >> /tmp/dtnex-horus.log 2>&1 &
-  echo "DTNEx horus PID $!"
-fi
+exec "$(dirname "$0")/start-dtn.sh" "$@"
