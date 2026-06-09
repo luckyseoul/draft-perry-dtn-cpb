@@ -293,3 +293,34 @@ This keeps the status as concise project history while the quickref holds the de
 
 Snapshot refreshed with updated quickref, this status, and /tmp/live_cpb_20260608_001833.bundle. Committed on timeline1 (push attempted; DNS blocks common in env).
 
+=== 2026-06-09 Services verify on all devices (user: "verify services are up on all devices" + "yes") ===
+
+Fresh verification run (local soulkiller + sshpass drpepper to Tailscale IPs for orin/horus).
+
+All three nodes have the full CPB stack UP and cfdp entities configured (bpclock, ipnfw, 3x udpclo for mesh peers+gw, cfdpclock, bputa, dtnex + cfdpadmin shows RUNNING daemons + 6 entities).
+
+- soulkiller (268485122 @ 100.91.23.41, local): 
+  Processes: bpclock 17248, ipnfw 17251, udpclo 17255(gw.37) 17256(orin.65) 17257(horus.37), cfdpclock 17270, bputa 17271, dtnex 17317.
+  cfdpadmin: cfdpclock RUNNING (17270), bputa RUNNING (17271), Configured remote entities: 6. dtnex: 17317 /usr/local/bin/dtnex -c dtnex-soulkiller.conf
+  Clean single instance set (recent 04:01 start via start-soulkiller.sh).
+
+- orin (268485121 @ 100.92.115.65):
+  Processes: bpclock 8233(Jun07)+8730, dtnex 8496, ipnfw 8733, udpclo 8736(gw) 8737(soul) 8738(horus), cfdpclock 8748+8797, bputa 8809.
+  cfdpadmin: cfdpclock RUNNING (8748), bputa RUNNING (8809), Configured remote entities: 6.
+  dtnex: 8496 /usr/local/bin/dtnex -c dtnex-orin.conf
+  (Dups from prior manual cfdpclock & + s bputa; main active PIDs functional and reporting RUNNING.)
+
+- horus (268485123 @ 100.65.168.37):
+  Processes: dtnex 6753(old)+13639, bpclock 13591, ipnfw 13594, udpclo 13597(gw) 13598(soul) 13599(orin), cfdpclock 13609, bputa 13610.
+  cfdpadmin: cfdpclock RUNNING (13609), bputa RUNNING (13610), Configured remote entities: 6.
+  dtnex: 13639 /usr/local/bin/dtnex -c dtnex-horus.conf
+  (Recent 04:02 start via start-123.sh over ssh; one lingering old dtnex.)
+
+All .rc files (host26848512[1-3].rc in ion-config/ and timeline1/ snapshot) declare identical cfdp section: s 'bputa' + a entity for 268485008/268484800/268550657/268485000(Moon 801)/268484820(Mars) .
+
+Services match the expected for CPB work: full daemons + bputa ready for injection to .64 entities, 3 outducts/udpclo for the testbed mesh (gw + cross peers), DTNEx for contacts.
+
+Nodes are in a similar state (modulo harmless dups on orin/horus from incremental manual starts; soulkiller cleanest). No immediate restart required. All reachable over Tailscale.
+
+This completes the explicit "verify services are up on all devices" request. (Cross-ref: prior 2026-06-08 min-bar work and start-*.sh used for parity.)
+
