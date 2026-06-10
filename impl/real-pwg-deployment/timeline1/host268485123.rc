@@ -1,0 +1,77 @@
+# ION configuration for third host (node 268485123)
+# Will be on nick@192.168.1.85 (pw drpepper)
+# Join same PWG tailnet as 121/122, then run update-rc-ips.sh with its new IP too.
+# After: add bidirectional contacts/ranges to 121,122,000 and outducts/plans.
+
+m 1000000
+w 1
+pathName /tmp
+
+## begin ionadmin
+
+1 268485123
+s
+
+m production 100000000
+m consumption 100000000
+
+# Long-duration bidirectional contacts to PWG gateway (268485000) -- update IP after join
+a contact +1 +8640000 268485123 268485000 10000000
+a range   +1 +8640000 268485123 268485000 1
+a contact +1 +8640000 268485000 268485123 10000000
+a range   +1 +8640000 268485000 268485123 1
+
+# To soulkiller (268485122)
+a contact +1 +8640000 268485123 268485122 10000000
+a range   +1 +8640000 268485123 268485122 1
+a contact +1 +8640000 268485122 268485123 10000000
+a range   +1 +8640000 268485122 268485123 1
+
+# To orin (268485121)
+a contact +1 +8640000 268485123 268485121 10000000
+a range   +1 +8640000 268485123 268485121 1
+a contact +1 +8640000 268485121 268485123 10000000
+a range   +1 +8640000 268485121 268485123 1
+
+## end ionadmin
+
+## begin bpadmin
+1
+
+a scheme ipn 'ipnfw' 'ipnadminep'
+
+a endpoint ipn:268485123.1  q
+a endpoint ipn:268485123.64 q
+a endpoint ipn:268485123.65 q
+
+a protocol udp 1400 100
+a induct udp 0.0.0.0:4556 udpcli
+
+# Outducts (Tailscale IPs) -- REPLACE after join via update-rc-ips or manual
+a outduct udp 100.96.108.37:4556 udpclo   # gateway placeholder
+a outduct udp 100.91.23.41:4556 udpclo    # soulkiller placeholder
+a outduct udp 100.92.115.65:4556 udpclo   # orin placeholder
+
+s
+## end bpadmin
+
+## begin ipnadmin
+a plan 268485000 udp/100.96.108.37:4556   # gw
+a plan 268485122 udp/100.91.23.41:4556    # soul
+a plan 268485121 udp/100.92.115.65:4556   # orin
+## end ipnadmin
+
+## begin ionsecadmin
+a key default /tmp/default.key
+q
+## end ionsecadmin
+
+## begin cfdpadmin
+1
+
+e 1
+m discard 0
+m requirecrc 0
+m segsize 1400
+s 'bputa'
+## end cfdpadmin
