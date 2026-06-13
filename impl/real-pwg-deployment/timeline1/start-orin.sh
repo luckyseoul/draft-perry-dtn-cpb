@@ -7,7 +7,13 @@ CONFIG_DIR="/home/nick/ion-config"
 RC_FILE="$CONFIG_DIR/host268485${NODE}.rc"
 LOG_FILE="$CONFIG_DIR/ion.log"
 echo "==> [${HOST} ${NODE}] Pre-clean..."
-pkill -9 -f "bpclock|ipnfw|cfdpclock|bputa|dtnex|udpclo|ion" 2>/dev/null || true
+pkill -9 -x bpclock 2>/dev/null || true
+pkill -9 -x ipnfw 2>/dev/null || true
+pkill -9 -x cfdpclock 2>/dev/null || true
+pkill -9 -x bputa 2>/dev/null || true
+pkill -9 -x dtnex 2>/dev/null || true
+pkill -9 -x udpclo 2>/dev/null || true
+pkill -9 -f 'ionstart' 2>/dev/null || true
 ionstop 2>/dev/null || true
 killm 2>/dev/null || true
 sleep 1
@@ -26,8 +32,8 @@ echo "==> ionstart..."
 ionstart -I "$RC_FILE" > "$LOG_FILE" 2>&1 &
 sleep 6
 echo "==> daemons..."
-bpclock &; ipnfw &
-udpclo 100.96.108.37:4556 &; udpclo 100.91.23.41:4556 &; udpclo 100.65.168.37:4556 &
+bpclock & ipnfw &
+udpclo 100.96.108.37:4556 & udpclo 100.91.23.41:4556 & udpclo 100.65.168.37:4556 &
 cfdpclock &
 sleep 5
 cfdpadmin 2>/dev/null <<'EOC' | cat || true
@@ -35,7 +41,24 @@ s 'bputa'
 l
 q
 EOC
+sleep 2
+echo "==> Re-checking bputa..."
+cfdpadmin 2>/dev/null <<'EOC' | cat || true
+s 'bputa'
+l
+q
+EOC
 ps -ef | grep -E '[b]pclock|[i]pnfw|[u]dpclo|[c]fdpclock|[b]puta' | cat || true
 if [ -x /usr/local/bin/dtnex ] && [ -f /home/nick/ion-dtn-dtnex/dtnex-orin.conf ]; then
-  pkill -x dtnex 2>/dev/null || true; sleep 1; cd /home/nick/ion-dtn-dtnex; nohup /usr/local/bin/dtnex -c dtnex-orin.conf >> /tmp/dtnex-orin.log 2>&1 &; echo "DTNEx orin PID $!"
+  pkill -x dtnex 2>/dev/null || true; sleep 1; cd /home/nick/ion-dtn-dtnex; nohup /usr/local/bin/dtnex -c dtnex-orin.conf >> /tmp/dtnex-orin.log 2>&1 &
+  DTNPID=$!
+  echo "DTNEx orin PID $DTNPID"
+  sleep 2
+  if ps -p $DTNPID >/dev/null 2>&1; then 
+    echo "DTNEX orin confirmed running"
+  else 
+    echo "DTNEX orin not running, retrying..."; 
+    nohup /usr/local/bin/dtnex -c dtnex-orin.conf >> /tmp/dtnex-orin.log 2>&1 & 
+    echo "DTNEx orin retry PID $!"
+  fi
 fi
