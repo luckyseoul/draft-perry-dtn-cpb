@@ -1,0 +1,15 @@
+[Unit]
+Description=ION DTN Node 268485123 (horus)
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=nick
+ExecStart=/bin/bash /home/nick/ion-config/start-horus.sh
+ExecStop=/bin/bash -c 'ionstop; killm; rm -f /tmp/ion* /dev/shm/sem.*ion*'
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
