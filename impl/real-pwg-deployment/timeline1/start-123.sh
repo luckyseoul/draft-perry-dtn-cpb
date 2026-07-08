@@ -1,1 +1,0 @@
-start-horus.sh
