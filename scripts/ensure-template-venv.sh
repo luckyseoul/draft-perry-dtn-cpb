@@ -34,6 +34,7 @@ if [[ ! -x "${VENV_PIP}" ]]; then
 fi
 
 # Install / upgrade the template's declared requirements
+    "${VENV_PIP}" install --no-warn-script-location weasyprint
 if [[ -f "${REQUIREMENTS}" ]]; then
     echo "    Installing template requirements..."
     "${VENV_PIP}" install --no-warn-script-location -r "${REQUIREMENTS}"
