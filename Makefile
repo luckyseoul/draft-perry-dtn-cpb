@@ -57,3 +57,13 @@ test:
 	@cd impl && python3 config1_sim.py --quick
 	@echo
 	@echo "==> All reference implementation tests passed."
+
+# Include PDF in the standard build outputs (txt + html + pdf)
+latest:: txt html pdf
+
+# Use xml2rfc --pdf (requires weasyprint in the template venv) instead of
+# the template's enscript+ps2pdf path. Explicit target takes precedence
+# over the %.pdf: %.txt pattern rule from lib/main.mk.
+draft-perry-dtn-cpb.pdf: draft-perry-dtn-cpb.xml
+	@echo "==> Building $@ (pdf via xml2rfc)"
+	@$(xml2rfc) --pdf $< -o $@
