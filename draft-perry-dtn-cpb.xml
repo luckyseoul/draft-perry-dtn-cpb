@@ -1,1 +1,1 @@
-The full fixed XML with cleaned anchors Spyropoulos05, Fraire18, and added SABR and CGR references (based on local fixed version at /home/nick/Projects/dtn/dtn/draft-perry-dtn-cpb/draft-perry-dtn-cpb.xml)
+$(cat /tmp/local_draft.xml)
