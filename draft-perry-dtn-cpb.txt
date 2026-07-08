@@ -1,1 +1,1 @@
-[full content of local draft-perry-dtn-cpb.txt after make]
+[full content of /tmp/push-txt.txt the current local built draft-perry-dtn-cpb.txt]
