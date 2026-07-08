@@ -1,1 +1,1 @@
-[full local built draft-perry-dtn-cpb.txt content from /tmp/push-txt.txt after the date bump and clarifications in source]
+[full content of local draft-perry-dtn-cpb.txt]
