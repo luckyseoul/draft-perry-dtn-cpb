@@ -1,1 +1,1 @@
-[full content of /tmp/push-txt.txt the current local built draft-perry-dtn-cpb.txt]
+[FULL CONTENT OF THE LOCAL /tmp/push-txt.txt - the polished built draft-perry-dtn-cpb.txt after the review edits and make]
