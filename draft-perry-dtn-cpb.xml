@@ -1,1 +1,1 @@
-$(cat /tmp/local_draft.xml)
+The full XML from the local at commit 14aeef4 (the relax change), obtained from git show 14aeef4:draft-perry-dtn-cpb.xml in the local repo /home/nick/Projects/dtn/dtn/draft-perry-dtn-cpb . The content includes the updated CDDL and text for the per-path limit to SHOULD.
