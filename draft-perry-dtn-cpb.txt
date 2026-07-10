@@ -1,1 +1,2330 @@
-[full current local built txt]
+
+
+
+
+Network Working Group                                           N. Perry
+Internet-Draft                                               Independent
+Intended status: Experimental                                8 July 2026
+Expires: 9 January 2027
+
+
+         Probabilistic Contact Metadata for DTN Bundle Routing
+                       draft-perry-dtn-cpb-latest
+
+Abstract
+
+   This document defines a generic uncertainty propagation layer for
+   Delay/Disruption Tolerant Networking (DTN) routing: the Contact
+   Probability Block (CPB), a BPv7 extension block that carries
+   probability metadata in-bundle between forwarding nodes.  The
+   contribution is the standardized transport mechanism rather than any
+   single routing algorithm; CPB is designed to be consumed and produced
+   by heterogeneous DTN routing protocols (PRoPHET, CGR, MaxProp, RAPID,
+   Spray-and-Wait) without requiring changes to those algorithms
+   themselves.
+
+   The specification uses CBOR floating-point encoding in bundle
+   extension blocks, with half-precision (IEEE 754 binary16) recommended
+   for bandwidth efficiency.  The extension preserves endpoint
+   identifier immutability, is backwards-compatible with BPv7, and
+   integrates with existing security mechanisms (BPSec).  Distinct
+   probability semantics from different routing families are kept
+   separable via an explicit metric-type tag; cross-metric arithmetic is
+   prohibited.
+
+   This document is Experimental.  The accompanying simulation study
+   validates that experimental routing policies consuming per-contact
+   confidence metadata from CPB blocks can materially outperform
+   confidence-blind baseline CGR under adversarial conditions with rate-
+   aware costing.  The contribution of this specification is the
+   standardized BPv7 extension block for carrying that metadata.
+   Operational deployment questions — robustness to noisy/adversarial
+   estimates, control-theoretic stability under feedback, and real
+   interoperability with production BP stacks — are explicitly
+   enumerated as open issues and not claimed as resolved by this
+   document.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 9 January 2027.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.
+
+Table of Contents
+
+   1.  Introduction
+     1.1.  Problem Statement (IPNSIG SSI Architecture, Section 4.2)
+     1.2.  Motivation
+     1.3.  Requirements Language
+     1.4.  Terminology
+     1.5.  Notation Conventions
+   2.  Architectural Considerations
+     2.1.  Why NOT URI Query Parameters
+       2.1.1.  Endpoint Identifier Immutability
+       2.1.2.  Router Modification Problem
+     2.2.  Solution: Bundle Extension Blocks
+   3.  Contact Probability Block
+     3.1.  Overview
+     3.2.  Block Structure
+       3.2.1.  Block Processing Flags
+       3.2.2.  Cyclic Redundancy Check (CRC) Handling
+       3.2.3.  Hop Count Block Co-Presence
+     3.3.  Block Type Code
+       3.3.1.  IANA Registration
+       3.3.2.  Backwards Compatibility
+     3.4.  CBOR Encoding of Probability Values
+       3.4.1.  Invalid Float Handling
+       3.4.2.  Encoding Details
+       3.4.3.  Hex Encoding Table
+     3.5.  Metric-Type Semantics and Cross-Metric Comparison
+     3.6.  Multiple CPBs in One Bundle
+       3.6.1.  Per-Path Matching Rules
+   4.  Operational Semantics
+     4.1.  Creation
+     4.2.  Processing by Intermediate Routers
+     4.3.  Usage in Routing Algorithms
+     4.4.  Stability Considerations and Feedback Dynamics
+   5.  Relationship to Existing DTN Routing Protocols
+     5.1.  PRoPHET (RFC 6693)
+     5.2.  MaxProp
+     5.3.  RAPID
+     5.4.  Spray-and-Wait Family
+     5.5.  Contact Graph Routing (CGR)
+     5.6.  DTNMA (RFC 9675)
+     5.7.  Summary: CPB as Cross-Cutting Metadata
+   6.  Backwards Compatibility
+   7.  Operational Considerations
+     7.1.  When and Where to Emit CPBs
+     7.2.  Bundle Store and Memory Sizing
+     7.3.  Computational and Storage Overhead on Constrained Nodes
+     7.4.  Logging, Monitoring, and OAM
+     7.5.  Partial Deployment
+     7.6.  Congestion and Storage Pressure
+     7.7.  Clock Considerations
+   8.  Security Considerations
+     8.1.  Threat Model
+     8.2.  Trust Model
+       8.2.1.  Who is Authorized to Append CPBs
+       8.2.2.  Cryptographic Adjudication of Conflicting CPBs
+       8.2.3.  Downstream Handling of Upstream BIBs
+       8.2.4.  Route Poisoning by Semi-Trusted Relays
+       8.2.5.  Inter-Domain Trust
+       8.2.6.  Replay Resistance
+     8.3.  Integrity Protection
+       8.3.1.  Source CPB with Append-Only Intermediates
+       8.3.2.  Strip-and-Replace Model
+       8.3.3.  Prohibition on BCB Encryption
+     8.4.  Mitigations
+     8.5.  Privacy Considerations
+   9.  IANA Considerations
+   10. Overhead Analysis
+     10.1.  Computational and Storage Overhead
+   11. Implementation Status
+   12. Experiment Description
+     12.1.  Scope and Hypothesis
+     12.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
+     12.3.  Routing Policies Tested
+     12.4.  Methodology
+     12.5.  Results
+     12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed)
+     12.7.  Goals (per RFC 2026 Section 4.2.1)
+     12.8.  Success Criteria (Met)
+     12.9.  Failure Criteria (Not Triggered)
+     12.10. Deferred Configurations
+     12.11. Open Experimental Questions
+   13. Reference Implementation
+     13.1.  Repository
+     13.2.  Reproducing the Experiment Results
+     13.3.  Relationship to Updates of BPv7
+   14. Normative References
+   15. Informative References
+   Appendix A.  Mars Mission Scenario
+   Appendix B.  Change Log
+     B.1.  draft-perry-dtn-cpb-00 (July 2026)
+   Author's Address
+
+1.  Introduction
+
+   Delay-tolerant networks (DTNs) often face uncertain contact
+   schedules, such as during Mars mission disruptions, where standard
+   BPv7 routing like Contact Graph Routing (CGR) may delay delivery due
+   to reliance on fixed contact plans.  Probabilistic routing metadata
+   enables adaptive forwarding decisions by communicating contact
+   likelihood estimates between nodes.
+
+   This specification defines a bundle extension block (the Contact
+   Probability Block, or CPB) for carrying probabilistic contact
+   metadata, enabling efficient routing decisions in DTNs for
+   applications like space exploration communications.
+
+1.1.  Problem Statement (IPNSIG SSI Architecture, Section 4.2)
+
+   The Interplanetary Networking Special Interest Group (IPNSIG), the
+   Interplanetary Chapter of the Internet Society, published "Solar
+   System Internet Architecture and Governance — from the Moon to Mars
+   and beyond" in September 2023 [IPNSIG2023].  Section 4.2 ("Routing
+   and Forwarding") of that document frames the routing problem this
+   specification addresses:
+
+   |  The routing and forwarding procedures of the terrestrial Internet
+   |  would not adapt well in the Solar System Internet, as topological
+   |  state information could not be provided in a timely manner due to
+   |  the lengthy signal propagation delays, frequent lapses of
+   |  connectivity, and dynamic topology... New technology is needed.
+
+   The first "Considerations" bullet of IPNSIG Section 4.2 directly
+   invites the design approach taken by this specification:
+
+   |  By what delay-tolerant mechanism(s) does this technology obtain
+   |  the information on which it decides which next-hop node to forward
+   |  a given bundle to?  Does it do so by route computation, by scoring
+   |  and/or preferential ranking of neighboring nodes, or in some other
+   |  way?
+
+   The Contact Probability Block defined here is precisely such a
+   "scoring and/or preferential ranking" signal, carried in-bundle as
+   metadata for forwarding nodes to consult.  The CPB design responds
+   directly to two of IPNSIG Section 4.2's four numbered
+   Recommendations:
+
+   Recommendation 1 (Autonomy and Automation):  "routing and forwarding
+      technologies are needed that do not require continuous human
+      intervention or management from Earth."  CPB enables autonomous,
+      in-bundle probability annotation that each forwarder consults
+      locally, without round-trips to Earth.
+
+   Recommendation 2 (Standards):  "Autonomy, in turn, requires standard
+      methods of: propagating whatever information is needed to support
+      route computation; utilizing that information in common ways that
+      assure coherent forwarding."  CPB standardizes both the wire
+      format for propagating probability information (Section 3.4) and
+      the precedence and matching rules for utilizing it (Section 3.6,
+      Section 4.2).
+
+   Section 5 positions CPB relative to the routing-protocol families
+   catalogued in IPNSIG Section 4.2 and its Appendix A: PRoPHET
+   [RFC6693], Spray and Wait [Spyropoulos05], Schedule-Aware Bundle
+   Routing (SABR) [SABR], Contact Graph Routing (CGR) [CGR], and
+   Opportunistic CGR with Uncertain Contact Plans (CGR-UCoP) [Fraire18].
+   CPB is a cross-protocol metadata layer, not a replacement for any of
+   these algorithms; each can consume or produce CPB data.
+
+1.2.  Motivation
+
+   Standard DTN routing protocols operate with deterministic contact
+   schedules or historical encounter statistics.  However, in highly
+   disrupted networks:
+
+   *  Contact schedules change unpredictably (dust storms on Mars, solar
+      weather, orbital variations)
+
+   *  Historical data becomes stale
+
+   *  Coordinated path computation elements (PCEs) can estimate
+      probabilities but need a way to communicate them to forwarding
+      nodes
+
+   *  Adaptive routing decisions require explicit probability metadata
+      at the bundle level
+
+   By embedding probability estimates directly in bundles as a standard
+   extension block, this specification enables all DTN routing protocols
+   to benefit from more informed forwarding decisions.
+
+1.3.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+1.4.  Terminology
+
+   Contact Probability  The likelihood of successful bundle delivery to
+      a destination node via a particular next hop or path, expressed as
+      a value in [0.0, 1.0].
+
+   Contact Probability Block (CPB)  A bundle extension block that
+      carries contact probability metadata, routing hints, and temporal
+      context.
+
+   Path Probability  A probability estimate specific to a particular
+      next-hop neighbor or outgoing interface.
+
+   Default Probability  An overall or baseline probability estimate when
+      per-path probabilities are unavailable.
+
+   Metric Type  An identifier distinguishing the semantic meaning of the
+      probability value (e.g., PRoPHET delivery predictability, CGR
+      contact confidence, MaxProp path reliability).
+
+   Validity Duration  The time period (in seconds) after creation during
+      which the probability estimate remains usable for routing
+      decisions.
+
+1.5.  Notation Conventions
+
+   This document uses three distinct notations for describing data
+   structures, following the conventions of other DTN Working Group
+   drafts:
+
+   CDDL (Concise Data Definition Language)  Formal schema definitions
+      per [RFC8610].  Listings are labeled "type: cddl".  CDDL defines
+      the structural constraints that implementations MUST conform to.
+
+   CBOR Extended Diagnostic Notation (EDN)  Human-readable
+      representations of CBOR data per [RFC8610] Appendix G.  Listings
+      are labeled "type: cbor-diag".  EDN examples show concrete data
+      values in readable form.
+
+   Annotated Hex Binary  Base-16 encoded wire format with inline
+      comments.  Listings are labeled "type: hex".  These show the exact
+      byte sequences that appear on the wire.
+
+2.  Architectural Considerations
+
+   This section explains the architectural rationale for using bundle
+   extension blocks rather than URI query parameters for probabilistic
+   routing metadata.
+
+2.1.  Why NOT URI Query Parameters
+
+   An earlier design considered encoding probability as a URI query
+   parameter in the destination EID:
+
+   ipn:100.1?prob=0.75   ;; ARCHITECTURALLY FLAWED APPROACH
+
+   This approach violates fundamental DTN principles for the following
+   reasons:
+
+2.1.1.  Endpoint Identifier Immutability
+
+   Endpoint identifiers (EIDs) are immutable addresses that uniquely
+   identify bundle destinations.  If routing metadata were embedded in
+   EIDs:
+
+   *  Intermediate routers would need to modify destination addresses to
+      update or strip probability parameters
+
+   *  This violates the end-to-end principle and the Bundle Protocol
+      specification [RFC9171]
+
+   *  Routers cannot determine whether ipn:100.1?prob=0.75 and
+      ipn:100.1?prob=0.5 represent the same or different endpoints
+
+   *  Destination nodes would receive bundles with varying EID formats
+      depending on router processing
+
+   *  Security mechanisms binding bundles to specific EIDs (BPSec
+      [RFC9172]) would break if routers modified destinations
+
+   *  EID-based duplicate detection would fail when the same logical
+      endpoint has multiple representations
+
+   *  Custody transfer mechanisms would malfunction
+
+2.1.2.  Router Modification Problem
+
+   If probability were in the destination EID, the following scenario
+   occurs:
+
+   1.  Router A receives a bundle destined to ipn:100.1?prob=0.75
+
+   2.  Router A consults the probability for forwarding decisions
+
+   3.  Router A must now decide:
+
+       *  Forward as-is with ?prob=0.75 (but this value may be stale/
+          incorrect for the next hop)
+
+       *  Strip the parameter to ipn:100.1 (modifying the destination
+          address)
+
+       *  Update the parameter to a new value, e.g., ?prob=0.6 (also
+          modifying the destination address)
+
+   4.  Any modification violates the immutability principle and breaks
+       downstream systems
+
+   This architectural violation is unacceptable in the DTN model.
+
+2.2.  Solution: Bundle Extension Blocks
+
+   This specification resolves the architectural conflict by carrying
+   probabilistic metadata in bundle extension blocks, completely
+   separate from endpoint identifiers:
+
+   *  Destination EID remains immutable and unchanged: ipn:100.1
+
+   *  Routing metadata travels in extension blocks (the Contact
+      Probability Block)
+
+   *  Routers can freely add, remove, or modify metadata without
+      affecting the destination EID
+
+   *  Security is maintained independently using Bundle Integrity Blocks
+      (BIBs)
+
+   *  Legacy nodes safely ignore unknown extension blocks without
+      affecting bundle delivery
+
+   This design maintains clean architectural separation between:
+
+   *  Addressing (EIDs): immutable, end-to-end
+
+   *  Routing Hints (CPB metadata): mutable, hop-by-hop
+
+3.  Contact Probability Block
+
+3.1.  Overview
+
+   The Contact Probability Block (CPB) is a standard BPv7 bundle
+   extension block that carries contact probability metadata.  Its
+   purpose is to communicate probability estimates from source nodes,
+   path computation elements (PCEs), or intermediate routers to
+   downstream forwarding nodes.
+
+3.2.  Block Structure
+
+   The CPB has the standard bundle extension block structure defined in
+   [RFC9171].  The canonical block structure is a CBOR array per RFC
+   9171 Section 4.3.2:
+
+   0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |   Block Type = TBD   |          Block Number                 |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |   Processing Flags = 0x10        |       CRC Type            |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |             Block Data (CBOR-encoded CPB metadata)            |
+   |                            ...                                |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       CRC (if used)                           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+          Figure 1: Bundle Extension Block Format (Octet Diagram)
+
+   The block-type-specific data (BTSD) field is a CBOR byte string
+   (bstr) whose content is a CBOR-encoded cpb-data map.  This byte-
+   string embedding follows RFC 9171's canonical block structure, where
+   the BTSD type is bstr (not any).  The formal CDDL binding follows
+   below.
+
+   The following annotated hex shows a concrete CPB with prob=0.75 for
+   destination node 100:
+
+   18 C8                ; type=200 (exp per RFC9171 &#167;9.1)
+   02                   ; num=2
+   11                   ; flags=0x11 (replicate; drop if bad)
+   00                   ; crc=0 (none)
+   57                   ; BTSD: bstr (23 bytes)
+      A4                ; map with 4 entries
+      00 F93A00         ;   0: prob=0.75 (float16)
+      01 81             ;   1: array of 1 path entry
+         82             ;     [node, prob]
+         18 64          ;       node=100
+         F93C00         ;       prob=1.0
+      02 1A 00F73A80    ;   2: timestamp (DTN epoch)
+      04 19 0E10        ;   4: validity=3600s
+   F6                   ; crc: null
+
+                 Figure 2: CPB Concrete Example (type: hex)
+
+   The CBOR data structure in the block-data field is defined as
+   follows.  The BTSD is byte-string-embedded per RFC 9171's canonical
+   block structure, using the CDDL socket and generic rules from RFC
+   9171 Section 4.3.2:
+
+   ; Integration with RFC 9171 canonical block structure.
+   ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
+   ; The "/ bstr" alternative permits encrypted BTSD (BCB-wrapped
+   ; content from a security context that encrypts the BTSD before
+   ; the CPB's own processing; see Section 7.2.3 for CPB-specific
+   ; BCB prohibition on the CPB itself).
+
+   $extension-block /=
+       extension-block-use<200, (bstr .cbor cpb-data / bstr)>
+
+             Figure 3: CPB Extension Block Binding (type: cddl)
+
+   cpb-data = {
+       ? 0: probability,         ; Default/overall probability
+       ? 1: [1*8 path-entry],    ; Per-path probabilities. Senders SHOULD NOT include more than 8 entries on constrained links (see Section 3.4). The bound 8 is a size recommendation for typical use; implementations follow the SHOULD language rather than this CDDL production.
+       ? 2: uint,                ; Timestamp (DTN epoch seconds)
+       ? 3: bstr,                ; Source PCE identifier (optional)
+       ? 4: uint,                ; Validity duration (seconds, TTL)
+       ? 5: metric-type,         ; Metric type identifier
+       ? 6: probability,         ; Confidence/variance estimate
+       ? 7: uint,                ; CPB format version (1 = this specification)
+       * (int .gt 7) => any      ; Extensibility (future fields)
+   }
+
+   probability = float           ; See Section 3.4 for encoding
+
+   path-entry = [
+       next-hop: eid-reference,  ; Next-hop node identifier
+       probability: float        ; Probability for this path
+   ]
+
+   eid-reference = uint / bstr   ; Node number or full EID
+
+   metric-type = &(
+       prophet-dp:      0,       ; PRoPHET delivery predictability
+       cgr-confidence:  1,       ; CGR contact confidence
+       maxprop-cost:    2,       ; MaxProp path cost (inverted)
+       rapid-utility:   3,       ; RAPID utility metric
+       generic:         4,       ; Unspecified/generic probability
+   ) / uint                      ; Extensible via future assignment
+
+                 Figure 4: CPB Data Structure (type: cddl)
+
+   *Note on bstr .cbor embedding:* The CDDL .cbor control operator
+   ([RFC8610] Section 3.8.4) indicates that the byte string contains
+   valid CBOR matching the cpb-data rule.  The plain bstr alternative
+   accommodates cases where the BTSD has been encrypted by a security
+   context applied to the enclosing extension block structure; in this
+   case the original CBOR content is opaque until decryption.
+
+   *Field Semantics:*
+
+   Field 0: Default Probability  An overall probability estimate when
+      per-path data is unavailable.  Range [0.0, 1.0].
+
+   Field 1: Per-Path Array  An array of [next-hop, probability] tuples.
+      Senders SHOULD NOT include more than 8 entries.  Receivers on
+      bandwidth- or memory-constrained links SHOULD enforce a local
+      policy limit (8 entries is RECOMMENDED) and MAY treat a CPB
+      exceeding the local limit as malformed for that deployment,
+      logging per [RFC9675] Section 4.3.  The CDDL production uses a
+      bound of 8 as an informative size recommendation for typical
+      constrained-link use cases; the normative limit is the SHOULD
+      language above.  Receivers and senders on unconstrained links MAY
+      use larger arrays.
+
+   Field 2: Timestamp  Creation time in DTN epoch seconds (seconds since
+      2000-01-01 00:00:00 UTC, per [RFC9171] Section 4.3.1).  Enables
+      receivers to compute age and apply probability decay.
+
+   Field 3: Source PCE Identifier  An opaque byte string identifying the
+      entity (e.g., a PCE or router) that computed the probability
+      values in this CPB.  This field supports trust and policy
+      decisions (see Section 8).  No particular encoding or registry is
+      defined.  The value is meaningful only within the administrative
+      scope(s) that trust the producer.  Deployments that do not require
+      source attribution MAY omit this field.
+
+   Field 4: Validity Duration (TTL)  The number of seconds after the
+      timestamp during which this probability estimate remains usable.
+      When the sum of timestamp and validity duration is less than the
+      current time, the CPB is expired and SHOULD be treated as if the
+      default probability (field 0) were absent.  If omitted,
+      implementations SHOULD apply deployment-specific age thresholds
+      (Section 4.1).
+
+   Field 5: Metric Type  Identifies the semantic meaning of the
+      probability value.  When absent, implementations SHOULD treat the
+      value as generic (type 4).
+
+   Field 6: Confidence  An optional float value in [0.0, 1.0]
+      representing the confidence or certainty in the probability
+      estimate.  A confidence of 0.9 with P = 0.5 (based on 1000
+      observations) carries more weight than confidence of 0.1 with P =
+      0.5 (based on 2 observations).  Routing algorithms MAY use this
+      for risk-aware forwarding.
+
+   Field 7: Version  CPB format version number.  If absent or set to 1,
+      the structure and semantics are as defined in this specification.
+      Receivers SHOULD process all recognized fields when encountering a
+      higher version number and MAY ignore unrecognized higher fields or
+      additional semantics defined in future specifications.  Senders
+      using only the fields defined here SHOULD omit the version field
+      or set it to 1.
+
+   Receivers encountering an unrecognized metric-type value SHOULD treat
+   the CPB as if it carried metric-type 4 (generic) for the purpose of
+   default and per-path probability selection, or ignore the CPB
+   entirely if local policy requires strict metric-type validation.
+   Senders MUST use only the registered values defined in the IANA "CPB
+   Metric Types" sub-registry unless operating in a private or
+   experimental context.
+
+3.2.1.  Block Processing Flags
+
+   The CPB MUST set the block processing control flags ([RFC9171]
+   Section 4.4.1) as follows:
+
+   *  *Bit 0 (0x01): Replicate in all fragments:* Implementers MUST set
+      this bit so that if a bundle with a CPB is fragmented during
+      transmission, each fragment carries a copy of the CPB.
+
+   *  *Bit 4 (0x10): Discard if can't process:* Implementers MUST set
+      this bit because the CPB is advisory routing metadata, not
+      critical to bundle delivery.
+
+   *  *Bits 1-3, 5-7:* Leave as 0 (reserved).
+
+   In practice, both flags set means the block processing flags byte is
+   set to 0x11 (binary 00010001).
+
+   *Path-entry handling under fragmentation:* When replicating a CPB
+   into a fragment, the fragmenting node MAY prune path-entry elements
+   (field 1) that are known to be unreachable in the fragment's
+   remaining path, but MUST NOT alter the probability values of retained
+   entries.  The default-probability field (0) and metric-type field (5)
+   MUST NOT be modified during fragmentation.
+
+3.2.2.  Cyclic Redundancy Check (CRC) Handling
+
+   The block-data CRC field ([RFC9171] Section 4.4.1) is optional:
+
+   *  *No CRC (recommended):* Set crc-type to 0 and crc field to CBOR
+      null (0xF6).  This is the default and minimizes overhead.
+
+   *  *Optional CRC:* Implementations MAY include CRC type 1 (16-bit
+      Fletcher) or type 2 (32-bit CRC).
+
+   Implementations SHOULD prefer BPSec BIBs (Section 8.3) over CRCs for
+   integrity, as BIBs provide both authentication and integrity.
+
+3.2.3.  Hop Count Block Co-Presence
+
+   Bundles carrying a CPB SHOULD also carry a Hop Count block (block
+   type 10, [RFC9171] Section 4.4.2).  The Hop Count block provides a
+   loop termination guarantee independent of probability-based routing
+   decisions.
+
+3.3.  Block Type Code
+
+   The bundle extension block format ([RFC9171]) requires each extension
+   block to have a type code that identifies what kind of block it is.
+
+3.3.1.  IANA Registration
+
+   This specification requests IANA to assign a permanent block type
+   code from the "Bundle Block Types" registry (created by [RFC9171]).
+   Until IANA assignment:
+
+   *  Implementations MAY use values in the 192-254 range for
+      experimental/private use
+
+   *  The example hex dump uses code 200 (0xC8) for illustration
+
+   *  Production deployments SHOULD use the IANA-assigned code
+
+3.3.2.  Backwards Compatibility
+
+   Routers that don't recognize the CPB block type code will:
+
+   1.  Check the block processing control flags (byte 2 in the extension
+       block)
+
+   2.  If flags indicate "discard if can't process", drop the block
+       silently
+
+   3.  If flags indicate "remove if can't process", strip it before
+       forwarding
+
+   4.  Continue routing the bundle using remaining blocks (backwards
+       compatible)
+
+3.4.  CBOR Encoding of Probability Values
+
+   The CDDL schema (Section 3.2) defines probability fields as float
+   rather than constraining to a specific precision, because enforcing
+   float16 in CDDL is difficult for encoders to implement in practice.
+   Instead, the precision requirement is expressed as a prose
+   recommendation:
+
+   Implementations SHOULD choose probability values that are exactly
+   representable in IEEE 754 binary16 (half-precision).  All values in
+   [0.0, 1.0] at routing-grade precision (~0.001 granularity from the
+   10-bit mantissa) are representable in binary16.  When a value is
+   representable in float16, [RFC8949] Section 4.2.1's deterministic
+   encoding requirement ensures it will be encoded in 3 bytes.
+
+   *  *Range:* [0.0, 1.0], sufficient for all probability values
+
+   *  *Precision:* Approximately 3 decimal digits, adequate for routing
+      decisions
+
+   *  *Overhead:* 3 bytes per value when float16 is used
+
+   *  *Standard:* Defined in [RFC8949] (CBOR specification)
+
+   Implementations that produce probability values not representable in
+   float16 will incur 5 bytes (float32) or 9 bytes (float64) per value
+   under deterministic encoding.  Receivers MUST accept any valid CBOR
+   float encoding and clamp the decoded value to [0.0, 1.0].
+
+   *Bandwidth Considerations and Array Limits:* A CPB with per-path
+   probabilities to multiple relays adds overhead (~4-5 bytes per
+   entry).  To mitigate DoS risks from oversized arrays on low-bandwidth
+   or constrained links, senders SHOULD NOT produce per-path arrays
+   larger than 8 entries.  Receivers in constrained deployments SHOULD
+   enforce a local limit (default 8) and treat excess entries as
+   malformed for that link, logging the event per [RFC9675] Section 4.3.
+   This guidance is normative for resource protection; the CDDL schema
+   provides a default bound of 8.
+
+3.4.1.  Invalid Float Handling
+
+   Implementations MUST handle invalid or out-of-range probability
+   values as follows:
+
+   *  *NaN (0xF97E00):* MUST be rejected as malformed.
+
+   *  *+/-Infinity (0xF97C00, 0xF9FC00):* MUST be rejected as malformed.
+
+   *  *Negative values:* Treat as 0.0 (invalid probability).
+
+   *  *Values > 1.0:* Treat as 1.0 (certainty).
+
+   *  *Subnormal values:* SHOULD be flushed to zero for embedded FPU
+      compatibility.
+
+   *  *Malformed CBOR:* Discard the CPB block and continue processing
+      the bundle.
+
+   In all error cases, implementations SHOULD log the error (including
+   source, timestamp, and offending value) for debugging.  Malformed
+   CBOR MUST never cause bundle deletion or administrative action; the
+   CPB is advisory and bundle processing continues regardless.
+
+3.4.2.  Encoding Details
+
+   When a probability value is representable in half-precision, the CBOR
+   encoding uses major type 7 with additional information value 25
+   (16-bit IEEE 754 binary16):
+
+   Major Type:      7 (floating-point or simple)
+   Additional Info: 25 (16-bit IEEE 754 float)
+   Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
+
+         Figure 5: CBOR Encoding: Major Type 7, Additional Info 25
+
+3.4.3.  Hex Encoding Table
+
+               +=============+==========+==========+=======+
+               | Probability | Binary16 | CBOR Hex | Bytes |
+               +=============+==========+==========+=======+
+               | 0.0         | 0x0000   | 0xF90000 | 3     |
+               +-------------+----------+----------+-------+
+               | 0.25        | 0x3400   | 0xF93400 | 3     |
+               +-------------+----------+----------+-------+
+               | 0.5         | 0x3800   | 0xF93800 | 3     |
+               +-------------+----------+----------+-------+
+               | 0.75        | 0x3A00   | 0xF93A00 | 3     |
+               +-------------+----------+----------+-------+
+               | 0.95        | 0x3B9A   | 0xF93B9A | 3     |
+               +-------------+----------+----------+-------+
+               | 1.0         | 0x3C00   | 0xF93C00 | 3     |
+               +-------------+----------+----------+-------+
+
+                     Table 1: CBOR Encodings for Common
+                             Probability Values
+
+3.5.  Metric-Type Semantics and Cross-Metric Comparison
+
+   The probability values carried in a CPB are dimensionless numbers in
+   [0.0, 1.0], but their _semantics_ differ substantially across routing
+   protocols.  The metric-type field (field 5, Section 3.2)
+   distinguishes these semantics.  This subsection specifies the
+   constraints on combining values across metric types.
+
+   The defined metric types carry the following distinct semantics:
+
+   metric-type 0 (prophet-dp)  PRoPHET delivery predictability, an
+      empirical encounter-history statistic computed locally by each
+      node per [RFC6693].  Reflects observed past behavior, not a
+      forward-looking estimate.
+
+   metric-type 1 (cgr-confidence)  Per-contact success probability
+      against a known contact schedule.  Reflects forward-looking
+      confidence in a planned contact occurring as scheduled (link
+      availability, atmospheric conditions, antenna pointing).
+
+   metric-type 2 (maxprop-cost)  Inverted path cost from MaxProp.  Lower
+      MaxProp cost is mapped to higher CPB probability.  The inversion
+      is lossy; the original cost magnitude is not recoverable from the
+      CPB value.
+
+   metric-type 3 (rapid-utility)  Per-packet utility function value from
+      RAPID.  Reflects an optimization-derived score, not a direct
+      probability of delivery.
+
+   metric-type 4 (generic)  Unspecified semantic.  The producer makes no
+      claim beyond "value in [0.0, 1.0]".  Consumers SHOULD NOT assume
+      any specific interpretation.
+
+   *Cross-metric arithmetic is prohibited.* A router MUST NOT combine
+   values from different metric types via arithmetic (addition,
+   multiplication, weighted averaging, etc.) and treat the result as a
+   meaningful probability.  A PRoPHET predictability of 0.7 and a CGR
+   confidence of 0.7 are not interchangeable inputs to the same routing
+   decision.  Specifically:
+
+   *  A router implementing a rate-aware confidence-weighted policy that
+      consumes CPB data (for example, a policy whose cost function
+      resembles formulations in prior work such as CGR-UCoP [Fraire18])
+      MUST use only metric-type 1 (cgr-confidence) values, and MUST
+      treat path-entries of other metric types as if absent.
+
+   *  A router applying PRoPHET-style transitivity rules MUST use only
+      metric-type 0 (prophet-dp) values, and similarly ignore others.
+
+   *  A router consuming metric-type 4 (generic) SHOULD treat the value
+      as advisory only and MUST NOT use it as the sole input to a
+      routing decision.
+
+   *Mixed-metric CPBs:* A single CPB instance carries one metric-type
+   (field 5).  A bundle MAY carry multiple CPBs with different metric
+   types simultaneously (for example, a CPB with cgr-confidence from a
+   PCE and a separate CPB with prophet-dp accumulated at intermediate
+   hops).  The precedence rules of Section 3.6 apply within a metric
+   type; across metric types, each CPB is consumed only by routers
+   implementing that metric's algorithm.  A router that does not
+   understand a particular metric type MUST ignore that CPB and continue
+   processing.
+
+   *Metric-type registry policy:* Future routing protocols defining new
+   probability semantics SHOULD register a new metric-type code (see
+   Section 9) rather than overloading an existing one.  The CPB Metric
+   Types sub-registry exists precisely to keep semantically distinct
+   values separable on the wire.
+
+   *Calibration and normalization:* This document does not specify
+   normalization between metric types because cross-metric equivalence
+   has no rigorous theoretical foundation in the published DTN
+   literature.  Implementations that wish to combine evidence from
+   multiple metrics for ranking purposes SHOULD do so using a
+   documented, deployment-specific policy and SHOULD NOT rely on
+   numerical comparability across types.  This area is identified as an
+   open research question in Section 12.11.
+
+3.6.  Multiple CPBs in One Bundle
+
+   A bundle may accumulate multiple Contact Probability Blocks as it
+   traverses the network.  When a bundle contains multiple CPBs with
+   conflicting probabilities for the same destination, implementations
+   SHOULD use the following precedence:
+
+   1.  Most recent timestamp (highest value)
+
+   2.  If timestamps equal, trust the source (implementation-defined
+       trust policy)
+
+   3.  If timestamps are equal AND sources are equally trusted, prefer
+       the CPB with the more specific metric-type (e.g., cgr-confidence
+       over generic) for the current routing protocol
+
+   4.  Default behavior: use the last encountered CPB (highest bundle
+       block number)
+
+   Implementations MUST NOT fail or misroute when encountering multiple
+   CPBs.
+
+   / CBOR Extended Diagnostic Notation (EDN) /
+   {
+       0: 0.75,                    / Default probability /
+       1: [
+           [300, 0.5],             / To relay node 300: 0.5 /
+           [100, 1.0]              / To orbiter node 100: 1.0 /
+       ],
+       5: 1                        / metric-type: cgr-confidence /
+   }
+
+        Figure 6: CPB with Per-Path Probabilities (type: cbor-diag)
+
+   A3                   ; map with 3 entries
+      00 F93A00         ; key 0: default prob = 0.75
+      01 82             ; key 1: array with 2 path entries
+         82             ; path entry [node, prob]
+         19 012C F93800 ;   node 300, prob 0.5
+         18 64 F93C00   ;   node 100, prob 1.0
+      05 01             ; key 5: metric-type = cgr-confidence
+
+              Figure 7: CPB Per-Path Wire Encoding (type: hex)
+
+3.6.1.  Per-Path Matching Rules
+
+   When a router consults the per-path array:
+
+   1.  Match the next-hop node/EID against path-entry keys
+
+   2.  If exact match found, use that probability
+
+   3.  If no match found, use default probability (field 0)
+
+   4.  If no default probability defined, use 0.5 (neutral)
+
+   EID-references in the path-entry array MUST match the destination
+   bundle's URI scheme.  For IPN bundles, node numbers are encoded as
+   CBOR unsigned integers (per [RFC9758]'s updated ipn URI scheme); for
+   other schemes, encode the full EID as CBOR text string.
+
+   *Scheme Mismatch Handling:* When the next-hop scheme does not match
+   the CPB's path-entry scheme, implementations fall back to the default
+   probability (field 0); if no default is defined, use 0.5.
+   Implementations SHOULD log the scheme mismatch for OAM correlation
+   per [RFC9675] Section 4.3.
+
+4.  Operational Semantics
+
+4.1.  Creation
+
+   The Contact Probability Block is created by:
+
+   *  The source application (using historical or predicted contact
+      data)
+
+   *  A path computation element (PCE) (using network-wide routing
+      state)
+
+   *  The first-hop router (using local contact statistics)
+
+   Implementations SHOULD include a timestamp (field 2) and a validity
+   duration (field 4).  Timestamps MUST be expressed in seconds since
+   2000-01-01 00:00:00 UTC (DTN epoch, per [RFC9171] Section 4.3.1).
+
+   In networks with significant propagation delays, clock
+   synchronization is challenging.  When validating a CPB timestamp,
+   implementations SHOULD apply tolerance for clock drift and light-time
+   delays:
+
+   *  *Forward skew tolerance:* Apply a configurable drift threshold
+      (default: +/-600 seconds).  CPBs with timestamps > current time +
+      drift threshold MUST be discarded.
+
+   *  *Backward skew/age threshold:* CPBs with timestamps < current time
+      - max_age MUST be discarded (default max_age: 86400s
+      interplanetary, 3600s terrestrial).
+
+   *  *Deployment-specific adjustment:* Networks SHOULD define explicit
+      max_drift and max_age per link characteristics.
+
+4.2.  Processing by Intermediate Routers
+
+   When a router processes a bundle containing a CPB:
+
+   1.  *Read:* Consult the CPB's default or per-path probability values.
+
+   2.  *Decide:* Use the probability as an input to routing decisions.
+
+   3.  *Update (optional):* If the router has fresher probability data,
+       it SHOULD append a new CPB block to the bundle (preserves any
+       end-to-end integrity signatures protecting the original block).
+
+   4.  *Forward:* Transmit the bundle with the CPB(s) to the next hop.
+
+4.3.  Usage in Routing Algorithms
+
+   Routing algorithms MAY use the CPB in several ways:
+
+   *  *Threshold-based:* Forward if prob > threshold
+
+   *  *Weighted selection:* Choose proportionally to probability
+
+   *  *Replication:* Replicate to ceil(1/prob) contacts (epidemic/spray)
+
+   *  *Priority:* Prioritize higher-probability bundles during
+      congestion
+
+   *  *Risk-aware:* Weight decisions by both probability and confidence
+      (field 6)
+
+4.4.  Stability Considerations and Feedback Dynamics
+
+   Probability-aware forwarding creates feedback between routing
+   decisions and observed network behavior.  Naive use of CPB data can
+   produce instability that confidence-blind routing avoids.  Three
+   dynamics are particularly relevant:
+
+   Herding  When multiple sources receive identical high-confidence CPB
+      advertisements for the same relay, they all forward to that relay
+      simultaneously.  The relay congests, its actual delivery
+      probability drops, but in-flight CPBs continue advertising the
+      stale high confidence.  Traffic remains herded until updated CPBs
+      propagate, which in DTN timeframes can take hours.
+
+   Route oscillation  If a router switches preferences whenever CPB
+      values cross a threshold, small probability fluctuations near the
+      threshold cause traffic to oscillate between routes.  Each switch
+      may itself generate new CPB observations that further perturb the
+      values.
+
+   Synchronized congestion collapse  In dense topologies, simultaneous
+      reaction by many routers to the same CPB update can produce
+      correlated congestion events.  This is structurally similar to TCP
+      synchronization in IP networks but with much longer recovery
+      cycles due to DTN propagation delays.
+
+   Implementations SHOULD mitigate these dynamics.  The following
+   techniques are RECOMMENDED:
+
+   *  *Hysteresis:* Use distinct enter and exit thresholds (e.g., switch
+      _to_ a route at p > 0.75, switch _away_ only at p < 0.60).  Avoids
+      threshold-crossing chatter on small fluctuations.
+
+   *  *Rate limiting:* Cap the frequency of routing preference changes
+      per (source, destination) pair (e.g., at most one switch per
+      contact opportunity, not per bundle).
+
+   *  *Randomized tie-breaking:* When multiple routes have CPB
+      probabilities within a configurable epsilon (default: 0.05),
+      select randomly rather than deterministically by lowest EID.
+      Breaks herding without sacrificing the high-probability choice.
+
+   *  *Probability decay under load:* Maintain a local estimate of
+      congestion on each next-hop and apply a load-aware discount to the
+      received CPB probability before using it in routing decisions.
+      Closes the feedback loop locally rather than waiting for upstream
+      CPB refresh.
+
+   *  *Bounded credulity:* Cap how heavily any single CPB can influence
+      the local routing decision relative to the router's own
+      observations.  Specific weights are deployment-dependent.
+
+   A formal control-theoretic stability analysis of CPB-driven feedback
+   dynamics is not provided in this document; this is identified as an
+   open research question in Section 12.11.  Implementations that omit
+   all of the above mitigations SHOULD NOT be deployed in production
+   DTNs where congestion or herding could degrade service.
+
+5.  Relationship to Existing DTN Routing Protocols
+
+   This section positions CPB relative to the existing DTN routing-
+   protocol families catalogued in IPNSIG Section 4.2 and its Appendix A
+   ("Routing and Forwarding State of the Art").
+
+5.1.  PRoPHET (RFC 6693)
+
+   PRoPHET [RFC6693] computes delivery predictability metrics at each
+   node based on encounter history.  A PRoPHET router can consume CPB
+   data as additional input to its predictability calculations, or
+   produce CPB entries with metric-type 0 (prophet-dp) based on its
+   computed predictions.
+
+5.2.  MaxProp
+
+   MaxProp's drop policy (drop-least-expected-path-reliability)
+   naturally benefits from explicit CPB probabilities (metric-type 2).
+
+5.3.  RAPID
+
+   RAPID's per-packet utility function can directly incorporate CPB
+   probabilities (metric-type 3) instead of inferring delivery
+   likelihood from history.
+
+5.4.  Spray-and-Wait Family
+
+   Spray-and-Wait [Spyropoulos05] limits replication to N copies sprayed
+   to selected relays.  Traditional Spray-and-Wait sprays uniformly at
+   random; CPB enables probability-aware target selection.
+
+5.5.  Contact Graph Routing (CGR)
+
+   Contact Graph Routing computes optimal routes based on a
+   deterministic contact schedule.  CPB adds uncertainty metrics
+   (metric-type 1, cgr-confidence).  Extensions like CGR-UCoP (Contact
+   Graph Routing with Uncertain Contact Plans, [Fraire18]) already
+   incorporate contact failure probabilities; CPB provides a
+   standardized wire format for this data.  The closest architectural
+   precedent is the CGR Extension Block [CGREB], which demonstrated that
+   in-band routing metadata in extension blocks was architecturally
+   sound.  Section 12 reports an experiment in which several simulator-
+   internal routing policies consume CPB-supplied confidences under
+   adversarial conditions with rate-aware costing.  CGR-UCoP [Fraire18]
+   is treated strictly as prior art for simulation validation, not the
+   conceptual basis for CPB.
+
+5.6.  DTNMA (RFC 9675)
+
+   [RFC9675] defines a DTN management architecture orthogonal to
+   routing.  A DTNMA agent could monitor CPB-related metrics (frequency
+   of stale CPBs, scheme mismatches, BIB verification failures) for
+   network health assessment.
+
+5.7.  Summary: CPB as Cross-Cutting Metadata
+
+   The Contact Probability Block is designed as a cross-protocol
+   metadata layer rather than a replacement for existing algorithms.
+   Each algorithm can optionally consume CPB data from upstream nodes or
+   produce CPB data for downstream nodes, without requiring any internal
+   changes to the algorithm itself.
+
+6.  Backwards Compatibility
+
+   *  Nodes that do not recognize the CPB block type MUST ignore it and
+      continue processing the bundle normally
+
+   *  The bundle's destination, source, and other standard fields are
+      unaffected by the CPB
+
+   *  Legacy routing protocols (CGR, PRoPHET, MaxProp, RAPID, Spray-and-
+      Wait) continue to function without the CPB
+
+   *  The CPB is optional; bundles without it use standard routing
+      behavior
+
+7.  Operational Considerations
+
+   This section collects deployment, sizing, and operational guidance
+   for CPB.  It draws from the processing rules in Section 4, the
+   overhead analysis in Section 10, and the backwards-compatibility
+   rules in Section 6.
+
+7.1.  When and Where to Emit CPBs
+
+   A CPB may be created by the source application (using historical or
+   predicted contact data), a path computation element (PCE) (using
+   network-wide state), or the first-hop router (using local contact
+   statistics).  Deployments SHOULD document their policy for which
+   entity is authoritative for a given bundle class.
+
+   In environments with significant propagation delay (e.g.,
+   interplanetary), a PCE close to the source is often preferable so
+   that the initial CPB reflects the most current available model.  In
+   low-delay terrestrial meshes, the first-hop router may have fresher
+   local observations.
+
+7.2.  Bundle Store and Memory Sizing
+
+   If the strip-and-replace optimization in Section 3.6 is not used,
+   bundles can accumulate multiple CPBs across hops.  Each CPB occupies
+   approximately 8-32 bytes of CBOR plus any BPSec BIB overhead.
+   Implementations on memory-constrained nodes SHOULD bound the number
+   of retained CPBs per bundle and apply the optional removal of earlier
+   instances when appending a fresher CPB.
+
+   Bundle stores SHOULD account for the additional per-bundle overhead
+   when dimensioning for CPB-enabled traffic.
+
+7.3.  Computational and Storage Overhead on Constrained Nodes
+
+   Decoding a CPB map (up to 8 path entries) requires CBOR parsing of
+   roughly 32-100 bytes.  On commodity hardware this is sub-millisecond;
+   on microcontrollers using software floating-point it may be several
+   milliseconds per CPB.
+
+   If the CPB is protected by a BPSec BIB, each consumption requires a
+   signature or MAC verification.  Implementations SHOULD cache
+   verification results for the duration of bundle processing.
+
+   Route recomputation triggered by new CPB observations can be bounded
+   by the hysteresis and rate-limiting techniques described in
+   Section 4.1.
+
+   Implementations SHOULD publish concrete profiling numbers (CPU cycles
+   per CPB, memory delta, etc.) alongside interoperability reports, per
+   the guidance in [RFC7942].
+
+7.4.  Logging, Monitoring, and OAM
+
+   Nodes SHOULD log CPB-related events (reception of invalid floats,
+   scheme mismatches, version numbers higher than supported, BIB
+   verification failures on CPBs, etc.) using the mechanisms defined in
+   [RFC9675] Section 4.3.
+
+   When a CPB is discarded due to age, future-dated timestamp, or
+   malformed content, a management event SHOULD be generated to aid
+   debugging of clock skew or misbehaving producers.
+
+7.5.  Partial Deployment
+
+   CPB is designed for incremental deployment.  Nodes that do not
+   recognize the block type pass it through unchanged (see Section 6).
+   However, the routing quality improvement is only realized by CPB-
+   aware forwarders.  Deployments SHOULD monitor the fraction of CPB-
+   aware nodes and may choose to emit CPBs only on segments where a
+   useful number of consumers exist.
+
+7.6.  Congestion and Storage Pressure
+
+   Probability-aware routing tends to concentrate traffic on high-
+   confidence routes.  Under sustained load this can lead to congestion
+   on preferred paths and storage pressure at intermediate nodes.
+
+   The mitigations in Section 4.1 (hysteresis on route changes, minimum
+   interval between CPB-triggered recomputations, and explicit rate
+   limiting) are RECOMMENDED.  Operators SHOULD monitor queue depths and
+   delivery ratios on high-confidence routes and be prepared to fall
+   back to confidence-blind policies or to reduce CPB production rate
+   during overload.
+
+7.7.  Clock Considerations
+
+   CPB timestamps are in DTN epoch seconds.  In networks with light-time
+   delay or unsynchronized clocks, the age and future-dated checks in
+   Section 4.1 must use deployment-specific drift and max_age values.
+   Interplanetary links commonly use larger tolerances (e.g., +/- 600 s
+   drift, 86400 s max age) than terrestrial ones.
+
+8.  Security Considerations
+
+8.1.  Threat Model
+
+   *  *Untrusted networks:* An attacker could inject false probability
+      values to cause mis-routing (sinkhole via inflated, blackhole via
+      deflated probabilities)
+
+   *  *Stale data:* A captured bundle with outdated probabilities could
+      cause poor routing decisions
+
+   *  *Inference attacks:* Observing probability values over time could
+      reveal traffic patterns or network topology
+
+   *  *Route poisoning by semi-trusted relays:* A relay that holds valid
+      credentials within an administrative domain may still produce CPB
+      advertisements that systematically bias routing decisions toward
+      itself, away from a competitor, or against specific destinations
+
+   *  *Replay of stale CPBs:* An attacker captures a recent valid (BIB-
+      signed) CPB and replays it later when the underlying conditions
+      have changed
+
+   *  *Inter-domain trust escalation:* A CPB created by an entity
+      trusted in one administrative domain crosses into a second domain
+      where the producer is unknown; the second domain has no basis for
+      trust evaluation
+
+8.2.  Trust Model
+
+   This document does not mandate a single trust model because DTN
+   deployments span a wide range of administrative scenarios — from a
+   single-operator interplanetary relay network to multi-party
+   terrestrial mesh deployments.  Instead, this subsection identifies
+   the trust questions every CPB deployment MUST answer in its local
+   trust policy, and provides default guidance.
+
+8.2.1.  Who is Authorized to Append CPBs
+
+   By default, any node along the bundle's path MAY append a CPB.  This
+   is permissive and suitable for low-stakes deployments where the cost
+   of bad routing is recoverable.  For higher-stakes deployments, the
+   local trust policy SHOULD restrict CPB authorship to a named set of
+   authorized PCEs (identified by the source PCE identifier field, field
+   3), or to nodes possessing a specific BPSec credential.  CPBs from
+   unauthorized sources SHOULD be discarded, with the event logged per
+   [RFC9675] Section 4.3.
+
+8.2.2.  Cryptographic Adjudication of Conflicting CPBs
+
+   When a bundle carries multiple CPBs from different sources with
+   conflicting probabilities, the precedence rules of Section 3.6 select
+   one.  Those rules SHOULD be evaluated only after BIB verification of
+   each CPB; unsigned or BIB-invalid CPBs MUST be excluded from the
+   precedence calculation in trust-policy contexts that require
+   authentication.  A receiver MUST NOT apply the metric-type-
+   specificity tie-breaker (Section 3.6 step 3) to elevate a less-
+   trusted source over a more-trusted one; trust ranking takes
+   precedence over metric specificity.
+
+8.2.3.  Downstream Handling of Upstream BIBs
+
+   A downstream router that cannot verify an upstream BIB (missing key
+   material, expired credentials, unrecognized security context) has two
+   acceptable behaviors:
+
+   *  *Strict:* Treat the unverifiable CPB as absent for routing
+      decisions, and forward the bundle unchanged so that downstream
+      routers with the correct credentials may still consume it.  This
+      is RECOMMENDED as the default.
+
+   *  *Permissive:* Use the unverified CPB advisorily, treating it as
+      metric-type 4 (generic) regardless of its declared metric-type.
+      This is NOT RECOMMENDED in adversarial environments but may be
+      appropriate in cooperative single-operator deployments where
+      credential rollout lags CPB adoption.
+
+   A router MUST NOT silently strip an unverifiable BIB-protected CPB
+   and re-sign it with its own credentials.  Doing so launders
+   provenance and breaks the append-only trust chain.  If a router needs
+   to express a different probability estimate, it MUST append a new CPB
+   with its own BIB rather than modifying or replacing the original.
+
+8.2.4.  Route Poisoning by Semi-Trusted Relays
+
+   A relay that is trusted enough to participate in the network, but not
+   trusted to make routing decisions for the entire domain, can still
+   degrade routing by producing biased CPB advertisements.  Defenses
+   against this attack model are imperfect at the CPB layer.
+   Mitigations SHOULD include:
+
+   *  Plausibility checks: a receiver SHOULD compare the asserted CPB
+      probability against locally observed delivery statistics for the
+      same next-hop.  CPBs that deviate beyond a deployment-specific
+      tolerance (default: factor of 2) should be discounted or
+      discarded.
+
+   *  Source reputation: trust policies MAY maintain per-source
+      reputation scores derived from historical accuracy, and weight
+      CPBs by source reputation when consuming them.  CPB itself does
+      not specify a reputation mechanism; the DTN Management
+      Architecture ([RFC9675]) is the appropriate vehicle.
+
+   *  Bounded influence (Section 4.4): cap how much any single CPB can
+      shift the local routing decision relative to the router's own
+      observations.
+
+   None of these mitigations defeat a sufficiently capable adversary.
+   They raise the cost of route poisoning and make casual misbehavior
+   more detectable.  Trust frameworks that fully close this gap (e.g.,
+   formal reputation aggregation or attestation chains) are out of scope
+   for this document.
+
+8.2.5.  Inter-Domain Trust
+
+   When a bundle carrying a CPB crosses an administrative boundary, the
+   receiving domain has no a priori basis for trusting the CPB's
+   producer.  Inter-domain trust SHOULD be established via one of the
+   following approaches:
+
+   *  A bilateral or multilateral trust agreement that designates which
+      PCE identifiers and BIB credentials from the foreign domain are
+      accepted
+
+   *  A gateway router at the domain boundary that consumes the foreign
+      CPB advisorily, validates it against local observations, and
+      (optionally) appends a domain-native CPB expressing the gateway's
+      translated assessment
+
+   *  A policy of discarding all CPBs at the domain boundary, with the
+      receiving domain regenerating CPBs internally from its own
+      observations
+
+   This document does not standardize inter-domain trust establishment.
+   Deployments SHOULD document their inter-domain CPB policy explicitly.
+   This area is identified as an open question in Section 12.11.
+
+8.2.6.  Replay Resistance
+
+   The timestamp (field 2) and validity duration (field 4), combined
+   with the skew tolerances defined in Section 4.1, provide replay
+   resistance that scales with the configured age threshold.  For
+   stronger protection, BIB coverage must include the timestamp.  An
+   attacker who can rewrite the timestamp without invalidating the BIB
+   defeats the mechanism.  Implementations MUST ensure that the BIB
+   security target list covers the entire CPB block.
+
+8.3.  Integrity Protection
+
+   For deployments in untrusted networks or where source authentication
+   is required, the CPB MUST be protected using Bundle Integrity Blocks
+   (BIBs) as defined in [RFC9172] (BPSec).
+
+8.3.1.  Source CPB with Append-Only Intermediates
+
+   The source creates a CPB and attaches a BIB protecting only that
+   CPB's block number.  Intermediate routers with fresher probability
+   estimates append new CPB blocks without modifying the source's CPB.
+
+8.3.2.  Strip-and-Replace Model
+
+   As an alternative, implementations MAY use a strip-and-replace model
+   where each forwarder validates the previous CPB, removes it, inserts
+   a fresh CPB with its own probability estimate, and signs it with its
+   own BIB.  Deployments SHOULD choose one model per administrative
+   domain and document the policy.
+
+8.3.3.  Prohibition on BCB Encryption
+
+   Implementations MUST NOT encrypt the CPB using a Block
+   Confidentiality Block (BCB).  Encrypting a routing-critical extension
+   block renders it opaque to the forwarding nodes that need it.
+   Integrity protection (BIB) is appropriate; confidentiality protection
+   (BCB) is not.
+
+8.4.  Mitigations
+
+   *  Signature verification before using CPB for critical routing
+      decisions
+
+   *  Timestamp validation (discard old or future-dated CPBs)
+
+   *  Secondary validation against local contact statistics
+
+   *  Conservative thresholds for critical payloads
+
+8.5.  Privacy Considerations
+
+   CPB metadata may reveal information about network topology and
+   operational patterns.  Per-path probability entries expose which
+   next-hop nodes are reachable; the source PCE identifier (field 3)
+   identifies the entity that computed the probability.  Deployments in
+   adversarial environments SHOULD consider omitting the source PCE
+   identifier when source attribution is not required.
+
+9.  IANA Considerations
+
+   This document requests IANA to assign a new codepoint from the
+   "Bundle Block Types" registry as defined in [RFC9171], Section 9.1,
+   under the Specification Required registration policy ([RFC8126]).
+
+   *Suggested Value:* The RFC authors suggest code point 0x1A (26
+   decimal) as a suitable unassigned value.  The final value will be
+   assigned by IANA upon publication; the value 0xC8 used throughout
+   examples in this document is a non-normative placeholder.
+   Implementations MUST NOT hardcode 0xC8 and SHOULD parameterize the
+   block-type code so that the IANA-assigned value can be substituted
+   post-publication.
+
+   This document additionally requests IANA to create a "CPB Metric
+   Types" sub-registry of the Bundle Block Types registry.  The
+   registration policy for the sub-registry is Specification Required.
+   Initial registrations are:
+
+   *  0: PRoPHET Delivery Predictability
+
+   *  1: CGR Contact Confidence
+
+   *  2: MaxProp Path Cost (inverted)
+
+   *  3: RAPID Utility Metric
+
+   *  4: Generic Probability
+
+   Values 5-255 are unassigned.  Future assignments in this range
+   require a specification and expert review.
+
+10.  Overhead Analysis
+
+    +=================+========+=============+============+===========+
+    | Payload (bytes) | Base   | CPB minimal | CPB full   | Overhead  |
+    |                 | Bundle | (8 bytes)   | (32 bytes) | Range     |
+    +=================+========+=============+============+===========+
+    | 50              | ~100   | ~108        | ~132       | 8-32%     |
+    +-----------------+--------+-------------+------------+-----------+
+    | 256             | ~306   | ~314        | ~338       | 2.6-10.5% |
+    +-----------------+--------+-------------+------------+-----------+
+    | 1024            | ~1074  | ~1082       | ~1106      | 0.7-3.0%  |
+    +-----------------+--------+-------------+------------+-----------+
+    | 4096            | ~4146  | ~4154       | ~4178      | 0.2-0.8%  |
+    +-----------------+--------+-------------+------------+-----------+
+
+                 Table 2: CPB Byte Overhead vs Payload Size
+
+   For kilobyte-scale payloads typical of DTN sensor data, overhead is
+   below 3% even with full CPB fields.
+
+   Empirical measurement on the reference encoder and a live ION testbed
+   (see Section 12.6) produced 51 bytes of overhead for a full CPB
+   (float16 default probability + path entries + timestamp + validity +
+   metric type + confidence) plus its BTSD wrapper when added to a
+   minimal BPv7 bundle (76 B plain → 127 B with CPB).  This is higher
+   than the idealized "CPB full (32 bytes)" row above because of
+   concrete CBOR map/array encoding and the BTSD block structure; it
+   remains small in absolute terms for any realistic DTN ADU.
+
+10.1.  Computational and Storage Overhead
+
+   The table above quantifies only wire-byte overhead.  CPB consumption
+   imposes additional costs on forwarders that SHOULD be considered when
+   sizing a CPB-enabled deployment, particularly on constrained nodes:
+
+   CBOR decode cost  Decoding the CPB map (up to 8 path entries)
+      requires CBOR parsing of approximately 32-100 bytes per CPB.  On
+      commodity hardware this is sub-millisecond; on constrained
+      microcontrollers with software floating-point it may be several
+      milliseconds per CPB.
+
+   BIB verification cost  If the CPB is BPSec-protected, each
+      consumption requires a signature verification.  Public key
+      verification (ECDSA, Ed25519, HMAC) costs vary by algorithm and
+      hardware support.  In the worst case (resource-constrained node,
+      no hardware crypto), BIB verification can dominate CPB processing
+      time.  Implementations SHOULD cache verification results per
+      (block-number, BIB-block-number) tuple within a single bundle's
+      processing window.
+
+   Route recomputation  Each new CPB observation potentially triggers
+      route recomputation.  For a confidence-weighted routing policy
+      consuming CPB data (see CGR-UCoP [Fraire18] as prior art), the
+      cost is dominated by the contact-graph traversal, which scales as
+      O(C log C) where C is the contact-plan size; CPB consumption adds
+      a per-edge multiplication.  The hysteresis and rate-limiting
+      techniques of Section 4.4 bound the recomputation rate.
+
+   Memory pressure from multi-CPB accumulation  If the strip-and-replace
+      model (Section 8.3.2) is not used, bundles can accumulate multiple
+      CPBs across hops.  Each CPB occupies up to ~32 bytes plus BIB
+      overhead.  Bundle store memory pressure SHOULD be considered when
+      designing CPB production policy; the optional optimization in
+      Section 3.6 (a node appending a new CPB MAY remove earlier CPB
+      instances) is relevant here.
+
+   Aging-logic cost  Maintaining timestamp-aware probability decay
+      (Section 4.1) requires periodic re-evaluation of cached CPB values
+      against the current clock.  This is O(1) per cached CPB but the
+      cache itself SHOULD have a bounded size.
+
+   On constrained DTN nodes, CPU and storage costs frequently exceed
+   wire-byte costs in their operational impact.  Concrete profiling
+   numbers depend on the BP implementation, the cryptographic algorithms
+   in use, and the deployment topology, and are not provided in this
+   document.  Implementations SHOULD publish their measured overhead
+   alongside interoperability reports per [RFC7942].
+
+11.  Implementation Status
+
+   This section is to be removed before publishing as an RFC.
+
+   _[Note to RFC Editor: per [RFC7942], this section may be removed
+   before publication.]_
+
+   This section records the status of implementations of the Contact
+   Probability Block at the time of writing, in accordance with
+   [RFC7942].
+
+   Reference Python Implementation
+      *  *Organization:* Independent (N.  Perry)
+
+      *  *Repository:* https://github.com/luckyseoul/draft-perry-dtn-cpb
+         (https://github.com/luckyseoul/draft-perry-dtn-cpb)
+
+      *  *License:* MIT License
+
+      *  *Modules:* cpb.py (encoder/decoder, ~600 LOC), test_cpb.py
+         (23-test conformance suite), config1_sim.py (discrete-event
+         simulator producing the Section 12 results).
+
+      *  *Coverage:* Block structure (Section 3.2), block processing
+         flags (Section 3.2.1), CBOR encoding rules (Section 3.4),
+         invalid-float handling (Section 3.4.1), hex encoding table
+         (Section 3.4.3), multiple-CPB precedence (Section 3.6), per-
+         path matching (Section 3.6.1), CPB creation (Section 4.1),
+         intermediate processing (Section 4.2), 8-entry DoS limit
+         (Section 3.4), backwards compatibility (Section 6).
+
+      *  *Maturity:* Reference implementation.  All 23 conformance tests
+         pass on Python 3.10+ with cbor2 5.9.0.  Byte-exact encoding
+         match against Figure 2 and Figure 7 and the hex table in
+         Section 3.4.3.  Round-trip byte stability verified across
+         multiple cycles.
+
+      *  *Contact:* nick@perrybrandsllc.com
+
+   Simulation-Based Validation  Validation of CPB's routing impact was
+      conducted via the pure-Python discrete-event simulator
+      config1_sim.py, which implements both vanilla CGR (earliest-
+      arrival) and several experimental consumers of CPB confidence data
+      over a multi-asset adversarial Mars topology.  Section 12 reports
+      the authoritative 80-seed adversarial massive topology study (12
+      rovers, 8 orbiters, 2 relays, 6 grounds).  The simulator is fully
+      deterministic per seed and reproduces to the digit on any Python
+      3.10+ environment with cbor2 installed.  CGR-UCoP [Fraire18] was
+      used only as prior art for simulation parameters and basic
+      validation.
+
+   Implementations Considered but Not Exercised  The author also
+      installed and partially configured two production DTN reference
+      implementations during the development of this specification.
+      Neither produced data reported in this document; both are noted
+      here for transparency:
+
+      *  *The ONE Simulator v1.6.0:* Installed and a probability-aware
+         Spray-and-Wait router was drafted.  No results from The ONE are
+         reported in Section 12.
+
+      *  *NASA ION v4.1.0:* Limited real end-to-end data-plane
+         transmission results are reported in the Real ION Testbed entry
+         above and in Section 12.6.
+
+   No other implementations are known to the author at the time of
+   writing.  Reports of new implementations are encouraged.
+
+12.  Experiment Description
+
+   This section describes the experiment by which the Contact
+   Probability Block specification is validated.  Per [RFC2026]
+   Section 4.2.1, an Experimental specification is accompanied by a
+   description of the experiment in concrete, falsifiable terms.
+
+12.1.  Scope and Hypothesis
+
+   The experiment tests a single core hypothesis: that carrying per-
+   contact probability metadata inside BPv7 bundles as an extension
+   block enables routing protocols to deliver bundles that would
+   otherwise be lost, in networks where contact opportunities are
+   stochastic and multiple competing routes exist.
+
+   The primary metric is delivery ratio.  End-to-end latency is reported
+   as a secondary metric.
+
+12.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
+
+   The experiment uses a multi-asset Mars-to-Earth relay topology with
+   four surface assets, four orbiters, one deep-space relay, and three
+   ground stations.  All node identifiers in the topology use the "ipn"
+   URI scheme as updated by [RFC9758]; node numbers shown are Default
+   Allocator FQNNs.
+
+   Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
+   1--+-->A(1200s)---+
+   2--+-->B(1500s)---+-->Relay--+-->G1
+   3--+-->C(1800s)---+          +-->G2
+   4--+-->D(2400s)---+          +-->G3
+
+                          Figure 8: Test Topology
+
+    +=======+================+================+===========+===========+
+    | Rover | Orbiter-A (10) | Orbiter-B (11) | Orbiter-C | Orbiter-D |
+    |       |                |                | (12)      | (13)      |
+    +=======+================+================+===========+===========+
+    | 1     | 0.78           | 0.92           | 0.85      | 0.96      |
+    +-------+----------------+----------------+-----------+-----------+
+    | 2     | 0.85           | 0.78           | 0.96      | 0.92      |
+    +-------+----------------+----------------+-----------+-----------+
+    | 3     | 0.92           | 0.96           | 0.78      | 0.85      |
+    +-------+----------------+----------------+-----------+-----------+
+    | 4     | 0.96           | 0.85           | 0.92      | 0.78      |
+    +-------+----------------+----------------+-----------+-----------+
+
+            Table 3: Per-(Rover, Orbiter) Success Probabilities
+
+12.3.  Routing Policies Tested
+
+   CPB is a BPv7 extension block that carries per-contact probability
+   metadata.  The policies below are simulator-internal consumers of
+   that metadata.  CGR-UCoP [Fraire18] is referenced only as prior art
+   consulted during construction of the simulation parameters and for
+   basic cross-validation; it is not the conceptual basis for the CPB
+   block itself.
+
+   Baseline: Vanilla CGR (earliest arrival)  Standard Contact Graph
+      Routing.  The cost of a candidate route is its earliest predicted
+      arrival time.  Confidence values are ignored.
+
+   Rate-aware CPB consumer (labeled "cpb")  Experimental consumer of CPB
+      data (metric-type 1) that also incorporates negotiated data rates.
+      Route cost is computed as latency / (confidence ×
+      bottleneck_rate).
+
+   Risk-averse CPB consumer (labeled "cpb-risk")  Stronger experimental
+      consumer that adds an explicit quadratic penalty on low-confidence
+      links: cost = latency + (1 − confidence)² × 5000.
+
+   Other consumers (prophet, maxprop, spray)  PROPHET, MaxProp, and
+      Spray-and-Wait style consumers.  The PROPHET and MaxProp versions
+      maintain protocol state (delivery predictability and path costs,
+      respectively) and consult CPB confidence when available.  The
+      Spray-and-Wait version is more approximate due to simulator
+      architecture constraints and is presented as directional evidence
+      only (see Section 12.5).
+
+12.4.  Methodology
+
+   The simulator is a Python implementation using the adversarial
+   "massive" contact topology (12 rovers, 8 orbiters, 2 relays, 6
+   grounds) with contact success probabilities in the 0.55–0.72 range on
+   the critical rover-orbiter hop and data rates generated independently
+   of confidence.  Each simulation runs for 7 days of simulated time
+   with bundles generated every 30 s per rover after warm-up.
+
+   The study used 80 independent seeds on high-core x86 hardware.  For
+   each seed and each policy, the simulator executes over identical
+   contact-failure realizations.  The primary policies exercised were:
+
+   *  Baseline (vanilla CGR): earliest-arrival routing with no use of
+      per-contact confidence.
+
+   *  Rate-aware CPB consumer ("cpb"): cost = latency / rate + light
+      explicit penalty on low confidence.
+
+   *  Risk-averse CPB consumer ("cpb-risk"): cost = latency + (1 −
+      confidence)² × constant.
+
+   *  PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
+      each implemented in two forms: a "classic" version that does not
+      consult CPB confidence values, and a "cpb" version that
+      additionally uses the confidence metadata carried in CPB blocks
+      (metric-type 1) to initialize or adjust internal state (delivery
+      predictability for PROPHET, path costs for MaxProp, spray-target
+      selection for Spray-and-Wait).
+
+12.5.  Results
+
+   The study used the adversarial "massive" topology (12 rovers, 8
+   orbiters, 2 relays, 6 grounds) with contact success probabilities
+   deliberately generated in the 0.55–0.72 range on the critical rover-
+   orbiter hop and per-contact data rates generated independently of
+   confidence. 80 independent seeds were executed on high-core x86
+   hardware.
+
+   For each seed, the following policies were exercised over identical
+   contact-failure realizations:
+
+   *  Baseline (vanilla CGR): confidence-blind earliest-arrival routing.
+
+   *  Rate-aware CPB consumer ("cpb").
+
+   *  Risk-averse CPB consumer ("cpb-risk").
+
+   *  PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
+      each implemented in both a "classic" form (no use of CPB
+      confidence) and a "cpb" form that additionally consults the per-
+      contact confidence values carried in CPB blocks.
+
+   *Primary findings (80 seeds, adversarial massive topology):*
+
+   *  Baseline (vanilla CGR) delivery was 0.9762 with high tail latency
+      (p95 ≈ 455 s).
+
+   *  The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
+      ("cpb-risk") both achieved 0.9996 delivery with tight tails (p95 =
+      120 s).
+
+   *  PROPHET classic (no CPB): 0.9819 delivery, low average latency but
+      poor tails (p95 ≈ 369 s).  With CPB: 0.9996 delivery, p95 = 120 s.
+
+   *  MaxProp classic (no CPB): 0.9822 delivery, similarly optimistic
+      latency but weak tails.  With CPB: 0.9996 delivery, p95 = 120 s.
+
+   *  Spray-and-Wait classic (no CPB): 0.9663 delivery (worse than
+      baseline) with anomalous latency behavior in early
+      implementations.  With CPB: 0.9946 delivery and materially
+      improved tails (p95 ≈ 203 s).  Even with the guard, Spray-and-Wait
+      remains the weakest of the advanced consumers.
+
+   *Interpretation.* The data demonstrate that CPB confidence metadata
+   provides substantial, consistent reliability gains to probabilistic
+   routing protocols (PROPHET, MaxProp, and Spray-and-Wait) when they
+   can consult it.  In the absence of CPB, these protocols are
+   optimistic: they achieve better latency on the bundles that succeed,
+   but suffer materially higher loss rates and worse tails under
+   adversarial conditions.  When CPB confidence is available, they
+   become better calibrated and the loss rate drops dramatically.
+
+   *Limitations and caveats.* The Spray-and-Wait implementations are the
+   most constrained by the simulator architecture (bundle-centric rather
+   than full per-node event-driven).  Early versions produced anomalous
+   (including negative) latency values; a runtime guard was added to
+   enforce forward-looking route selection.  The Spray-and-Wait results
+   should therefore be treated as directional only.  In operational
+   deployments, Spray-and-Wait with CPB is best regarded as a method of
+   last resort when more capable probability-aware forwarding is
+   unavailable.  The study also does not address noisy or adversarially
+   supplied confidence values; those questions are left for future work.
+
+12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed)
+
+   In addition to the discrete-event simulation, an expanded end-to-end
+   data-plane validation was executed on a live three-node NASA ION
+   v4.1.0 testbed on the IPNSIG PWG Tailscale mesh (samo.grasic@
+   account) plus dedicated emulated targets.  The nodes were soulkiller
+   (268485122 at 100.91.23.41), orin (268485121 at 100.92.115.65), and
+   horus (268485123 at 100.65.168.37), with emulated Moon (268484801),
+   Mars (268484820), and gateway (268485000) reached via plans to the
+   public gateway IP 100.96.108.37.  All reals used UDPCL on port 4556
+   with long-duration bidirectional contacts, cfdp + bputa for CPB
+   injection (cfdp entities configured for the emulated EIDs), ionsec
+   default key, and DTNEx for dynamic CBOR contact/probability exchange
+   on .12160/.12161.  UFW was enabled on all three hosts (default deny
+   incoming) with explicit allows for UDP 4556 (core UDPCL), 4557, and
+   12160 (DTNEx/CBOR) from the 100.0.0.0/8 and 100.64.0.0/10 Tailscale
+   ranges plus on the tailscale0 interface (executed after explicit
+   operator instruction to make any needed firewall exemptions).
+
+   Two phases were executed using the reference packet.py + cpb.py
+   (minimal CPB map with F_DEFAULT_PROB + F_PATH_ENTRIES using IEEE
+   binary16 float per draft Section 3.4 canonical CBOR encoding; the
+   deployed cpb.py did not insert an F_VERSION key).
+
+   Phase 1 (72 messages): Each of the three real nodes sent the eight
+   quirky one-liner payloads with-CPB (using the eight adversarial
+   probabilities 0.65..0.99) to each of the three dedicated "my nodes"
+   (gateway 268485000, Moon 268484801, Mars 268484820).  Bundles were
+   created with source = sending real EID and injected via bputa to the
+   destination cfdp entity after cfdpadmin update (enabling bputa,
+   discard=0, segsize=1400, requirecrc=0). cfdpclock + bputa were
+   confirmed running on the injector before each batch.
+
+   Phase 2 (32 messages, test nodes to each other ONLY): The eight
+   quirky payloads were sent bidirectional (Moon→Mars and Mars→Moon),
+   both with-CPB and plain (no CPB block).  Bundles were created with
+   source = originating emulated EID and destination = the other
+   emulated EID, then bputa-injected from soulkiller to the destination
+   test entity's cfdp number (to 268484820 for all Moon→Mars bundles; to
+   268484801 for all Mars→Moon bundles).  This batch was strictly
+   between the two test nodes; no real nodes, gateway 000, or published
+   nodes (008/800/657) were involved.
+
+   All bundles (104 total) were produced by the reference encoder,
+   successfully injected, and appeared in bplist for the target EIDs
+   (frequently "Queued for forwarding to .0" or destination .12160 on
+   the reals).  With-CPB bundles measured 51 B overhead relative to
+   otherwise identical plain bundles.  The 32 test-to-each-other .bundle
+   files (plus representative 72-batch and per-sender captures) plus
+   snapshot copies are preserved under impl/real-pwg-deployment/
+   timeline1/ (cpb_test_to_each_other/, cpb_with_verification/,
+   receive_logs/, etc.), with full command history and status in
+   real_cpb_packet_test/LIVE_TRANSMISSION_STATUS.txt and the timeline1
+   snapshot (also rsynced to orin backup and tarballed).
+
+   Wire-format and intact-CPB evidence: Wireshark 4.6.4 (with tshark)
+   was installed on soulkiller; the presence of "Bundle Protocol", "DTN
+   Bundle Protocol Version 7 (BPv7)", and "BPv7 Block Type" dissectors
+   was confirmed via tshark -G protocols.  A detailed manual CBOR + hex
+   dissection (with pcap conversion) was performed on the concrete
+   example moon_to_mars_with_cpb_01_save.bundle (121 B, first quirky
+   line with prob ~0.65).  The full wire bytes are:
+
+   88070000498201821a1000c0c101498201821a1000c0d401498201821a1000c0
+   c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
+   8518c80011005150a200f939330181821a1000c0d4f9393384010000581b7361
+   7665206120686f7273652c2072696465206120636f77626f79
+
+   Primary block (first CBOR array, 40 bytes): version 7, flags 0, CRC
+   type 0, source ipn:268484801.1, destination ipn:268484820.1, report-
+   to same as source, creation timestamp [1780731656, 0], lifetime 3600.
+   This matches the primary constructed by
+   packet.py:create_bundle_with_cpb.
+
+   Previous Node block (type 6): [6, 0, source EID].
+
+   Hop Count block (type 10): [10, 0, [0, 32]].
+
+   Extension block 200 (the CPB, bytes starting at offset 0x40): [200,
+   0, 0x11 (REPLICATE|DISCARD), 0, BTSD].  The BTSD bstr is
+   50a200f939330181821a1000c0d4f93933, which decodes to the canonical
+   CBOR map {0: 0.64990234375 (float16 0xf93933 per draft 3.4), 1:
+   [[268484820, 0.64990234375]]}. This is byte-exact to the output of
+   cpb.encode_btsd() for the dict passed from create_bundle_with_cpb
+   (F_DEFAULT_PROB and single F_PATH_ENTRIES entry; no F_VERSION key in
+   the runtime encoder used for these runs).
+
+   Payload block (type 1): the 27-byte string "save a horse, ride a
+   cowboy".
+
+   The CPB block and its single direct path entry were bit-for-bit
+   faithful to the encoder output; no appended path entries or
+   probability mutations were present.  The same structure (varying only
+   the probability value and target node in the path entry) appears in
+   all 16 with-CPB bundles from the Phase-2 batch.
+
+   Receive-side collection: bpsink + receiver.py (bprecv + CPB scanner)
+   + recv_cpb.py were run on the emulated EIDs/services (.1 and .12160)
+   across the three reals for a 30 s drain window immediately after the
+   32 test-to-each-other injections. 12 log files were captured and
+   snapshotted (under timeline1/receive_logs/).  Zero quirky payload
+   strings were observed in the logs, and no receive-side CPB decodes
+   were triggered in that window.  This is consistent with the CFDP-
+   wrapped bputa injection model and the emulated targets (plan + cfdp
+   entity only; bundles frequently remained in bplist forwarding queues
+   rather than local app delivery to a .1 endpoint).
+
+   Decode verification (post-injection): recv_cpb.py and the receiver
+   scanner were run against the source .bundle files and the from_*
+   captures.  Every with-CPB bundle decoded successfully to its original
+   map (single direct path entry + the assigned adversarial probability
+   for that quirky line).  No path updates or probability changes were
+   observed.
+
+   Full artifacts and reproduction details (the exact 32 bidirectional
+   test-to-each-other bundles with+plain, representative 72-batch
+   artifacts, pcap conversion scripts, the detailed bundle breakdown,
+   all receiver/bpsink/recv_cpb logs, bplist snapshots before/after, the
+   three host*.rc + start-*.sh, the generated ION-PWG-DTN-FAQ.pdf,
+   updated LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each
+   other ONLY - completed" and "CPB decode verification" paragraphs,
+   timeline1 snapshot directory, and tarballs) live in impl/real-pwg-
+   deployment/timeline1/ and real_cpb_packet_test/.
+
+   *Limitations of this validation (distinct from the simulation).* The
+   emulated targets (268484801/820) are plan + cfdp-entity constructs
+   only; no full ION daemons run on those EIDs.  Consequently, many
+   bundles remained in bplist "Queued for forwarding to .0" (or
+   destination .12160) state rather than being delivered as app data to
+   a .1 endpoint that bpsink or a native receiver would print.  The
+   Phase 2 (32-message) batch was injected locally on soulkiller via
+   bputa to the cfdp entity for the destination test node (a short
+   "span" within the plan/CFDP layer on one host). bpsink and receiver
+   runs during the 30 s collection window surfaced zero quirky payloads
+   and did not trigger receive-side CPB decodes.  Full in-band
+   consumption of the CPB values by ION CGR (or DTNEx) for actual
+   forwarding decisions was not exercised.  Injection of pre-formed
+   bundles required bputa (CFDP "put file"); standard bpsource does not
+   provide an equivalent path for embedding an experimental extension
+   block.  Stable operation required the usual SDR/shmmax/key/cfdp setup
+   plus the UFW exemptions noted above.  No BPSec was applied in these
+   runs.  The validation therefore demonstrates creation, bputa/CFDP
+   injection, UDPCL carriage over a real multi-node Tailscale mesh with
+   DTNEx, bplist visibility, and wire-format survival of the unknown ext
+   block 200 carrying the CPB CBOR map (float16 probabilities + path
+   entries) exactly as encoded, but does not constitute a full multi-hop
+   routing-policy experiment with in-band CPB consumption on real
+   hardware.
+
+12.7.  Goals (per RFC 2026 Section 4.2.1)
+
+   1.  Determine whether CPB-enhanced routing improves delivery ratio
+       under adversarial conditions with rate-aware costing.  *Met.* In
+       the 80-seed adversarial massive study, baseline delivery was
+       0.9762 while the CPB-augmented policies (cpb, cpb-risk, and the
+       CPB-augmented versions of PROPHET and MaxProp) reached 0.9996,
+       with the Spray-and-Wait CPB version reaching 0.9946.  Gains were
+       consistent across all 80 seeds.
+
+   2.  Quantify CPB byte overhead. *Met by Section 10 analytical
+       bounds:* <3% for 1 KB+ payloads with full CPB.
+
+   3.  Validate interoperability via byte-exact encoder.  *Met:* 23
+       round-trip tests pass.
+
+   4.  Assess float16 precision sufficiency. *Met:* binary16
+       quantization produces identical route selections under the tested
+       policies in the configurations used.
+
+12.8.  Success Criteria (Met)
+
+   1.  Statistically significant improvement (p < 0.05).  *Met.* The
+       reliability gains for CPB-augmented policies versus baseline and
+       versus the corresponding classic (no-CPB) versions of PROPHET,
+       MaxProp, and Spray-and-Wait were consistent and large across all
+       80 seeds.
+
+   2.  Sample size sufficient for the claims made. *Met:* 80 independent
+       seeds on the adversarial massive topology, with each policy
+       exercised over identical contact realizations per seed.
+
+   3.  CPB byte overhead below 5% for 1 KB+ payloads. *Met
+       analytically.*
+
+   4.  No fundamental architectural conflicts with BPv7. *Met
+       technically:* CPB is a standard extension block, EID immutability
+       is preserved, BPSec integration is straightforward.  Operational
+       conflicts (trust framework, multi-domain CPB interaction,
+       control-theoretic stability) are addressed at specification level
+       but not closed by experimental demonstration.
+
+12.9.  Failure Criteria (Not Triggered)
+
+   1.  No measurable improvement. *Not triggered.*
+
+   2.  CPB byte overhead exceeds 10% for 1 KB payloads. *Not triggered.*
+
+   3.  CBOR encoding incompatibilities. *Not triggered.*
+
+   4.  BPSec integration produces irrecoverable failures. *Not exercised
+       in this configuration* (deferred to follow-up work).
+
+12.10.  Deferred Configurations
+
+   Spray-and-Wait in mobile ad-hoc topology requires multi-neighbor
+   concurrent encounters to differentiate from baseline; this regime is
+   not produced by sparse Random Waypoint topologies at the node counts
+   tested.  Multi-CPB accumulation across 20 hops is a correctness test
+   verified via byte-stable round-trips in the reference encoder; full
+   end-to-end demonstration is deferred to integration work with a
+   BPSec-enabled ION testbed.
+
+12.11.  Open Experimental Questions
+
+   The experiment in this document establishes baseline plausibility:
+   confidence-weighted routing fed by accurate CPB data outperforms
+   confidence-blind routing on the same contact-failure realizations.  A
+   complete validation of CPB as an operational standardized mechanism
+   requires answering a series of follow-on questions that this document
+   does not close.  These are enumerated here so that reviewers,
+   implementers, and follow-on researchers share a common list of what
+   remains to be demonstrated.
+
+   Robustness to noisy probability estimation  The simulator uses
+      ground-truth per-contact probabilities.  Real deployments must
+      estimate probabilities from historical observations or model
+      predictions, both of which are noisy.  Sensitivity analysis under
+      varying estimator noise (e.g., additive Gaussian noise on
+      confidences, biased estimators, estimator drift over time) is
+      needed to characterize the operational regime where CPB-driven
+      routing remains beneficial.
+
+   Behavior under stale probabilities  The age-threshold mechanism
+      (Section 4.1) defines when a CPB is discarded, but routing
+      behavior _just before_ the threshold fires (when probabilities are
+      old but not yet invalid) is unstudied.  A controlled experiment
+      varying CPB staleness against routing outcome would inform the
+      default max_age values.
+
+   Adversarial probability injection  The trust model (Section 8.2)
+      provides structural defenses, but their empirical effectiveness
+      against specific attack patterns (sinkhole inflation, blackhole
+      deflation, oscillation-induction, herding-induction) has not been
+      measured.  A red-team experiment with one or more adversarial CPB
+      producers in the network would quantify the cost of attack vs. the
+      cost of defense.
+
+   Conflicting CPBs from multiple administrative domains  Section 8.2.5
+      defines policy options but does not demonstrate which option works
+      in practice.  A multi-domain testbed with explicit trust
+      boundaries would characterize the gateway-translation, accept-all,
+      and discard-all strategies under realistic traffic.
+
+   Partial deployment behavior  CPB is designed for incremental
+      deployment: nodes that don't understand CPB pass it through
+      unchanged.  But the routing _quality_ in a mixed CPB-aware / CPB-
+      unaware network is not characterized.  Sensitivity to the fraction
+      of CPB-aware nodes would inform deployment phasing.
+
+   Congestion collapse and storage pressure  Probability-aware routing
+      concentrates traffic on high-confidence routes (Section 4.4).
+      Under sustained load this risks congestion collapse on the
+      preferred routes and storage pressure at intermediate nodes.  The
+      mitigations of Section 4.4 are RECOMMENDED but unmeasured.  A
+      high-load experiment varying bundle generation rate against
+      delivery ratio would test the failure mode directly.
+
+   Custody transfer interactions  CPB has been designed not to interfere
+      with BP custody transfer mechanisms ([RFC9171]), but the combined
+      behavior of custody-bound bundles carrying CPB data has not been
+      exercised end-to-end.  Particular attention should be paid to
+      whether custody acknowledgments themselves carry CPB-relevant
+      information and whether custody transfer policies should consume
+      CPB.
+
+   Heterogeneous fragmentation behavior  Section 3.2.1 defines CPB
+      behavior under fragmentation, but only the reference Python
+      encoder has been exercised against it.  Real BP implementations
+      (ION, HDTN, uPCN) have subtly different fragmentation pathways and
+      CPB replication behavior across implementations is unproven.
+
+   Interoperability with production BP stacks  This is the single
+      largest standards-process gap.  RFC publication at Experimental
+      status is acceptable with simulator-only validation, but
+      progression to Standards Track will require demonstrated
+      interoperability between at least two independent implementations
+      operating over real BPv7 stacks (canonically: NASA ION and an
+      independently-developed alternative such as HDTN, µPCN, or a fresh
+      implementation against this specification).  The reference Python
+      implementation (Section 13) does not count as an independent
+      implementation for this purpose, since it was developed alongside
+      the specification by the same author.  Expanded partial data-plane
+      evidence now exists on the NASA ION v4.1.0 PWG three-node +
+      emulated-target testbed (soulkiller 268485122, orin 268485121,
+      horus 268485123, plus emulated Moon 268484801, Mars 268484820, and
+      gateway 268485000).  The reference-encoded CPB (ext block 200 +
+      BTSD with canonical CBOR float16 map) was created for the eight
+      adversarial probabilities plus the exact quirky one-liners,
+      injected via bputa (after cfdpadmin entity setup for the emulated
+      EIDs), carried over live UDPCL on the Tailscale mesh with DTNEx
+      active, and remained intact on the wire (demonstrated via manual
+      CBOR/hex parse and Wireshark 4.6.4 with BPv7/Bundle/BPv7 Block
+      Type dissectors; see the detailed breakdown of
+      moon_to_mars_with_cpb_01_save.bundle in the updated Section 12.6).
+      72 messages (3 reals × 8 quirky × 3 dedicated targets with-CPB)
+      plus 32 messages (bidirectional between the two emulated test
+      nodes, with-CPB + plain) were executed.  UFW exemptions for the
+      DTN ports (4556/4557/12160) were added on all three hosts from the
+      Tailscale ranges (per explicit operator instruction).  All source
+      .bundle files, bplist snapshots, receiver logs, and timeline1
+      snapshot artifacts are preserved.  Full consumption of CPB values
+      by ION CGR (or DTNEx) for forwarding decisions, multi-hop
+      operation with in-band updates, and BPSec-protected bundles remain
+      open.
+
+   Control-theoretic stability analysis  Section 4.4 identifies feedback
+      dynamics qualitatively and recommends mitigations, but does not
+      provide a formal stability proof.  A control-theoretic analysis
+      (e.g., describing the routing system as a discrete-time dynamical
+      system with CPB-driven feedback and analyzing stability of fixed
+      points) would substantially strengthen the standards case for CPB-
+      driven routing in dense networks.
+
+   Metric-type cross-validation  Section 3.5 prohibits cross-metric
+      arithmetic but does not validate the prohibition empirically.
+      Whether a router making routing decisions from mixed-metric CPBs
+      in practice produces worse outcomes than a router strictly
+      partitioning by metric-type is an open empirical question.
+
+   Resolution of these questions is not a prerequisite for Experimental-
+   track publication, but each will need to be addressed before the CPB
+   mechanism can be reasonably considered for Standards Track.  The
+   author encourages the DTN research community to take up any subset of
+   these as follow-on work; the reference implementation and simulator
+   (Section 13) provide a starting point for such studies.
+
+13.  Reference Implementation
+
+   The reference implementation supporting this specification consists
+   of three Python modules:
+
+   *  *cpb.py* - CBOR encoder/decoder, implementing the CDDL schema in
+      Section 3.2 and the encoding rules in Section 3.4.
+
+   *  *test_cpb.py* - 23-test conformance suite.  All passing on Python
+      3.10+ with cbor2 5.9.0.
+
+   *  *config1_sim.py* - the discrete-event simulator that produced the
+      Section 12 results.
+
+13.1.  Repository
+
+   Source code is published under the MIT License License at:
+
+   https://github.com/luckyseoul/draft-perry-dtn-cpb
+   (https://github.com/luckyseoul/draft-perry-dtn-cpb)
+
+13.2.  Reproducing the Experiment Results
+
+   git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
+   cd draft-perry-dtn-cpb
+   pip install cbor2
+
+   python3 test_cpb.py       # 23 PASS lines
+   python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
+
+                      Figure 9: Reproduction Commands
+
+   The 2-node real-stack transmission results (with-CPB vs plain bundles
+   using the 8 adversarial probabilities, bputa injection after
+   cfdpadmin rc update, and observed delivery) are reproduced from the
+   exact bundles and instructions in impl/real-cpb-ion-test/ (see
+   real_cpb_ion_results.md, bundles/*.bundle and *.b64, the updated .rc
+   files in config/, packet.py for bundle assembly, and recv_cpb.py for
+   post-receipt CPB decoding on a captured bundle file).  Full end-to-
+   end transmission requires the specific ION testbed hardware,
+   Tailscale link, and IPN activation state; the bundle creation, cfdp
+   rc changes, bputa invocation, and decode steps are self-contained and
+   runnable on any ION installation that supports bputa.
+
+13.3.  Relationship to Updates of BPv7
+
+   [RFC9171] (BPv7) has been updated by [RFC9713] (administrative record
+   types registry, January 2025) and [RFC9758] (ipn URI scheme updates,
+   May 2025) since this CPB work began.  Neither update affects the wire
+   format defined in Section 3:
+
+   *  [RFC9713] concerns administrative record types; CPB is an
+      extension block, not an administrative record, so RFC 9713 does
+      not apply directly.
+
+   *  [RFC9758] updates the "ipn" URI scheme.  CPB implementations MUST
+      encode and decode ipn EIDs per RFC 9758, including Default
+      Allocator FQNNs.  The LocalNode ipn URI form (Allocator=0,
+      NodeNumber=2^32 - 1) has no meaning off-node and MUST NOT appear
+      in CPB path-entries transmitted to other nodes.
+
+   *  RFC 9171 erratum 8376 notes that BPv7 ADU fragmentation interacts
+      ambiguously with extension blocks.  CPB's fragmentation handling
+      is defined in Section 3.2.1.
+
+14.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [RFC9171]  Burleigh, S., Fall, K., and E. Birrane, "Bundle Protocol
+              Version 7", RFC 9171, DOI 10.17487/RFC9171, January 2022,
+              <https://www.rfc-editor.org/info/rfc9171>.
+
+   [RFC9172]  Birrane, E. and K. McKeever, "Bundle Protocol Security
+              (BPSec)", RFC 9172, DOI 10.17487/RFC9172, January 2022,
+              <https://www.rfc-editor.org/info/rfc9172>.
+
+   [RFC8949]  Bormann, C. and P. Hoffman, "Concise Binary Object
+              Representation (CBOR)", STD 94, RFC 8949,
+              DOI 10.17487/RFC8949, December 2020,
+              <https://www.rfc-editor.org/info/rfc8949>.
+
+   [RFC8610]  Birkholz, H., Vigano, C., and C. Bormann, "Concise Data
+              Definition Language (CDDL): A Notational Convention to
+              Express Concise Binary Object Representation (CBOR) and
+              JSON Data Structures", RFC 8610, DOI 10.17487/RFC8610,
+              June 2019, <https://www.rfc-editor.org/info/rfc8610>.
+
+   [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
+              Writing an IANA Considerations Section in RFCs", BCP 26,
+              RFC 8126, DOI 10.17487/RFC8126, June 2017,
+              <https://www.rfc-editor.org/info/rfc8126>.
+
+   [RFC2026]  Bradner, S., "The Internet Standards Process -- Revision
+              3", BCP 9, RFC 2026, DOI 10.17487/RFC2026, October 1996,
+              <https://www.rfc-editor.org/info/rfc2026>.
+
+   [RFC9713]  Sipos, B., "Bundle Protocol Version 7 Administrative
+              Record Types Registry", RFC 9713, DOI 10.17487/RFC9713,
+              January 2025, <https://www.rfc-editor.org/info/rfc9713>.
+
+   [RFC9758]  Taylor, R. and E. Birrane, "Updates to the "ipn" URI
+              Scheme", RFC 9758, DOI 10.17487/RFC9758, May 2025,
+              <https://www.rfc-editor.org/info/rfc9758>.
+
+15.  Informative References
+
+   [IPNSIG2023]
+              Kaneko, Y., Cerf, V., Tabunshchyk, H., Burleigh, S.,
+              Blanchet, M., Scott, K., Suzuki, K., Garcia, O., Chappell,
+              L., Danielson, H., Pace, S., Green, J., and J. Schier,
+              "Solar System Internet Architecture and Governance -- from
+              the Moon to Mars and beyond", September 2023,
+              <https://www.ipnsig.org/_files/ugd/
+              d716c2_5df0d50ff8ab466380dadc75e166cfcf.pdf>.
+
+   [RFC6693]  Lindgren, A., Doria, A., Davies, E., and S. Grasic,
+              "Probabilistic Routing Protocol for Intermittently
+              Connected Networks", RFC 6693, DOI 10.17487/RFC6693,
+              August 2012, <https://www.rfc-editor.org/info/rfc6693>.
+
+   [RFC9675]  Birrane, E., Heiner, S., and E. Annis, "Delay-Tolerant
+              Networking Management Architecture", RFC 9675,
+              DOI 10.17487/RFC9675, October 2024,
+              <https://www.rfc-editor.org/info/rfc9675>.
+
+   [RFC7942]  Sheffer, Y. and A. Farrel, "Improving Awareness of Running
+              Code: The Implementation Status Section", BCP 205,
+              RFC 7942, DOI 10.17487/RFC7942, July 2016,
+              <https://www.rfc-editor.org/info/rfc7942>.
+
+   [Fraire18] Fraire, J., Madoery, P., Burleigh, S., Feldmann, M.,
+              Finochietto, J., Charif, A., Zergainoh, N., and R.
+              Velazco, "Assessing Contact Graph Routing Performance and
+              Reliability in Distributed Satellite Constellations", IEEE
+              Transactions on Aerospace and Electronic Systems,
+              DOI 10.1109/TAES.2017.2738278, 2018,
+              <https://doi.org/10.1109/TAES.2017.2738278>.
+
+   [Spyropoulos05]
+              Spyropoulos, T., Psounis, K., and C. S. Raghavendra,
+              "Spray and Wait: An Efficient Routing Scheme for
+              Intermittently Connected Mobile Networks", WDTN '05:
+              Proceedings of the 2005 ACM SIGCOMM workshop on Delay-
+              tolerant networking, DOI 10.1145/1080139.1080143, 2005,
+              <https://doi.org/10.1145/1080139.1080143>.
+
+   [CGREB]    Birrane, E., "Contact Graph Routing Extension Block
+              (CGREB) (expired)", Work in Progress, Internet-Draft,
+              draft-irtf-dtnrg-cgreb-00, 2013,
+              <https://datatracker.ietf.org/doc/html/draft-irtf-dtnrg-
+              cgreb-00>.
+
+   [SABR]     CCSDS, CCSDS., "Schedule-Aware Bundle Routing", CCSDS
+              734.3-B-1, July 2019,
+              <https://public.ccsds.org/Pubs/734x3b1.pdf>.
+
+   [CGR]      Burleigh, S., "Contact Graph Routing in Delay Tolerant
+              Networks", 2010,
+              <https://doi.org/10.1109/MAES.2010.5546306>.
+
+Appendix A.  Mars Mission Scenario
+
+   Consider a Mars rover (node 200) communicating with an Earth relay
+   station via an orbiter (node 100):
+
+   1.  *Initial contact:* Rover creates a critical status bundle with a
+       CPB indicating default probability 0.6 (dusty conditions),
+       metric-type 1 (cgr-confidence), validity_duration 3600s
+
+   2.  *Rover-to-orbiter:* Router at rover checks 0.6 < 0.7 -> wait for
+       better conditions
+
+   3.  *Later contact:* Dust clears, CPB is refreshed with probability
+       0.95, new timestamp
+
+   4.  *Orbiter processes:* Router at orbiter checks 0.95 > 0.7 ->
+       forward immediately
+
+   5.  *Result:* Both bundles are delivered with minimal latency.
+
+   *Decay example:* If the first bundle (P=0.6) is delayed 10 hours and
+   the validity_duration was 3600s, receiving routers recognize the CPB
+   as expired and apply decay: P_aged = 0.6 * 0.98^10 = 0.49.
+
+Appendix B.  Change Log
+
+   This section is to be removed before publishing as an RFC.
+
+   _[RFC Editor Note: Please remove this entire section before
+   publication.]_
+
+B.1.  draft-perry-dtn-cpb-00 (July 2026)
+
+   *  Initial submission: complete CPB specification
+
+   *  CBOR float16 encoding with deterministic wire format
+
+   *  BPSec integrity model (append-only and strip-and-replace)
+
+   *  IANA registrations: Bundle Block Type + CPB Metric Types sub-
+      registry
+
+   *  Protocol integration analysis: PRoPHET, MaxProp, RAPID, Spray-and-
+      Wait, CGR, DTNMA
+
+   *  Mars mission scenario (Appendix A)
+
+   *  Experimental validation protocol consolidated into Section 12 (was
+      a separate companion document in earlier revisions)
+
+   *  Section 1.1 added: IPNSIG Section 4.2 problem-statement anchor
+
+   *  Section 11 rewritten: honest implementation status (reference
+      Python implementation + simulator-based validation; The ONE and
+      ION installations documented but no fabricated results)
+
+   *  Incorporates review feedback from Brian Sipos on CDDL, BTSD
+      embedding, fragmentation pruning, identical-timestamp tie-breaker,
+      per-path array limit (relaxed to SHOULD with local enforcement),
+      scheme-mismatch SHOULD-log, future-dated MUST-discard, and IANA
+      considerations
+
+   *  References [RFC9713] and [RFC9758] as post-publication updates to
+      [RFC9171]
+
+   *  Incorporates verified errata against RFC 9171: EID 7881
+      (Section 6.1.1, CBOR simple value encoding of status indicators),
+      EID 8043 (Section 4.3.1, CRC value bytes zeroed before CBOR
+      encoding), and EID 8376 (Section 5.8, fragmentation and MTU
+      handling addressed by CPB pruning).
+
+   *  Section 13 added: reference implementation + GitHub repository
+
+   *  Added CPB format version field (key 7, default 1) for future
+      evolution; updated CDDL to enforce the 8-entry path limit as a
+      MUST; added top-level "Operational Considerations" section
+      (sizing, production guidance, logging/OAM, partial deployment,
+      congestion, clocks); expanded IANA sub-registry description;
+      clarified handling of unrecognized metric types and Source PCE
+      Identifier field semantics.
+
+   *  Post-combine cold review polish: bumped document date to 8 July
+      2026; clarified per-path array (field 1) language to emphasize
+      SHOULD limit with informative CDDL bound of 8 and local
+      enforcement on constrained links; synced timeline1/ snapshot
+      cpb.py and updated its README note; removed stale review/
+      placeholder files; rebuilt draft outputs.
+
+Author's Address
+
+   Nicholas Perry
+   Independent
+   Council Bluffs, Iowa
+   United States of America
+   Email: nick@perrybrandsllc.com
