@@ -37,3 +37,79 @@ jobs:
 
       - name: Verify packaging import
         run: python3 -c "import cpb; print('cpb package import OK')"
+
+  # Build the Internet-Draft from XML. Catches placeholder/stub XML that
+  # previously slipped through when only Python tests ran.
+  build-draft:
+    name: Build Internet-Draft (xml2rfc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Reject stub / placeholder draft XML
+        run: |
+          set -euo pipefail
+          XML=draft-perry-dtn-cpb.xml
+          if [ ! -f "$XML" ]; then
+            echo "::error::Missing $XML"
+            exit 1
+          fi
+          size=$(wc -c < "$XML")
+          echo "XML size: $size bytes"
+          # Real draft is ~100k+; prior MCP accidents left ~100-byte stubs
+          if [ "$size" -lt 50000 ]; then
+            echo "::error::$XML is only $size bytes — looks like a stub/placeholder, not the full draft"
+            head -c 500 "$XML" || true
+            exit 1
+          fi
+          if ! head -1 "$XML" | grep -q '<?xml'; then
+            echo "::error::$XML does not start with an XML declaration"
+            head -c 200 "$XML" || true
+            exit 1
+          fi
+          # Guard against known MCP/stub accident phrases only.
+          # Do not match the word "placeholder" alone — the draft uses it
+          # legitimately (e.g. non-normative EIDs, changelog about stubs).
+          if grep -qiE '\[full current local|content of local /tmp|TODO: paste full|MCP placeholder' "$XML"; then
+            echo "::error::$XML contains stub accident text"
+            grep -niE '\[full current local|content of local /tmp|TODO: paste full|MCP placeholder' "$XML" | head -5
+            exit 1
+          fi
+          echo "XML preflight OK"
+
+      - name: Install xml2rfc
+        run: |
+          python -m pip install --upgrade pip
+          pip install 'xml2rfc>=3.23.0'
+
+      - name: Build text and HTML from XML
+        run: |
+          set -euo pipefail
+          xml2rfc --version
+          xml2rfc --text draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.txt
+          xml2rfc --html draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.html
+          txt_size=$(wc -c < /tmp/draft-perry-dtn-cpb.txt)
+          html_size=$(wc -c < /tmp/draft-perry-dtn-cpb.html)
+          echo "Built txt=$txt_size bytes html=$html_size bytes"
+          if [ "$txt_size" -lt 20000 ]; then
+            echo "::error::Built .txt is suspiciously small ($txt_size bytes)"
+            exit 1
+          fi
+          # Sanity: expected title present
+          grep -q 'Probabilistic Contact Metadata' /tmp/draft-perry-dtn-cpb.txt
+          grep -q 'Contact Probability Block' /tmp/draft-perry-dtn-cpb.txt
+          echo "Draft build OK"
+
+      - name: Upload built draft artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-build
+          path: |
+            /tmp/draft-perry-dtn-cpb.txt
+            /tmp/draft-perry-dtn-cpb.html
+          if-no-files-found: error

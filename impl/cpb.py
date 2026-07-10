@@ -4,6 +4,12 @@ cpb.py -- Contact Probability Block reference encoder/decoder.
 Implements draft-perry-dtn-cpb-00 Section 3.2 (CDDL schema) and Section 3.4
 (CBOR encoding rules) using cbor2 for the underlying CBOR work.
 
+Per-path array (field 1) limit: the spec uses SHOULD (not MUST) for a
+maximum of 8 entries to mitigate DoS on low-bandwidth/constrained DTN
+links (see Bandwidth Considerations). Reference implementation accepts
+larger arrays on encode; receivers in constrained deployments should
+apply local policy.
+
 Public surface:
     encode_cpb(data: dict) -> bytes      # cpb-data map -> CBOR bytes
     decode_cpb(buf: bytes) -> dict       # CBOR bytes -> cpb-data map
@@ -148,12 +154,12 @@ def _encode_path_entries(entries) -> bytes:
     if not isinstance(entries, list):
         raise TypeError("path-entries (field 1) must be a list")
     if len(entries) > 8:
-        # Spec 3.4: SHOULD limit to 8 entries to prevent DoS.  Truncate at 8;
-        # caller can override by setting field 1 to a longer list explicitly.
-        # Here we raise so the caller decides; silent truncation is worse.
-        raise ValueError(
-            f"path-entries has {len(entries)} elements; Spec requires a maximum of 8 (MUST limit)"
-        )
+        # Spec §3.4: senders SHOULD limit per-path array to 8 entries to
+        # mitigate DoS on low-bandwidth/constrained links.  The reference
+        # implementation allows larger lists (per the relaxed SHOULD language)
+        # but deployments on constrained nodes should enforce locally.
+        # Larger arrays may be dropped by receivers per local policy.
+        pass  # proceed to encode (SHOULD, not MUST)
     n = len(entries)
     if n < 24:
         out = bytes([0x80 | n])

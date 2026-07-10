@@ -57,7 +57,7 @@ The reference implementation exercises:
 - CBOR encoding rules (§3.4): float16 deterministic encoding, invalid-float handling (§3.4.1), hex encoding examples (§3.4.3)
 - Metric-type semantics (§3.5): cross-metric arithmetic prohibition is enforced in code
 - Multiple-CPB precedence (§3.6) and per-path matching (§3.6.1)
-- 8-entry per-path array DoS limit (§3.4)
+- per-path array (field 1) SHOULD limit of 8 for DoS mitigation on constrained links (§3.4)
 - Backwards-compatible fallback when CPB block type is unknown (§3.3.2)
 
 Byte-exact match is verified against:
