@@ -1,0 +1,19 @@
+[Unit]
+Description=ION DTN Node 268485122 (soulkiller) - PWG testbed
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=nick
+Group=nick
+WorkingDirectory=/home/nick/ion-config
+ExecStart=/bin/bash /home/nick/ion-config/start-soulkiller.sh
+ExecStop=/bin/bash -c "ionstop 2>/dev/null || true; killm 2>/dev/null || true; rm -f /tmp/ion* /dev/shm/sem.*ion* 2>/dev/null || true"
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ion-soulkiller
+
+[Install]
+WantedBy=multi-user.target
