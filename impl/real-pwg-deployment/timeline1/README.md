@@ -90,7 +90,7 @@ See the quickref for the exact "minimum bar" evidence list, the long-emulated co
 
 - All .rc files intentionally contain the long-duration contacts (`+8640000`) to the dedicated emulated nodes (Moon 268484801, Mars 268484820) and gateway (268485000). This is the state that produced the observed queuing behavior documented in the notes.
 - The snapshot is intentionally a lab notebook + artifact bundle, not a polished "clean room" package. It preserves the honest state of the real PWG Tailscale + ION runs.
-- Passwords and absolute paths (`/home/nick/...`) appear in comments and scripts — this matches the actual experimental environment.
+- Absolute paths (`/home/nick/...`) appear in scripts to match the experimental environment. Host passwords are not stored in this snapshot.
 
 For the draft RFC XML "Implementation Status / Real ION Testbed" section, refer to the parent repository (the quickref + this snapshot provide the supporting evidence and reproduction material).
 

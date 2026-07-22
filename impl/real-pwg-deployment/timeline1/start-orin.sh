@@ -20,7 +20,7 @@ sleep 1
 for id in $(ipcs -m 2>/dev/null | awk 'NR>3 && $1 ~ /^[0-9x]/ {print $2}'); do ipcrm -m $id 2>/dev/null || true; done
 for id in $(ipcs -s 2>/dev/null | awk 'NR>3 && $1 ~ /^[0-9x]/ {print $2}'); do ipcrm -s $id 2>/dev/null || true; done
 rm -f /tmp/ion* /dev/shm/sem.*ion* 2>/dev/null || true
-echo "drpepper" | sudo -S sysctl -w kernel.shmmax=1073741824 kernel.shmall=262144 2>&1 || true
+sudo sysctl -w kernel.shmmax=1073741824 kernel.shmall=262144 2>&1 || true
 if [ ! -f /tmp/default.key ]; then dd if=/dev/urandom of=/tmp/default.key bs=32 count=1 2>/dev/null || true; chmod 600 /tmp/default.key; fi
 # Make bputa binary discoverable by cfdpclock for "s 'bputa'" entity task (fixes "NOT RUNNING" and exec errors)
 ln -sf /usr/local/bin/bputa /usr/bin/bputa 2>/dev/null || true
