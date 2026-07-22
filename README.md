@@ -67,5 +67,5 @@ implementation.
 
 ## License
 
-Reference implementation in [`impl/`](impl/): [BSD-2-Clause](LICENSE).
+Reference implementation in [`impl/`](impl/): [MIT](LICENSE).
 Draft text: IETF Trust Legal Provisions (BCP 78).
