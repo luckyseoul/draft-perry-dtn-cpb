@@ -23,14 +23,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install test extras (cbor2 + Hypothesis)
+      - name: Install package and test extras (cbor2)
         run: |
           python -m pip install --upgrade pip
           cd impl
           pip install -e '.[test]'
 
-      - name: Run full CPB conformance tests (including property-based)
+      - name: Run full CPB conformance tests
         run: python3 impl/test_cpb.py
+
+      - name: Simulator cost-formula unit tests
+        run: python3 impl/test_config1_policies.py
+
+      - name: Draft/docs honesty structural tests
+        run: python3 impl/test_draft_honesty.py
 
       - name: Simulator smoke test (quick mode)
         run: python3 impl/config1_sim.py --quick

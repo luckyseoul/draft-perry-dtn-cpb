@@ -74,16 +74,16 @@
       </t>
       <t>
         This document is Experimental. The accompanying simulation study
-        validates that experimental routing policies consuming per-contact
-        confidence metadata from CPB blocks can materially outperform
-        confidence-blind baseline CGR under adversarial conditions with
-        rate-aware costing. The contribution of this specification is the
-        standardized BPv7 extension block for carrying that metadata. Operational
-        deployment questions &#8212; robustness to noisy/adversarial
-        estimates, control-theoretic stability under feedback, and real
-        interoperability with production BP stacks &#8212; are explicitly
-        enumerated as open issues and not claimed as resolved by this
-        document.
+        validates that experimental routing policies consuming the same
+        class of per-contact confidence metadata that CPB is designed to
+        carry can materially outperform confidence-blind baseline CGR under
+        stochastic contact failures with rate-aware costing. The contribution
+        of this specification is the standardized BPv7 extension block for
+        carrying that metadata. Operational deployment questions &#8212;
+        robustness to noisy/adversarial estimates, control-theoretic
+        stability under feedback, and real interoperability with production
+        BP stacks &#8212; are explicitly enumerated as open issues and not
+        claimed as resolved by this document.
       </t>
     </abstract>
   </front>
@@ -474,7 +474,7 @@ F6                   ; crc: null
 ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
 ; The "/ bstr" alternative permits encrypted BTSD (BCB-wrapped
 ; content from a security context that encrypts the BTSD before
-; the CPB's own processing; see Section 7.2.3 for CPB-specific
+; the CPB's own processing; see Section 8.3.3 for CPB-specific
 ; BCB prohibition on the CPB itself).
 
 $extension-block /=
@@ -1216,11 +1216,13 @@ A3                   ; map with 3 entries
           data. The closest architectural precedent is the CGR Extension
           Block <xref target="CGREB"/>, which demonstrated that in-band
           routing metadata in extension blocks was architecturally sound.
-          <xref target="experiment"/> reports an experiment in which
-          several simulator-internal routing policies consume CPB-supplied
-          confidences under adversarial conditions with rate-aware costing.
-          CGR-UCoP <xref target="Fraire18"/> is treated strictly as prior
-          art for simulation validation, not the conceptual basis for CPB.
+          <xref target="experiment"/> reports an experiment in which two
+          simulator-internal routing policies (confidence-blind earliest
+          arrival, and one rate-aware consumer of ground-truth per-contact
+          confidences of the class CPB carries) are compared under
+          stochastic contact failures. CGR-UCoP <xref target="Fraire18"/>
+          is treated strictly as prior art for simulation validation, not
+          the conceptual basis for CPB.
         </t>
       </section>
 
@@ -1720,15 +1722,20 @@ A3                   ; map with 3 entries
         below 3% even with full CPB fields.
       </t>
         <t>
-          Empirical measurement on the reference encoder and a live ION
-          testbed (see <xref target="exp-real-validation"/>) produced 51 bytes
-          of overhead for a full CPB (float16 default probability + path
-          entries + timestamp + validity + metric type + confidence) plus
-          its BTSD wrapper when added to a minimal BPv7 bundle (76 B plain
-          &#x2192; 127 B with CPB). This is higher than the idealized "CPB
-          full (32 bytes)" row above because of concrete CBOR map/array
-          encoding and the BTSD block structure; it remains small in
-          absolute terms for any realistic DTN ADU.
+          Empirical measurement on the reference encoder in the 2-node ION
+          campaign under <tt>impl/real-cpb-ion-test/</tt> (see also
+          <xref target="exp-real-validation"/>) produced 51 bytes of overhead
+          for a full-field CPB (float16 default probability + path entries +
+          timestamp + validity + metric type + confidence) plus its BTSD
+          wrapper when added to a minimal BPv7 bundle (76 B plain &#x2192;
+          127 B with CPB). That full-field figure is distinct from the
+          minimal-map timeline1 examples in
+          <xref target="exp-real-validation"/> (e.g., a 121 B with-CPB
+          sample carrying only default probability and one path entry).
+          Full-field overhead is higher than the idealized "CPB full
+          (32 bytes)" row above because of concrete CBOR map/array encoding
+          and the BTSD block structure; it remains small in absolute terms
+          for any realistic DTN ADU.
         </t>
 
       <section anchor="computational-overhead">
@@ -1827,29 +1834,26 @@ A3                   ; map with 3 entries
                 <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
                 https://github.com/luckyseoul/draft-perry-dtn-cpb</eref></li>
             <li><strong>License:</strong> MIT License</li>
-            <li><strong>Modules:</strong> cpb.py (encoder/decoder, ~600 LOC),
-                test_cpb.py (23-test conformance suite), config1_sim.py
-                (discrete-event simulator producing the
-                <xref target="experiment"/> results).</li>
-            <li><strong>Coverage:</strong> Block structure
-                (<xref target="block-structure"/>), block processing flags
-                (<xref target="block-processing-flags"/>), CBOR encoding rules
-                (<xref target="cbor-encoding"/>), invalid-float handling
-                (<xref target="invalid-float-handling"/>), hex encoding table
-                (<xref target="hex-encoding-table"/>), multiple-CPB precedence
-                (<xref target="multiple-cpbs"/>), per-path matching
-                (<xref target="per-path-matching"/>), CPB creation
-                (<xref target="op-creation"/>), intermediate processing
-                (<xref target="op-router-processing"/>), 8-entry DoS limit
-                (<xref target="cbor-encoding"/>), backwards compatibility
-                (<xref target="backwards-compatibility"/>).</li>
-            <li><strong>Maturity:</strong> Reference implementation. All 23
-                conformance tests pass on Python 3.10+ with cbor2 5.9.0.
-                Byte-exact encoding match against
+            <li><strong>Modules:</strong> cpb.py (encoder/decoder, ~280 lines),
+                test_cpb.py (conformance suite for wire encode/decode),
+                config1_sim.py (discrete-event simulator producing the
+                <xref target="experiment"/> Configuration 1 results).</li>
+            <li><strong>Coverage:</strong> Wire-format encode and decode of
+                CPB block-type-specific data (CBOR map fields, float16
+                encoding, invalid-float handling, BTSD wrapping), byte-exact
+                match against
                 <xref target="fig-listing-2"/> and
                 <xref target="fig-listing-7"/> and the hex table in
-                <xref target="hex-encoding-table"/>. Round-trip byte stability
-                verified across multiple cycles.</li>
+                <xref target="hex-encoding-table"/>, and acceptance of
+                more than eight path entries consistent with the SHOULD
+                (not MUST) path-array size guidance. Routing policies,
+                multi-CPB precedence, per-path matching algorithms, BPSec
+                flags/CRC handling, and intermediate-router update rules are
+                specified in this document but are not automated unit tests
+                in the reference encoder.</li>
+            <li><strong>Maturity:</strong> Reference implementation. Conformance
+                tests pass on Python 3.10+ with cbor2 5.9.0. Round-trip byte
+                stability verified across multiple encode/decode cycles.</li>
             <li><strong>Contact:</strong> nick@perrybrandsllc.com</li>
           </ul>
         </dd>
@@ -1860,7 +1864,9 @@ A3                   ; map with 3 entries
           discrete-event simulator config1_sim.py, which implements vanilla
           CGR (earliest-arrival) and the Section 12 consumer labeled "cpb"
           (rate-aware cost) over Configuration 1 (4 rovers, 4 orbiters,
-          1 relay, 3 ground stations).
+          1 relay, 3 ground stations). The simulator consumes ground-truth
+          confidences of the class CPB carries; it does not encode or
+          decode on-wire CPB extension blocks.
           <xref target="experiment"/> reports the authoritative 10-seed
           paper-battery results for those two policies, reproduced by
           <tt>python3 config1_sim.py --battery paper --strategy both</tt>.
@@ -1869,19 +1875,26 @@ A3                   ; map with 3 entries
           as prior art for simulation parameters and basic validation.
         </dd>
 
+        <dt>PWG ION Data-Plane Validation</dt>
+        <dd>
+          Limited real end-to-end data-plane results on NASA ION v4.1.0
+          (PWG Tailscale mesh) are reported in
+          <xref target="exp-real-validation"/>: creation and injection of
+          bundles carrying experimental extension block type 200, UDPCL
+          carriage, bplist visibility, and byte-exact CPB CBOR survival.
+          Artifacts live under <tt>impl/real-pwg-deployment/timeline1/</tt>
+          and <tt>impl/real-cpb-ion-test/</tt>. This is not an in-band
+          CPB-consuming routing experiment on ION CGR.
+        </dd>
+
         <dt>Implementations Considered but Not Exercised</dt>
         <dd>
-          <t>The author also installed and partially configured two production
-          DTN reference implementations during the development of this
-          specification. Neither produced data reported in this document; both
-          are noted here for transparency:</t>
+          <t>The author also installed and partially configured The ONE
+          Simulator during development of this specification:</t>
           <ul>
             <li><strong>The ONE Simulator v1.6.0:</strong> Installed and a
                 probability-aware Spray-and-Wait router was drafted. No results
                 from The ONE are reported in <xref target="experiment"/>.</li>
-            <li><strong>NASA ION v4.1.0:</strong> Limited real end-to-end
-                data-plane transmission results are reported in the Real ION
-                Testbed entry above and in <xref target="exp-real-validation"/>.</li>
           </ul>
         </dd>
       </dl>
@@ -1913,8 +1926,11 @@ A3                   ; map with 3 entries
           are stochastic and multiple competing routes exist.
         </t>
         <t>
-          The primary metric is delivery ratio. End-to-end latency is
-          reported as a secondary metric.
+          Delivery ratio and end-to-end latency (including p95 tails) are
+          both reported. Delivery ratio is the primary success criterion for
+          the hypothesis; on Configuration 1 the larger absolute operational
+          effect appears in tail latency (see
+          <xref target="exp-results"/>).
         </t>
       </section>
 
@@ -2101,14 +2117,20 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           All bundles (104 total) were produced by the reference encoder,
           successfully injected, and appeared in bplist for the target EIDs
           (frequently "Queued for forwarding to .0" or destination .12160 on
-          the reals). With-CPB bundles measured 51 B overhead relative to
-          otherwise identical plain bundles. The 32 test-to-each-other .bundle
-          files (plus representative 72-batch and per-sender captures) plus
-          snapshot copies are preserved under
+          the reals). The Phase 2 with-CPB examples use a minimal CPB map
+          (default probability + one path entry); a representative file is
+          121 B (see dissection below). The separate full-field overhead
+          measurement of 51 B (76 B plain &#x2192; 127 B with CPB) is from
+          the 2-node campaign in <tt>impl/real-cpb-ion-test/</tt> and is
+          reported under <xref target="overhead-analysis"/>; it is not the
+          size of these minimal-map timeline1 bundles. The 32
+          test-to-each-other .bundle files (plus representative 72-batch and
+          per-sender captures) plus snapshot copies are preserved under
           impl/real-pwg-deployment/timeline1/ (cpb_test_to_each_other/,
           cpb_with_verification/, receive_logs/, etc.), with full command
-          history and status in real_cpb_packet_test/LIVE_TRANSMISSION_STATUS.txt
-          and the timeline1 snapshot (also rsynced to orin backup and tarballed).
+          history and status in
+          impl/real-pwg-deployment/timeline1/LIVE_TRANSMISSION_STATUS.txt
+          (also rsynced to orin backup and tarballed).
         </t>
         <t>
           Wire-format and intact-CPB evidence: Wireshark 4.6.4 (with tshark)
@@ -2185,10 +2207,11 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           artifacts, pcap conversion scripts, the detailed bundle breakdown,
           all receiver/bpsink/recv_cpb logs, bplist snapshots before/after,
           the three host*.rc + start-*.sh, the generated ION-PWG-DTN-FAQ.pdf,
-          updated LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each
+          LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each
           other ONLY - completed" and "CPB decode verification" paragraphs,
-          timeline1 snapshot directory, and tarballs) live in
-          impl/real-pwg-deployment/timeline1/ and real_cpb_packet_test/.
+          and tarballs) live in
+          impl/real-pwg-deployment/timeline1/. Related 2-node full-field
+          bundle samples and notes are under impl/real-cpb-ion-test/.
         </t>
         <t>
           <strong>Limitations of this validation (distinct from the
@@ -2863,6 +2886,14 @@ python3 impl/config1_sim.py --battery paper --strategy both
               enforcement on constrained links; synced timeline1/ snapshot
               cpb.py and updated its README note; removed stale review/
               placeholder files; rebuilt draft outputs.</li>
+          <li>2026-07-22 cold-review honesty pass: Abstract and CGR section
+              use stochastic (not adversarial) sim conditions; Implementation
+              Status narrowed to wire encode/decode coverage plus separate
+              PWG ION data-plane entry; offline lab path names replaced with
+              repo-relative timeline1 and real-cpb-ion-test paths; full-field
+              51 B overhead attributed only to the 2-node campaign; document
+              date 22 July 2026; evaluation remains baseline vs one
+              rate-aware CPB consumer.</li>
         </ul>
       </section>
     </section>

@@ -20,7 +20,7 @@ python3 sender.py --count 20 --use-gpu
 
 echo ""
 echo "Step 2: On the RECEIVING machine, start the listener in another terminal:"
-echo "   cd /home/nick/real_cpb_packet_test"
+echo "   # (legacy) cd to your receiver tree and run receiver.py"
 echo "   python3 receiver.py --listen --endpoint ipn:THEIR_NODE.1"
 echo ""
 echo "Step 3: (Optional but recommended) Build and use the proper C sender for real extension blocks"
