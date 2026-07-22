@@ -5,7 +5,7 @@
 Three-node setup on IPNSIG PWG Tailscale (samo.grasic@account)
 
 ## Current Node Setup
-- horus (268485123) - 100.65.168.37 | Hostname: horus | 192.168.1.85 (nick, [redacted]
+- horus (268485123) - 100.65.168.37 | Hostname: horus | 192.168.1.85 (nick)
 - soulkiller (268485122) - 100.91.23.41 | Hostname: soulkiller
 - orin (268485121) - 100.92.115.65 | Hostname: orin | Jetson Orin Nano
 - gateway (268485000) - 100.96.108.37
