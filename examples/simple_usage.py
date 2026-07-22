@@ -15,14 +15,22 @@ package in your PYTHONPATH).
 
 from __future__ import annotations
 
-import cpb
+import sys
+from pathlib import Path
+
+# Allow `python3 examples/simple_usage.py` from the repo root without install.
+_IMPL = Path(__file__).resolve().parents[1] / "impl"
+if str(_IMPL) not in sys.path:
+    sys.path.insert(0, str(_IMPL))
+
+import cpb  # noqa: E402
 
 
 def main() -> None:
     print("=== CPB simple usage example ===\n")
 
     # 1. Build a realistic CPB (default probability + two path entries)
-    # This is similar in spirit to Listing 2 / Listing 7 in the draft.
+    # This is similar in spirit to Figure 2 / Figure 7 in the draft.
     data = {
         cpb.F_DEFAULT_PROB: 0.82,
         cpb.F_PATH_ENTRIES: [
