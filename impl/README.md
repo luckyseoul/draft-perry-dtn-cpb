@@ -72,7 +72,7 @@ Byte-exact match is verified against:
 
 ## License
 
-BSD 2-Clause. See [`../LICENSE.md`](../LICENSE.md).
+MIT. See [`../LICENSE`](../LICENSE).
 
 ## Status
 
