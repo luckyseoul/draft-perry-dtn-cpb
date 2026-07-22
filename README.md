@@ -5,6 +5,9 @@ for DTN Bundle Routing" (draft-perry-dtn-cpb). Defines the Contact Probability
 Block (CPB), a BPv7 extension block carrying per-contact probability metadata
 in-bundle to support confidence-weighted routing in delay-tolerant networks.
 
+**Current line of development is `main`.** That branch holds the vetted draft,
+CI, reference implementation, and the timeline1 PWG testbed snapshot.
+
 ## Building the draft
 
 ```sh
@@ -35,11 +38,11 @@ pip install -e '.[test]'
 # Run the full conformance suite (including property-based tests with Hypothesis)
 python3 test_cpb.py
 
-# Fast smoke test of the Mars relay simulation
+# Fast smoke test of the Mars relay simulation (baseline + cpb + cpb-risk)
 python3 config1_sim.py --quick
 
 # Full paper-reproducing run (10 seeds, ~80k bundles/arm)
-python3 config1_sim.py
+python3 config1_sim.py --battery paper --strategy both
 ```
 
 Alternative (traditional):
@@ -50,27 +53,19 @@ python3 test_cpb.py
 python3 config1_sim.py --quick
 ```
 
-The simulator supports useful options:
+Useful simulator options:
+
 ```sh
 python3 config1_sim.py --help
-python3 config1_sim.py --strategy cpb --max-bundles 8000 --csv results.csv
+python3 config1_sim.py --strategy cpb --csv results.csv
+python3 config1_sim.py --strategy cpb-risk --risk-floor 0.85 --age-conf
 ```
 
-All changes on the `timeline1` branch (build robustness, packaging, CI, stronger tests, simulator CLI) are intended to make the reference implementation easier for other people to use, test, and build upon.
-
-## Reference implementation
-
-See [`impl/`](impl/) for the CPB encoder/decoder, conformance tests, and the
-simulator that produced the Section 11 results.
-
-```sh
-cd impl
-pip install -r requirements.txt
-python3 test_cpb.py
-python3 config1_sim.py
-```
+Build robustness, packaging, CI, stronger tests, and the simulator CLI are
+maintained on `main` so others can use, test, and build on the reference
+implementation.
 
 ## License
 
-Reference implementation in [`impl/`](impl/): [MIT](LICENSE).
+Reference implementation in [`impl/`](impl/): [BSD-2-Clause](LICENSE).
 Draft text: IETF Trust Legal Provisions (BCP 78).

@@ -26,7 +26,7 @@ for id in $(ipcs -m 2>/dev/null | awk 'NR>3 && $1 ~ /^[0-9x]/ {print $2}'); do i
 for id in $(ipcs -s 2>/dev/null | awk 'NR>3 && $1 ~ /^[0-9x]/ {print $2}'); do ipcrm -s $id 2>/dev/null || true; done
 rm -f /tmp/ion* /dev/shm/sem.*ion* /dev/shm/*ion* 2>/dev/null || true
 
-echo "drpepper" | sudo -S sysctl -w kernel.shmmax=1073741824 kernel.shmall=262144 2>&1 || true
+sudo sysctl -w kernel.shmmax=1073741824 kernel.shmall=262144 2>&1 || true
 sysctl kernel.shmmax kernel.shmall 2>/dev/null | cat || true
 
 if [ ! -f /tmp/default.key ]; then

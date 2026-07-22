@@ -90,7 +90,7 @@ python3 life_of_a_bundle.py --dst 268485121 --write-bundle /tmp/life_demo_quick.
 bputa /tmp/life_demo_quick.bundle ipn:268485121.64   # or .1 / emulated target
 bplist | tail -5
 
-# On orin (receive side) - use sshpass if needed: sshpass -p drpepper ssh nick@orin ...
+# On orin (receive side) - use sshpass if needed: sshpass -p [REDACTED] ssh nick@orin ...
 # Capture the bytes that left the line (as delivered by CFDP or direct BP)
 
 pkill -f "bprecv.*268485121" 2>/dev/null || true

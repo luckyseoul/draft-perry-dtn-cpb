@@ -161,7 +161,7 @@ Clarification on targets (2026-06-06):
 72 with-CPB clean re-execution (fix after initial long-command scp/mv/glob issue) (2026-06-06):
 - Files were successfully created (72 in /tmp/cpb_72_with_my).
 - Re-staged with explicit per-target cp into clean /tmp/cpb_send_*/ (24 per sender, only 000/801/820).
-- scp used full sshpass -p + -o Strict... flags (previous bare scp in long cmd had failed with askpass/permission).
+- scp used full sshpass -p [REDACTED] -o Strict... flags (previous bare scp in long cmd had failed with askpass/permission).
 - bputa re-ran with ls-based file list (safe against nullglob literal *.bundle) + sshpass for remotes.
 - All 72 transferred via bputa from the 3 real nodes to the 3 my dedicated targets.
 - Post bputa bplist (see execution output) shows the expected queues to the target EIDs on the senders.
@@ -295,7 +295,7 @@ Snapshot refreshed with updated quickref, this status, and /tmp/live_cpb_2026060
 
 === 2026-06-09 Services verify on all devices (user: "verify services are up on all devices" + "yes") ===
 
-Fresh verification run (local soulkiller + sshpass drpepper to Tailscale IPs for orin/horus).
+Fresh verification run (local soulkiller + sshpass [REDACTED] to Tailscale IPs for orin/horus).
 
 All three nodes have the full CPB stack UP and cfdp entities configured (bpclock, ipnfw, 3x udpclo for mesh peers+gw, cfdpclock, bputa, dtnex + cfdpadmin shows RUNNING daemons + 6 entities).
 
