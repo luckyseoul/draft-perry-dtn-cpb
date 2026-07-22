@@ -37,7 +37,7 @@
       </address>
     </author>
 
-    <date year="2026" month="July" day="8"/>
+    <date year="2026" month="July" day="22"/>
 
     <area>Internet</area>
 
@@ -486,13 +486,13 @@ $extension-block /=
           <sourcecode type="cddl"><![CDATA[
 cpb-data = {
     ? 0: probability,         ; Default/overall probability
-    ? 1: [1*8 path-entry],    ; Per-path probabilities. Senders SHOULD NOT include more than 8 entries on constrained links (see Section 3.4). The bound 8 is a size recommendation for typical use; implementations follow the SHOULD language rather than this CDDL production.
+    ? 1: [1*8 path-entry],    ; per-path (SHOULD size; see Sec 3.4)
     ? 2: uint,                ; Timestamp (DTN epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
     ? 4: uint,                ; Validity duration (seconds, TTL)
     ? 5: metric-type,         ; Metric type identifier
     ? 6: probability,         ; Confidence/variance estimate
-    ? 7: uint,                ; CPB format version (1 = this specification)
+    ? 7: uint,                ; format version (1 = this spec)
     * (int .gt 7) => any      ; Extensibility (future fields)
 }
 
@@ -1858,7 +1858,7 @@ A3                   ; map with 3 entries
         <dd>
           Validation of CPB's routing impact was conducted via the pure-Python
           discrete-event simulator config1_sim.py, which implements vanilla
-          CGR (earliest-arrival) and the draft §12 consumers labeled "cpb"
+          CGR (earliest-arrival) and the Section 12 consumers labeled "cpb"
           (rate-aware) and "cpb-risk" (quadratic risk penalty) over
           Configuration 1 (4 rovers, 4 orbiters, 1 relay, 3 ground stations).
           <xref target="experiment"/> reports the authoritative 10-seed
@@ -1919,7 +1919,7 @@ A3                   ; map with 3 entries
       </section>
 
       <section anchor="exp-config">
-        <name>Test Configuration: Multi-Asset Mars Relay (CGR)</name>
+        <name>Test Configuration 1: Multi-Asset Mars Relay</name>
         <t>
           The experiment uses a multi-asset Mars-to-Earth relay topology with
           four surface assets, four orbiters, one deep-space relay, and three
@@ -1976,7 +1976,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           </dd>
           <dt>Risk-averse CPB consumer (labeled "cpb-risk")</dt>
           <dd>
-            Stronger experimental consumer that adds an explicit quadratic
+            Risk-averse experimental consumer that applies an explicit quadratic
             penalty on low-confidence links:
             <tt>cost = latency + (1 &#8722; confidence)&#178; &#215; 5000</tt>.
           </dd>
@@ -2035,20 +2035,23 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           via config1_sim.py --battery paper --strategy all):</strong>
         </t>
         <ul>
-          <li>Baseline (vanilla CGR) mean delivery was 0.9962 with elevated
-              tail latency (mean p95 &#8776; 273 s across seeds).</li>
-          <li>The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
-              ("cpb-risk") both achieved mean delivery 0.9998 with tight tails
-              (p95 = 123 s). Paired (cpb &#8722; baseline) delivery mean gain
-              +0.00355 (t &#8776; 86 over 10 seeds).</li>
-          <li>In this topology the two CPB consumers selected the same routes
-              under the published cost formulas, so their aggregate metrics
-              match; they remain distinct policies for other confidence/rate
-              mixes.</li>
+          <li>Latency and tails: baseline mean p95 latency was &#8776;273 s;
+              both CPB consumers tightened p95 to 123 s (mean lat_avg drop
+              &#8776;13 s). This is the primary operational win on
+              Configuration 1.</li>
+          <li>Delivery ratio: baseline mean delivery was 0.9962; both the
+              rate-aware consumer ("cpb") and the risk-averse consumer
+              ("cpb-risk") reached mean delivery 0.9998. Paired
+              (cpb &#8722; baseline) delivery mean gain +0.00355
+              (t &#8776; 86 over 10 seeds).</li>
+          <li>On this topology the two CPB cost formulas selected the same
+              routes, so aggregate metrics match. They remain distinct
+              policies and can diverge when confidence and bottleneck rate
+              are less correlated.</li>
         </ul>
 
         <t>
-          <strong>Interpretation.</strong> On Configuration 1, both draft §12
+          <strong>Interpretation.</strong> On Configuration 1, both Section 12
           CPB consumers improve delivery ratio and tail latency relative to
           confidence-blind earliest-arrival CGR. The rate-aware and risk-averse
           costs remain distinct policies; they can diverge when confidence and
@@ -2236,7 +2239,7 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <name>Goals (per RFC 2026 Section 4.2.1)</name>
         <ol>
           <li>Determine whether CPB-enhanced routing improves delivery ratio
-              under adversarial conditions with rate-aware costing.
+              under stochastic contact conditions with rate-aware costing.
               <strong>Met.</strong> In the Configuration 1 paper battery
               (10 seeds), baseline mean delivery was 0.9962 while both
               "cpb" and "cpb-risk" reached mean delivery 0.9998, with
@@ -2499,7 +2502,7 @@ pip install cbor2
 python3 impl/test_cpb.py
 python3 impl/test_config1_policies.py
 python3 impl/config1_sim.py --battery paper --strategy all
-# ~50 s walltime; mean delivery baseline 0.9962, cpb/cpb-risk 0.9998 (§12.5)
+# ~50s; mean delivery 0.9962 / 0.9998 (Section 12.5)
 ]]></sourcecode>
         </figure>
         <t>

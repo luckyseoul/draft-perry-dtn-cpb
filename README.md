@@ -8,6 +8,10 @@ in-bundle to support confidence-weighted routing in delay-tolerant networks.
 **Current line of development is `main`.** That branch holds the vetted draft,
 CI, reference implementation, and the timeline1 PWG testbed snapshot.
 
+**Teaching aid:** a short visual intro is in
+[`docs/CPB-TEACHING-GUIDE.md`](docs/CPB-TEACHING-GUIDE.md) (with diagrams under
+`docs/images/`).
+
 ## Building the draft
 
 ```sh

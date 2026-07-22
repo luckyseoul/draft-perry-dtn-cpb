@@ -4,8 +4,8 @@
 
 Network Working Group                                           N. Perry
 Internet-Draft                                               Independent
-Intended status: Experimental                                8 July 2026
-Expires: 9 January 2027
+Intended status: Experimental                               22 July 2026
+Expires: 23 January 2027
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Perry                    Expires 9 January 2027                 [Page 1]
+Perry                    Expires 23 January 2027                [Page 1]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -68,7 +68,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 January 2027.
+   This Internet-Draft will expire on 23 January 2027.
 
 Copyright Notice
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Perry                    Expires 9 January 2027                 [Page 2]
+Perry                    Expires 23 January 2027                [Page 2]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -165,13 +165,13 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 3]
+Perry                    Expires 23 January 2027                [Page 3]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
      12.1.  Scope and Hypothesis . . . . . . . . . . . . . . . . . .  34
-     12.2.  Test Configuration: Multi-Asset Mars Relay (CGR) . . . .  34
+     12.2.  Test Configuration 1: Multi-Asset Mars Relay . . . . . .  34
      12.3.  Routing Policies Tested  . . . . . . . . . . . . . . . .  35
      12.4.  Methodology  . . . . . . . . . . . . . . . . . . . . . .  35
      12.5.  Results  . . . . . . . . . . . . . . . . . . . . . . . .  36
@@ -221,7 +221,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 4]
+Perry                    Expires 23 January 2027                [Page 4]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -277,7 +277,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 5]
+Perry                    Expires 23 January 2027                [Page 5]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -333,7 +333,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 6]
+Perry                    Expires 23 January 2027                [Page 6]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -389,7 +389,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 7]
+Perry                    Expires 23 January 2027                [Page 7]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -445,7 +445,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 8]
+Perry                    Expires 23 January 2027                [Page 8]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -501,7 +501,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                 [Page 9]
+Perry                    Expires 23 January 2027                [Page 9]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -557,20 +557,20 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 10]
+Perry                    Expires 23 January 2027               [Page 10]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
    cpb-data = {
        ? 0: probability,         ; Default/overall probability
-       ? 1: [1*8 path-entry],    ; Per-path probabilities. Senders SHOULD NOT include more than 8 entries on constrained links (see Section 3.4). The bound 8 is a size recommendation for typical use; implementations follow the SHOULD language rather than this CDDL production.
+       ? 1: [1*8 path-entry],    ; per-path (SHOULD size; see Sec 3.4)
        ? 2: uint,                ; Timestamp (DTN epoch seconds)
        ? 3: bstr,                ; Source PCE identifier (optional)
        ? 4: uint,                ; Validity duration (seconds, TTL)
        ? 5: metric-type,         ; Metric type identifier
        ? 6: probability,         ; Confidence/variance estimate
-       ? 7: uint,                ; CPB format version (1 = this specification)
+       ? 7: uint,                ; format version (1 = this spec)
        * (int .gt 7) => any      ; Extensibility (future fields)
    }
 
@@ -613,7 +613,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 11]
+Perry                    Expires 23 January 2027               [Page 11]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -669,7 +669,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 12]
+Perry                    Expires 23 January 2027               [Page 12]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -725,7 +725,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 13]
+Perry                    Expires 23 January 2027               [Page 13]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -781,7 +781,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 14]
+Perry                    Expires 23 January 2027               [Page 14]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -837,7 +837,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 15]
+Perry                    Expires 23 January 2027               [Page 15]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -893,7 +893,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 16]
+Perry                    Expires 23 January 2027               [Page 16]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -949,7 +949,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 17]
+Perry                    Expires 23 January 2027               [Page 17]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1005,7 +1005,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 18]
+Perry                    Expires 23 January 2027               [Page 18]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1061,7 +1061,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 19]
+Perry                    Expires 23 January 2027               [Page 19]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1117,7 +1117,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 20]
+Perry                    Expires 23 January 2027               [Page 20]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1173,7 +1173,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 21]
+Perry                    Expires 23 January 2027               [Page 21]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1229,7 +1229,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 22]
+Perry                    Expires 23 January 2027               [Page 22]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1285,7 +1285,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 23]
+Perry                    Expires 23 January 2027               [Page 23]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1341,7 +1341,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 24]
+Perry                    Expires 23 January 2027               [Page 24]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1397,7 +1397,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 25]
+Perry                    Expires 23 January 2027               [Page 25]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1453,7 +1453,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 26]
+Perry                    Expires 23 January 2027               [Page 26]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1509,7 +1509,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 27]
+Perry                    Expires 23 January 2027               [Page 27]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1565,7 +1565,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 28]
+Perry                    Expires 23 January 2027               [Page 28]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1621,7 +1621,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 29]
+Perry                    Expires 23 January 2027               [Page 29]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1677,7 +1677,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 30]
+Perry                    Expires 23 January 2027               [Page 30]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1733,7 +1733,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 31]
+Perry                    Expires 23 January 2027               [Page 31]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1789,7 +1789,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 32]
+Perry                    Expires 23 January 2027               [Page 32]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1822,7 +1822,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    Simulation-Based Validation  Validation of CPB's routing impact was
       conducted via the pure-Python discrete-event simulator
       config1_sim.py, which implements vanilla CGR (earliest-arrival)
-      and the draft §12 consumers labeled "cpb" (rate-aware) and "cpb-
+      and the Section 12 consumers labeled "cpb" (rate-aware) and "cpb-
       risk" (quadratic risk penalty) over Configuration 1 (4 rovers, 4
       orbiters, 1 relay, 3 ground stations).  Section 12 reports the
       authoritative 10-seed paper-battery results for those three
@@ -1845,7 +1845,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 33]
+Perry                    Expires 23 January 2027               [Page 33]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1875,7 +1875,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    The primary metric is delivery ratio.  End-to-end latency is reported
    as a secondary metric.
 
-12.2.  Test Configuration: Multi-Asset Mars Relay (CGR)
+12.2.  Test Configuration 1: Multi-Asset Mars Relay
 
    The experiment uses a multi-asset Mars-to-Earth relay topology with
    four surface assets, four orbiters, one deep-space relay, and three
@@ -1901,7 +1901,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 34]
+Perry                    Expires 23 January 2027               [Page 34]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1939,9 +1939,10 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       Route cost is computed as latency / (confidence ×
       bottleneck_rate).
 
-   Risk-averse CPB consumer (labeled "cpb-risk")  Stronger experimental
-      consumer that adds an explicit quadratic penalty on low-confidence
-      links: cost = latency + (1 − confidence)² × 5000.
+   Risk-averse CPB consumer (labeled "cpb-risk")  Risk-averse
+      experimental consumer that applies an explicit quadratic penalty
+      on low-confidence links: cost = latency + (1 − confidence)² ×
+      5000.
 
 12.4.  Methodology
 
@@ -1956,8 +1957,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-
-Perry                    Expires 9 January 2027                [Page 35]
+Perry                    Expires 23 January 2027               [Page 35]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -1994,31 +1994,31 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    *Primary findings (Configuration 1, 10 seeds, paper battery via
    config1_sim.py --battery paper --strategy all):*
 
-   *  Baseline (vanilla CGR) mean delivery was 0.9962 with elevated tail
-      latency (mean p95 ≈ 273 s across seeds).
+   *  Latency and tails: baseline mean p95 latency was ≈273 s; both CPB
+      consumers tightened p95 to 123 s (mean lat_avg drop ≈13 s).  This
+      is the primary operational win on Configuration 1.
 
-   *  The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
-      ("cpb-risk") both achieved mean delivery 0.9998 with tight tails
-      (p95 = 123 s).  Paired (cpb − baseline) delivery mean gain
-      +0.00355 (t ≈ 86 over 10 seeds).
+   *  Delivery ratio: baseline mean delivery was 0.9962; both the rate-
+      aware consumer ("cpb") and the risk-averse consumer ("cpb-risk")
+      reached mean delivery 0.9998.  Paired (cpb − baseline) delivery
+      mean gain +0.00355 (t ≈ 86 over 10 seeds).
 
-   *  In this topology the two CPB consumers selected the same routes
-      under the published cost formulas, so their aggregate metrics
-      match; they remain distinct policies for other confidence/rate
-      mixes.
-
-
-
+   *  On this topology the two CPB cost formulas selected the same
+      routes, so aggregate metrics match.  They remain distinct policies
+      and can diverge when confidence and bottleneck rate are less
+      correlated.
 
 
 
 
-Perry                    Expires 9 January 2027                [Page 36]
+
+
+Perry                    Expires 23 January 2027               [Page 36]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
-   *Interpretation.* On Configuration 1, both draft §12 CPB consumers
+   *Interpretation.* On Configuration 1, both Section 12 CPB consumers
    improve delivery ratio and tail latency relative to confidence-blind
    earliest-arrival CGR.  The rate-aware and risk-averse costs remain
    distinct policies; they can diverge when confidence and bottleneck
@@ -2069,7 +2069,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 37]
+Perry                    Expires 23 January 2027               [Page 37]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2125,7 +2125,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 38]
+Perry                    Expires 23 January 2027               [Page 38]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2181,7 +2181,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 39]
+Perry                    Expires 23 January 2027               [Page 39]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2214,10 +2214,10 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 12.7.  Goals (per RFC 2026 Section 4.2.1)
 
    1.  Determine whether CPB-enhanced routing improves delivery ratio
-       under adversarial conditions with rate-aware costing.  *Met.* In
-       the Configuration 1 paper battery (10 seeds), baseline mean
-       delivery was 0.9962 while both "cpb" and "cpb-risk" reached mean
-       delivery 0.9998, with consistent gains on every seed.
+       under stochastic contact conditions with rate-aware costing.
+       *Met.* In the Configuration 1 paper battery (10 seeds), baseline
+       mean delivery was 0.9962 while both "cpb" and "cpb-risk" reached
+       mean delivery 0.9998, with consistent gains on every seed.
 
    2.  Quantify CPB byte overhead. *Met by Section 10 analytical
        bounds:* <3% for 1 KB+ payloads with full CPB.
@@ -2237,7 +2237,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 40]
+Perry                    Expires 23 January 2027               [Page 40]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2293,7 +2293,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 41]
+Perry                    Expires 23 January 2027               [Page 41]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2349,7 +2349,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 42]
+Perry                    Expires 23 January 2027               [Page 42]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2405,7 +2405,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 43]
+Perry                    Expires 23 January 2027               [Page 43]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2461,7 +2461,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 44]
+Perry                    Expires 23 January 2027               [Page 44]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2473,7 +2473,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    python3 impl/test_cpb.py
    python3 impl/test_config1_policies.py
    python3 impl/config1_sim.py --battery paper --strategy all
-   # ~50 s walltime; mean delivery baseline 0.9962, cpb/cpb-risk 0.9998 (§12.5)
+   # ~50s; mean delivery 0.9962 / 0.9998 (Section 12.5)
 
                       Figure 9: Reproduction Commands
 
@@ -2517,7 +2517,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 45]
+Perry                    Expires 23 January 2027               [Page 45]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2573,7 +2573,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 46]
+Perry                    Expires 23 January 2027               [Page 46]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2629,7 +2629,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 47]
+Perry                    Expires 23 January 2027               [Page 47]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2685,7 +2685,7 @@ B.1.  draft-perry-dtn-cpb-00 (July 2026)
 
 
 
-Perry                    Expires 9 January 2027                [Page 48]
+Perry                    Expires 23 January 2027               [Page 48]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2741,7 +2741,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
 
 
-Perry                    Expires 9 January 2027                [Page 49]
+Perry                    Expires 23 January 2027               [Page 49]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
@@ -2797,4 +2797,4 @@ Author's Address
 
 
 
-Perry                    Expires 9 January 2027                [Page 50]
+Perry                    Expires 23 January 2027               [Page 50]
