@@ -8,7 +8,7 @@ Reference implementation of the Contact Probability Block (CPB) defined in [draf
 |------|---------|
 | `cpb.py` | Encoder and decoder for the CPB block-type-specific data per §3.2 / §3.4. ~600 LOC. |
 | `test_cpb.py` | Conformance suite (original cases + many negative tests + Hypothesis property-based testing). |
-| `config1_sim.py` | Discrete-event simulator producing the §11.5 results (4-rover, 4-orbiter Mars relay topology). Supports `--quick`, `--max-bundles`, etc. |
+| `config1_sim.py` | Discrete-event simulator producing the §11.5 results (4-rover, 4-orbiter Mars relay topology). Strategies: `baseline`, `cpb` (UCoP), `cpb-risk` (confidence floor then earliest-arrival). Supports `--quick`, `--risk-floor`, `--age-conf`, `--csv`. |
 | `requirements.txt` | Python dependencies. |
 
 See `../examples/` for small, runnable demonstrations of using the packaged `cpb` module.
@@ -35,11 +35,15 @@ python3 config1_sim.py --quick
 
 # Other useful options:
 python3 config1_sim.py --battery standard --strategy cpb --csv results.csv
+
+# All three policies (default); optional risk floor / seasonal aging:
+python3 config1_sim.py --quick --strategy all
+python3 config1_sim.py --strategy cpb-risk --risk-floor 0.85 --age-conf
 ```
 
 Expected `test_cpb.py` output: 23+ `PASS` lines (more with Hypothesis installed), zero failures.
 
-Expected full `config1_sim.py` output: delivery rates 0.99620 (baseline) / 0.99976 (CPB-aware), reproducing §11.5 exactly. Full run ~45s.
+Expected full `config1_sim.py` paper battery (`--battery paper --strategy both`): delivery rates 0.99620 (baseline) / 0.99976 (CPB-aware), reproducing §11.5 exactly. Full run ~45s. Default `--strategy all` also runs `cpb-risk`.
 
 ## New in this tree (timeline1 improvements)
 

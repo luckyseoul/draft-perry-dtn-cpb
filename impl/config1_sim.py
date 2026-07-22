@@ -16,7 +16,7 @@ Each rover sees all 4 orbiters with different per-orbiter confidences
 Each orbiter forwards to the deep-space relay.  The relay sees all 3
 ground stations on staggered schedules.
 
-Two routing algorithms:
+Three routing algorithms:
 
   baseline (vanilla CGR / SABR earliest-arrival):
     For each bundle, search across (orbiter, ground_station) pairs and
@@ -26,6 +26,30 @@ Two routing algorithms:
   cpb (CGR-UCoP per Fraire et al., DOI 10.1109/TAES.2017.2738278):
     Cost(route) = (arrival_time - now) / product_of_confidences.
     Picks the lowest-cost route, balancing latency vs reliability.
+
+  cpb-risk (reliability-constrained earliest-arrival; new):
+    First discard routes whose end-to-end confidence product is below a
+    configurable floor (default 0.85).  Among survivors, pick earliest
+    predicted arrival (not UCoP).  If no route clears the floor, fall
+    back to the highest-confidence route (hard reliability preference).
+
+    This is intentionally distinct from cpb (UCoP): cpb trades latency
+    against confidence continuously; cpb-risk treats confidence as a
+    hard admission control then optimizes delay among admissible paths.
+    That matches how ops often express SLAs ("never use a path below
+    X% expected success") rather than a soft cost weight.
+
+    Motivation (2025–2026 landscape):
+      - draft-birrane-dtn-rel: reliability as a first-class DTN concern
+      - operational CGR practice: avoid low-probability first hops even
+        when they look earliest-arrival on paper
+      - draft-perry-dtn-cpb path confidence product is exactly the
+        predicate this policy uses
+
+Optional confidence aging (--age-conf):
+  Multiplies hop confidences by a smooth seasonal factor in [0.70, 1.0]
+  (dust-storm / solar-weather model).  Tests whether risk floors remain
+  useful when CPB validity windows matter.
 
 Discrete-event sim, deterministic per seed.  10 seeds for paired CI.
 ~80K bundles per arm per seed, 7-day simulated traffic.
@@ -159,6 +183,26 @@ def attempt_hop(t: float, period: float, window: float, p: float,
     return False, close_t, 1
 
 
+# Default risk floor for cpb-risk (path product). Tunable via CLI.
+DEFAULT_RISK_FLOOR = 0.85
+
+# Seasonal aging period (seconds): one "dust storm cycle" ~ 1.5 simulated days
+AGE_PERIOD_S = 1.5 * 86400.0
+
+
+def confidence_age_factor(t: float, enabled: bool) -> float:
+    """Smooth seasonal multiplier in [0.70, 1.0] when aging is enabled.
+
+    Models temporary degradation of surface↔orbiter links (dust, solar
+    weather).  Mid-cycle is worst (0.70); cycle boundaries are clear (1.0).
+    """
+    if not enabled:
+        return 1.0
+    # cos from 1.0 → 0.70 → 1.0 over AGE_PERIOD_S
+    phase = (t % AGE_PERIOD_S) / AGE_PERIOD_S  # [0, 1)
+    return 0.85 + 0.15 * math.cos(2.0 * math.pi * phase)
+
+
 # ---- route enumeration -------------------------------------------------
 
 @dataclass(frozen=True)
@@ -167,10 +211,20 @@ class Route:
     orbiter: int
     ground: int
 
-    def confidence(self) -> float:
-        return (ROVER_ORBITER_CONFIDENCE[self.rover][self.orbiter]
-                * ORBITER_RELAY_CONFIDENCE[self.orbiter]
-                * GROUND_CONFIDENCE[self.ground])
+    def confidence(self, t: float = 0.0, age: bool = False) -> float:
+        age_f = confidence_age_factor(t, age)
+        # Aging hits the noisy first hop hardest (surface link).
+        p1 = ROVER_ORBITER_CONFIDENCE[self.rover][self.orbiter] * age_f
+        p2 = ORBITER_RELAY_CONFIDENCE[self.orbiter]
+        p3 = GROUND_CONFIDENCE[self.ground]
+        return p1 * p2 * p3
+
+    def hop_probs(self, t: float = 0.0, age: bool = False) -> tuple[float, float, float]:
+        age_f = confidence_age_factor(t, age)
+        p1 = ROVER_ORBITER_CONFIDENCE[self.rover][self.orbiter] * age_f
+        p2 = ORBITER_RELAY_CONFIDENCE[self.orbiter]
+        p3 = GROUND_CONFIDENCE[self.ground]
+        return p1, p2, p3
 
 
 def all_routes_from(rover: int) -> list[Route]:
@@ -191,18 +245,48 @@ def predicted_arrival(t: float, route: Route) -> float:
 
 # ---- routing algorithms -----------------------------------------------
 
-def baseline_choose(t: float, rover: int) -> Route:
+def baseline_choose(t: float, rover: int, *, age: bool = False,
+                    risk_floor: float = DEFAULT_RISK_FLOOR) -> Route:
     """Vanilla CGR: pick route with earliest predicted arrival."""
+    del age, risk_floor  # unused; shared chooser signature
     candidates = all_routes_from(rover)
     return min(candidates, key=lambda r: predicted_arrival(t, r))
 
 
-def cpb_choose(t: float, rover: int) -> Route:
+def cpb_choose(t: float, rover: int, *, age: bool = False,
+               risk_floor: float = DEFAULT_RISK_FLOOR) -> Route:
     """CGR-UCoP: cost = (arrival_time - now) / product_of_confidences."""
+    del risk_floor
     candidates = all_routes_from(rover)
     def cost(r: Route) -> float:
-        return (predicted_arrival(t, r) - t) / r.confidence()
+        conf = r.confidence(t, age)
+        if conf <= 0.0:
+            return float("inf")
+        return (predicted_arrival(t, r) - t) / conf
     return min(candidates, key=cost)
+
+
+def cpb_risk_choose(t: float, rover: int, *, age: bool = False,
+                    risk_floor: float = DEFAULT_RISK_FLOOR) -> Route:
+    """Reliability-constrained earliest-arrival.
+
+    Routes with confidence product < risk_floor are excluded.  Among
+    admissible routes, pick earliest predicted arrival.  If every route
+    fails the floor, pick the highest-confidence route (never fall back
+    to unconstrained earliest-arrival — reliability is the hard constraint).
+    """
+    candidates = all_routes_from(rover)
+    feasible = [r for r in candidates if r.confidence(t, age) >= risk_floor]
+    if not feasible:
+        return max(candidates, key=lambda r: r.confidence(t, age))
+    return min(feasible, key=lambda r: predicted_arrival(t, r))
+
+
+CHOOSERS = {
+    "baseline": baseline_choose,
+    "cpb": cpb_choose,
+    "cpb-risk": cpb_risk_choose,
+}
 
 
 # ---- simulator --------------------------------------------------------
@@ -216,9 +300,11 @@ class Bundle:
     delivered_at: float | None = None
     failed: bool = False
     total_attempts: int = 0
+    path_confidence: float = 0.0
 
 
-def simulate(seed: int, strategy: str) -> list[Bundle]:
+def simulate(seed: int, strategy: str, *, age: bool = False,
+             risk_floor: float = DEFAULT_RISK_FLOOR) -> list[Bundle]:
     rng = random.Random(seed)
     bundles: list[Bundle] = []
 
@@ -232,16 +318,18 @@ def simulate(seed: int, strategy: str) -> list[Bundle]:
             bid += 1
             t += BUNDLE_RATE
 
-    chooser = baseline_choose if strategy == "baseline" else cpb_choose
+    chooser = CHOOSERS[strategy]
 
     for b in bundles:
         t = b.created_at
-        b.chosen_route = chooser(t, b.rover)
+        b.chosen_route = chooser(t, b.rover, age=age, risk_floor=risk_floor)
         route = b.chosen_route
         attempts = 0
+        p1, p2, p3 = route.hop_probs(t, age)
+        b.path_confidence = p1 * p2 * p3
 
         # Hop 1: rover -> orbiter
-        p1 = ROVER_ORBITER_CONFIDENCE[b.rover][route.orbiter]
+        # use aged first-hop probability at decision time (held for the hop)
         retries = 3
         ok = False
         while retries > 0 and t < SIM_DURATION:
@@ -259,7 +347,6 @@ def simulate(seed: int, strategy: str) -> list[Bundle]:
 
         # Hop 2: orbiter -> relay (uses orbiter period for next contact opp)
         t += ORBITER_TO_RELAY_DELAY
-        p2 = ORBITER_RELAY_CONFIDENCE[route.orbiter]
         retries = 3
         ok = False
         while retries > 0 and t < SIM_DURATION:
@@ -277,7 +364,6 @@ def simulate(seed: int, strategy: str) -> list[Bundle]:
 
         # Hop 3: relay -> ground
         t += RELAY_TO_GROUND_DELAY
-        p3 = GROUND_CONFIDENCE[route.ground]
         retries = 3
         ok = False
         while retries > 0 and t < SIM_DURATION:
@@ -326,9 +412,11 @@ def report_run(bundles: list[Bundle], label: str, seed: int) -> dict:
 
     # Route diversity: count distinct (orbiter, ground) pairs chosen
     route_pairs = set()
+    path_confs = []
     for b in bundles:
         if b.chosen_route:
             route_pairs.add((b.chosen_route.orbiter, b.chosen_route.ground))
+            path_confs.append(b.path_confidence)
 
     return {
         "label":       label,
@@ -342,6 +430,7 @@ def report_run(bundles: list[Bundle], label: str, seed: int) -> dict:
         "lat_p99":     lat_p99,
         "atts_avg":    att_avg,
         "n_routes":    len(route_pairs),
+        "path_conf":   statistics.mean(path_confs) if path_confs else float("nan"),
     }
 
 
@@ -357,6 +446,25 @@ def paired_t(diffs: list[float]) -> tuple[float, float, float]:
     return mean_d, sd, t
 
 
+def _paired_block(rows: list[dict], a: str, b: str, n_seeds: int) -> None:
+    """Print paired (b - a) stats when both arms present with matching seeds."""
+    ra = sorted([r for r in rows if r["label"] == a], key=lambda r: r["seed"])
+    rb = sorted([r for r in rows if r["label"] == b], key=lambda r: r["seed"])
+    if len(ra) < 2 or len(ra) != len(rb):
+        return
+    print()
+    print(f"=== paired comparison ({b} - {a}), {n_seeds} seeds ===")
+    for metric, fmt in (
+        ("delivery", "delivery: mean={:+.5f}  sd={:.5f}  t={:+.2f}"),
+        ("lat_avg",  "lat_avg : mean={:+.2f}s  sd={:.2f}s  t={:+.2f}"),
+        ("lat_p95",  "lat_p95 : mean={:+.2f}s  sd={:.2f}s  t={:+.2f}"),
+        ("path_conf","path_conf mean={:+.5f}  sd={:.5f}  t={:+.2f}"),
+    ):
+        diffs = [xb[metric] - xa[metric] for xa, xb in zip(ra, rb)]
+        md, sd, t = paired_t(diffs)
+        print(fmt.format(md, sd, t))
+
+
 def main(argv: list[str] | None = None) -> None:
     import argparse
     import time
@@ -366,7 +474,16 @@ def main(argv: list[str] | None = None) -> None:
                         help="fast smoke test (1 seed, 1-day sim)")
     parser.add_argument("--battery", choices=("standard", "paper"), default="standard",
                         help="standard=3 seeds; paper=10 seeds (draft §11.5)")
-    parser.add_argument("--strategy", choices=("baseline", "cpb", "both"), default="both")
+    parser.add_argument(
+        "--strategy",
+        choices=("baseline", "cpb", "cpb-risk", "both", "all"),
+        default="all",
+        help="routing policy; 'both'=baseline+cpb; 'all'=+cpb-risk (default)",
+    )
+    parser.add_argument("--risk-floor", type=float, default=DEFAULT_RISK_FLOOR,
+                        help=f"min path confidence for cpb-risk (default {DEFAULT_RISK_FLOOR})")
+    parser.add_argument("--age-conf", action="store_true",
+                        help="enable seasonal confidence aging (dust/solar model)")
     parser.add_argument("--csv", type=Path, default=None, help="optional CSV output path")
     args = parser.parse_args(argv)
 
@@ -380,46 +497,47 @@ def main(argv: list[str] | None = None) -> None:
     else:
         seeds = list(SEEDS)
 
-    strategies = ("baseline", "cpb") if args.strategy == "both" else (args.strategy,)
+    if args.strategy == "both":
+        strategies = ("baseline", "cpb")
+    elif args.strategy == "all":
+        strategies = ("baseline", "cpb", "cpb-risk")
+    else:
+        strategies = (args.strategy,)
 
     rows = []
     print(f"{'strategy':<10} {'seed':>9} {'created':>9} {'delivered':>10} "
-          f"{'delivery':>9} {'lat_avg':>9} {'lat_p95':>10} {'#routes':>8}")
-    print("-" * 90)
+          f"{'delivery':>9} {'lat_avg':>9} {'lat_p95':>10} {'path_p':>8} {'#routes':>8}")
+    print("-" * 100)
+    if args.age_conf:
+        print(f"(confidence aging ON, period={AGE_PERIOD_S:.0f}s)")
+    if "cpb-risk" in strategies:
+        print(f"(cpb-risk floor={args.risk_floor})")
 
     t_start = time.time()
     for seed in seeds:
         for strategy in strategies:
             t0 = time.time()
-            bundles = simulate(seed, strategy)
+            bundles = simulate(
+                seed, strategy, age=args.age_conf, risk_floor=args.risk_floor)
             r = report_run(bundles, strategy, seed)
             r["walltime_s"] = round(time.time() - t0, 2)
+            r["risk_floor"] = args.risk_floor
+            r["age_conf"] = args.age_conf
             rows.append(r)
             print(f"{strategy:<10} {seed:>9} {r['created']:>9} "
                   f"{r['delivered']:>10} {r['delivery']:>9.4f} "
                   f"{r['lat_avg']:>9.1f} {r['lat_p95']:>10.1f} "
-                  f"{r['n_routes']:>8d}  ({r['walltime_s']}s)")
+                  f"{r['path_conf']:>8.4f} {r['n_routes']:>8d}  ({r['walltime_s']}s)")
 
     print(f"\ntotal walltime: {time.time() - t_start:.1f}s")
 
-    if len(strategies) == 2 and len(seeds) >= 2:
-        print()
-        print(f"=== paired comparison (cpb - baseline), {len(seeds)} seeds ===")
-        base = [r for r in rows if r["label"] == "baseline"]
-        cpb  = [r for r in rows if r["label"] == "cpb"]
-
-        deliv_diffs = [c["delivery"] - b["delivery"] for b, c in zip(base, cpb)]
-        lat_diffs   = [c["lat_avg"] - b["lat_avg"] for b, c in zip(base, cpb)]
-        p95_diffs   = [c["lat_p95"] - b["lat_p95"] for b, c in zip(base, cpb)]
-
-        md, sd, t = paired_t(deliv_diffs)
-        print(f"delivery: mean={md:+.5f}  sd={sd:.5f}  t={t:+.2f}")
-
-        md, sd, t = paired_t(lat_diffs)
-        print(f"lat_avg : mean={md:+.2f}s  sd={sd:.2f}s  t={t:+.2f}")
-
-        md, sd, t = paired_t(p95_diffs)
-        print(f"lat_p95 : mean={md:+.2f}s  sd={sd:.2f}s  t={t:+.2f}")
+    if len(seeds) >= 2:
+        if "baseline" in strategies and "cpb" in strategies:
+            _paired_block(rows, "baseline", "cpb", len(seeds))
+        if "baseline" in strategies and "cpb-risk" in strategies:
+            _paired_block(rows, "baseline", "cpb-risk", len(seeds))
+        if "cpb" in strategies and "cpb-risk" in strategies:
+            _paired_block(rows, "cpb", "cpb-risk", len(seeds))
 
     if args.csv and rows:
         args.csv.parent.mkdir(parents=True, exist_ok=True)
