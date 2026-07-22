@@ -1261,7 +1261,7 @@ li > p:last-of-type:only-child {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Perry</td>
-<td class="center">Expires 9 January 2027</td>
+<td class="center">Expires 23 January 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1274,12 +1274,12 @@ li > p:last-of-type:only-child {
 <dd class="internet-draft">draft-perry-dtn-cpb-00</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-07-08" class="published">8 July 2026</time>
+<time datetime="2026-07-22" class="published">22 July 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Experimental</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-01-09">9 January 2027</time></dd>
+<dd class="expires"><time datetime="2027-01-23">23 January 2027</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1342,7 +1342,7 @@ li > p:last-of-type:only-child {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 9 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 23 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1609,7 +1609,7 @@ li > p:last-of-type:only-child {
                 <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-scope-and-hypothesis" class="internal xref">Scope and Hypothesis</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
-                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-test-configuration-multi-as" class="internal xref">Test Configuration: Multi-Asset Mars Relay (CGR)</a></p>
+                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-test-configuration-1-multi-" class="internal xref">Test Configuration 1: Multi-Asset Mars Relay</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.3">
                 <p id="section-toc.1-1.12.2.3.1"><a href="#section-12.3" class="auto internal xref">12.3</a>.  <a href="#name-routing-policies-tested" class="internal xref">Routing Policies Tested</a></p>
@@ -2136,13 +2136,13 @@ $extension-block /=
 <pre>
 cpb-data = {
     ? 0: probability,         ; Default/overall probability
-    ? 1: [1*8 path-entry],    ; Per-path probabilities. Senders SHOULD NOT include more than 8 entries on constrained links (see Section 3.4). The bound 8 is a size recommendation for typical use; implementations follow the SHOULD language rather than this CDDL production.
+    ? 1: [1*8 path-entry],    ; per-path (SHOULD size; see Sec 3.4)
     ? 2: uint,                ; Timestamp (DTN epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
     ? 4: uint,                ; Validity duration (seconds, TTL)
     ? 5: metric-type,         ; Metric type identifier
     ? 6: probability,         ; Confidence/variance estimate
-    ? 7: uint,                ; CPB format version (1 = this specification)
+    ? 7: uint,                ; format version (1 = this spec)
     * (int .gt 7) =&gt; any      ; Extensibility (future fields)
 }
 
@@ -3806,7 +3806,7 @@ A3                   ; map with 3 entries
         <dd style="margin-left: 1.5em" id="section-11-4.4">
           Validation of CPB's routing impact was conducted via the pure-Python
           discrete-event simulator config1_sim.py, which implements vanilla
-          CGR (earliest-arrival) and the draft §12 consumers labeled "cpb"
+          CGR (earliest-arrival) and the Section 12 consumers labeled "cpb"
           (rate-aware) and "cpb-risk" (quadratic risk penalty) over
           Configuration 1 (4 rovers, 4 orbiters, 1 relay, 3 ground stations).
           <a href="#experiment" class="auto internal xref">Section 12</a> reports the authoritative 10-seed
@@ -3871,8 +3871,8 @@ A3                   ; map with 3 entries
 </div>
 <div id="exp-config">
 <section id="section-12.2">
-        <h3 id="name-test-configuration-multi-as">
-<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-test-configuration-multi-as" class="section-name selfRef">Test Configuration: Multi-Asset Mars Relay (CGR)</a>
+        <h3 id="name-test-configuration-1-multi-">
+<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-test-configuration-1-multi-" class="section-name selfRef">Test Configuration 1: Multi-Asset Mars Relay</a>
         </h3>
 <p id="section-12.2-1">
           The experiment uses a multi-asset Mars-to-Earth relay topology with
@@ -3972,7 +3972,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           <dd class="break"></dd>
 <dt id="section-12.3-2.5">Risk-averse CPB consumer (labeled "cpb-risk")</dt>
           <dd style="margin-left: 1.5em" id="section-12.3-2.6">
-            Stronger experimental consumer that adds an explicit quadratic
+            Risk-averse experimental consumer that applies an explicit quadratic
             penalty on low-confidence links:
             <code>cost = latency + (1 − confidence)² × 5000</code>.<a href="#section-12.3-2.6" class="pilcrow">¶</a>
 </dd>
@@ -4036,22 +4036,25 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           <strong>Primary findings (Configuration 1, 10 seeds, paper battery
           via config1_sim.py --battery paper --strategy all):</strong><a href="#section-12.5-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-12.5-5.1">Baseline (vanilla CGR) mean delivery was 0.9962 with elevated
-              tail latency (mean p95 ≈ 273 s across seeds).<a href="#section-12.5-5.1" class="pilcrow">¶</a>
+<li class="normal" id="section-12.5-5.1">Latency and tails: baseline mean p95 latency was ≈273 s;
+              both CPB consumers tightened p95 to 123 s (mean lat_avg drop
+              ≈13 s). This is the primary operational win on
+              Configuration 1.<a href="#section-12.5-5.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-12.5-5.2">The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
-              ("cpb-risk") both achieved mean delivery 0.9998 with tight tails
-              (p95 = 123 s). Paired (cpb − baseline) delivery mean gain
-              +0.00355 (t ≈ 86 over 10 seeds).<a href="#section-12.5-5.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-5.2">Delivery ratio: baseline mean delivery was 0.9962; both the
+              rate-aware consumer ("cpb") and the risk-averse consumer
+              ("cpb-risk") reached mean delivery 0.9998. Paired
+              (cpb − baseline) delivery mean gain +0.00355
+              (t ≈ 86 over 10 seeds).<a href="#section-12.5-5.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-12.5-5.3">In this topology the two CPB consumers selected the same routes
-              under the published cost formulas, so their aggregate metrics
-              match; they remain distinct policies for other confidence/rate
-              mixes.<a href="#section-12.5-5.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-12.5-5.3">On this topology the two CPB cost formulas selected the same
+              routes, so aggregate metrics match. They remain distinct
+              policies and can diverge when confidence and bottleneck rate
+              are less correlated.<a href="#section-12.5-5.3" class="pilcrow">¶</a>
 </li>
         </ul>
 <p id="section-12.5-6">
-          <strong>Interpretation.</strong> On Configuration 1, both draft §12
+          <strong>Interpretation.</strong> On Configuration 1, both Section 12
           CPB consumers improve delivery ratio and tail latency relative to
           confidence-blind earliest-arrival CGR. The rate-aware and risk-averse
           costs remain distinct policies; they can diverge when confidence and
@@ -4228,7 +4231,7 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         </h3>
 <ol start="1" type="1" class="normal type-1" id="section-12.7-1">
           <li id="section-12.7-1.1">Determine whether CPB-enhanced routing improves delivery ratio
-              under adversarial conditions with rate-aware costing.
+              under stochastic contact conditions with rate-aware costing.
               <strong>Met.</strong> In the Configuration 1 paper battery
               (10 seeds), baseline mean delivery was 0.9962 while both
               "cpb" and "cpb-risk" reached mean delivery 0.9998, with
@@ -4534,7 +4537,7 @@ pip install cbor2
 python3 impl/test_cpb.py
 python3 impl/test_config1_policies.py
 python3 impl/config1_sim.py --battery paper --strategy all
-# ~50 s walltime; mean delivery baseline 0.9962, cpb/cpb-risk 0.9998 (§12.5)
+# ~50s; mean delivery 0.9962 / 0.9998 (Section 12.5)
 </pre>
 </div>
 <figcaption><a href="#figure-9" class="selfRef">Figure 9</a>:
