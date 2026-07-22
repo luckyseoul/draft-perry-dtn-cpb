@@ -4,8 +4,8 @@ test_cpb.py -- round-trip and conformance tests for cpb.py.
 Verifies:
   - Listing 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, timestamp,
     validity duration -- inner CBOR map matches expected wire bytes.
-  - Listing 6 (Section 3.5): EDN form with default + 2 path entries + metric.
-  - Listing 7 (Section 3.5): wire encoding for the same -- byte-for-byte match.
+  - Listing 6 (Section 3.6): EDN form with default + 2 path entries + metric.
+  - Listing 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
   - Hex encoding table (Section 3.4.3): each (prob -> CBOR hex) row.
   - Section 3.4.1: NaN, +/-Inf rejection; out-of-range clamping on decode.
   - Round-trip: encode -> decode -> encode is byte-stable.
@@ -95,7 +95,7 @@ ok("decode(encode(L2)) == L2")
 #       82 18 64 F93C00      ;   [100, 1.0]
 #   05 01                    ; 5: 1 (cgr-confidence)
 
-print("\n== Listing 7 (Section 3.5): per-path wire encoding ==")
+print("\n== Listing 7 (Section 3.6): per-path wire encoding ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
     cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
