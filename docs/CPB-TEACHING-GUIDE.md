@@ -107,12 +107,18 @@ The shipped simulator `impl/config1_sim.py` uses **Configuration 1**:
 | baseline | **0.9962** | ~**273 s** |
 | cpb | **0.9998** | **123 s** |
 
+**Two experiment parts (draft §12.1):** (1) wire format + ION data-plane
+survival of the extension block; (2) routing value of confidences of the
+class CPB carries (simulator; bridge tests prove encode/decode preserves
+the cost ranking).
+
 Reproduce:
 
 ```sh
 cd impl
 python3 test_cpb.py
 python3 test_config1_policies.py   # pins the §12 cost formula
+python3 test_sim_cpb_bridge.py     # Config1 confidences ↔ CPB wire
 python3 config1_sim.py --battery paper --strategy both
 ```
 

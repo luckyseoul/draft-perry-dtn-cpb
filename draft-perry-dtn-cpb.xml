@@ -1919,18 +1919,40 @@ A3                   ; map with 3 entries
       <section anchor="exp-scope">
         <name>Scope and Hypothesis</name>
         <t>
-          The experiment tests a single core hypothesis: that carrying
-          per-contact probability metadata inside BPv7 bundles as an
-          extension block enables routing protocols to deliver bundles that
-          would otherwise be lost, in networks where contact opportunities
-          are stochastic and multiple competing routes exist.
+          The experiment has two complementary parts that together support
+          the CPB design goal (a BPv7 extension block that carries
+          per-contact probability metadata for routing consumers):
+        </t>
+        <ol>
+          <li><strong>Wire-format correctness.</strong> The reference encoder
+              produces CPB block-type-specific data per
+              <xref target="cpb"/>, and the live ION data-plane runs in
+              <xref target="exp-real-validation"/> show that experimental
+              extension block type 200 carrying that data survives creation,
+              injection, and UDPCL carriage on a real BPv7 stack.</li>
+          <li><strong>Routing value of the metadata class.</strong>
+              Configuration 1 compares confidence-blind earliest-arrival CGR
+              to a rate-aware consumer of ground-truth per-contact
+              confidences of the same class CPB is designed to carry
+              (metric-type 1). The discrete-event simulator does not place
+              extension blocks on a simulated wire; repository bridge tests
+              verify that Configuration 1 confidences encode and decode as
+              CPB maps without changing the rate-aware cost ranking.</li>
+        </ol>
+        <t>
+          The core hypothesis for part (2) is that such confidence metadata,
+          when available to routing, can improve delivery and latency under
+          stochastic contact failures with multiple competing routes.
+          In-band consumption of CPB by production CGR (or other stacks) is
+          not claimed here and is listed under
+          <xref target="open-questions"/>.
         </t>
         <t>
           Delivery ratio and end-to-end latency (including p95 tails) are
-          both reported. Delivery ratio is the primary success criterion for
-          the hypothesis; on Configuration 1 the larger absolute operational
-          effect appears in tail latency (see
-          <xref target="exp-results"/>).
+          both reported for Configuration 1. Delivery ratio is the primary
+          success criterion for the routing-value hypothesis; on this
+          topology the larger absolute operational effect appears in tail
+          latency (see <xref target="exp-results"/>).
         </t>
       </section>
 
@@ -2300,27 +2322,42 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
       <section anchor="exp-deferred">
         <name>Deferred Configurations</name>
         <t>
-          Spray-and-Wait in mobile ad-hoc topology requires multi-neighbor
-          concurrent encounters to differentiate from baseline; this regime
-          is not produced by sparse Random Waypoint topologies at the node
-          counts tested. Multi-CPB accumulation across 20 hops is a
-          correctness test verified via byte-stable round-trips in the
-          reference encoder; full end-to-end demonstration is deferred to
-          integration work with a BPSec-enabled ION testbed.
+          The following configurations are intentionally out of scope for
+          this Experimental revision and are deferred to follow-on work:
+        </t>
+        <ul>
+          <li>Spray-and-Wait (or other replication protocols) in dense
+              multi-neighbor mobile topologies where concurrent encounters
+              differentiate policies from earliest-arrival CGR.</li>
+          <li>Multi-hop in-band CPB create/update/strip chains with BPSec
+              BIB coverage on a production stack (ION, HDTN, or similar).</li>
+          <li>In-band consumption of CPB fields by ION CGR (or DTNEx) for
+              live forwarding decisions.</li>
+          <li>Multi-CPB accumulation and precedence across long paths
+              (tens of hops) under partial deployment.</li>
+        </ul>
+        <t>
+          The reference encoder verifies single-block encode/decode
+          stability (including multi-field maps and path arrays). It does
+          not by itself demonstrate multi-hop accumulation of distinct CPB
+          blocks along a path.
         </t>
       </section>
 
       <section anchor="open-questions">
         <name>Open Experimental Questions</name>
         <t>
-          The experiment in this document establishes baseline plausibility:
-          confidence-weighted routing fed by accurate CPB data outperforms
+          The experiment in this document establishes Experimental-track
+          baseline plausibility: (1) the wire format is implementable and
+          survivable on a real BPv7 data plane, and (2) confidence-weighted
+          routing fed by accurate confidences of the CPB class outperforms
           confidence-blind routing on the same contact-failure realizations.
           A complete validation of CPB as an operational standardized
           mechanism requires answering a series of follow-on questions that
           this document does not close. These are enumerated here so that
           reviewers, implementers, and follow-on researchers share a common
-          list of what remains to be demonstrated.
+          list of what remains for Standards Track; none of the items below
+          is required to complete this Experimental -00.
         </t>
         <dl>
           <dt>Robustness to noisy probability estimation</dt>
@@ -2473,17 +2510,25 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
       <name>Reference Implementation</name>
       <t>
         The reference implementation supporting this specification consists of
-        three Python modules:
+        the following Python modules under <tt>impl/</tt>:
       </t>
       <ul>
         <li><strong>cpb.py</strong> - CBOR encoder/decoder, implementing the
             CDDL schema in <xref target="block-structure"/> and the encoding
             rules in <xref target="cbor-encoding"/>.</li>
-        <li><strong>test_cpb.py</strong> - 23-test conformance suite. All
-            passing on Python 3.10+ with cbor2 5.9.0.</li>
+        <li><strong>test_cpb.py</strong> - wire-format conformance suite
+            (encode/decode, hex tables, invalid floats, path-array SHOULD).
+            Passes on Python 3.10+ with cbor2 5.9.0.</li>
         <li><strong>config1_sim.py</strong> - the discrete-event simulator
             that produced the Configuration 1 results in
             <xref target="experiment"/> (paper battery).</li>
+        <li><strong>test_config1_policies.py</strong> - unit tests for the
+            rate-aware cost formula.</li>
+        <li><strong>test_sim_cpb_bridge.py</strong> - bridge tests showing
+            Configuration 1 confidences encode/decode as metric-type 1 CPB
+            maps without changing rate-aware route cost ranking.</li>
+        <li><strong>test_draft_honesty.py</strong> - structural checks that
+            draft/docs claims stay aligned with shipped code.</li>
       </ul>
 
       <section anchor="repo">
@@ -2507,6 +2552,8 @@ pip install cbor2
 
 python3 impl/test_cpb.py
 python3 impl/test_config1_policies.py
+python3 impl/test_sim_cpb_bridge.py
+python3 impl/test_draft_honesty.py
 python3 impl/config1_sim.py --battery paper --strategy both
 # ~50s; mean delivery baseline 0.9962 / cpb 0.9998 (Section 12.5)
 ]]></sourcecode>
@@ -2894,6 +2941,10 @@ python3 impl/config1_sim.py --battery paper --strategy both
               51 B overhead attributed only to the 2-node campaign; document
               date 22 July 2026; evaluation remains baseline vs one
               rate-aware CPB consumer.</li>
+          <li>2026-07-22 purpose-completion pass: split experiment into
+              wire-format vs routing-value-of-metadata parts; honest
+              deferred-configurations list; sim↔CPB bridge tests; open
+              questions framed as Standards Track follow-ons, not -00 gaps.</li>
         </ul>
       </section>
     </section>

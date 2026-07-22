@@ -38,6 +38,9 @@ jobs:
       - name: Draft/docs honesty structural tests
         run: python3 impl/test_draft_honesty.py
 
+      - name: Sim↔CPB wire bridge tests
+        run: python3 impl/test_sim_cpb_bridge.py
+
       - name: Simulator smoke test (quick mode)
         run: python3 impl/config1_sim.py --quick
 

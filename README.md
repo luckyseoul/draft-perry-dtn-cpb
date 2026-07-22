@@ -41,6 +41,9 @@ pip install -e '.[test]'
 
 # Run the full conformance suite (wire encode/decode + hex tables)
 python3 test_cpb.py
+python3 test_config1_policies.py
+python3 test_sim_cpb_bridge.py   # Config1 confidences through CPB wire format
+python3 test_draft_honesty.py
 
 # Fast smoke test of the Mars relay simulation (baseline + cpb)
 python3 config1_sim.py --quick
