@@ -37,7 +37,7 @@ try:
     import cpb as cpb_module
 except ImportError:
     print("ERROR: cpb.py (the reference encoder) not found in path.")
-    print("Run from real_cpb_packet_test/ or ensure cpb.py is importable.")
+    print("Run from impl/real-pwg-deployment/timeline1/ or ensure cpb.py is importable.")
     sys.exit(1)
 
 try:

@@ -39,7 +39,7 @@ cd impl
 # Modern way: install as a proper package (includes cbor2)
 pip install -e '.[test]'
 
-# Run the full conformance suite (including property-based tests with Hypothesis)
+# Run the full conformance suite (wire encode/decode + hex tables)
 python3 test_cpb.py
 
 # Fast smoke test of the Mars relay simulation (baseline + cpb)

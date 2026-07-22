@@ -7,7 +7,7 @@ Reference implementation of the Contact Probability Block (CPB) defined in [draf
 | File | Purpose |
 |------|---------|
 | `cpb.py` | Encoder and decoder for the CPB block-type-specific data per §3.2 / §3.4. |
-| `test_cpb.py` | Conformance suite (original cases + many negative tests + Hypothesis property-based testing). |
+| `test_cpb.py` | Conformance suite (encode/decode, hex tables, invalid floats, path-array SHOULD). |
 | `test_config1_policies.py` | Unit tests for the draft §12 rate-aware cost formula used by the simulator. |
 | `config1_sim.py` | Discrete-event simulator for draft §12.5 (4-rover, 4-orbiter Mars relay). Strategies: `baseline`, `cpb` (rate-aware). CLI: `--quick`, `--battery`, `--strategy`, `--max-bundles`, `--age-conf`, `--csv`. |
 | `requirements.txt` | Python dependencies. |
@@ -40,7 +40,7 @@ python3 config1_sim.py --battery standard --strategy cpb --csv results.csv
 python3 config1_sim.py --quick --strategy both --max-bundles 8000
 ```
 
-Expected `test_cpb.py` output: 23+ `PASS` lines (more with Hypothesis installed), zero failures.
+Expected `test_cpb.py` output: 23+ `PASS` lines, zero failures.
 
 Routing policy labels (must match draft §12):
 
@@ -52,19 +52,18 @@ Paper-battery mean delivery (Configuration 1, 10 seeds, `--battery paper
 
 ## Coverage
 
-The reference implementation exercises:
+The reference encoder/decoder exercises:
 
-- Block structure (draft §3.2) including block processing flags (§3.2.1) and CRC handling (§3.2.2)
-- CBOR encoding rules (§3.4): float16 deterministic encoding, invalid-float handling (§3.4.1), hex encoding examples (§3.4.3)
-- Metric-type semantics (§3.5): cross-metric arithmetic prohibition is enforced in code
-- Multiple-CPB precedence (§3.6) and per-path matching (§3.6.1)
-- per-path array (field 1) SHOULD limit of 8 for DoS mitigation on constrained links (§3.4)
-- Backwards-compatible fallback when CPB block type is unknown (§3.3.2)
+- CBOR encoding of CPB block-type-specific data (§3.4): float16 deterministic encoding, invalid-float handling (§3.4.1), hex encoding examples (§3.4.3)
+- BTSD wrapping of the CPB map as used in the extension block
+- per-path array (field 1): more than 8 entries are accepted at the encoder (SHOULD, not MUST; local enforcement on constrained nodes)
+
+Routing, multi-CPB precedence, per-path matching algorithms, and cross-metric arithmetic prohibition are specified in the draft prose and are not separate unit tests in this package.
 
 Byte-exact match is verified against:
 
-- Listing 2 (concrete CPB with `prob=0.75`)
-- Listing 7 (per-path CPB wire encoding, §3.6)
+- Figure 2 (concrete CPB with `prob=0.75`)
+- Figure 7 (per-path CPB wire encoding, §3.6)
 - The full hex encoding table in §3.4.3
 
 ## License

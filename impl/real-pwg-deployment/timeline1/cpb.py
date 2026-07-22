@@ -33,7 +33,7 @@ import cbor2
 
 CPB_BLOCK_TYPE_EXAMPLE = 200  # Spec uses 0xC8 in examples until IANA assigns
 
-# Field numbers from Spec Section 3.2.1 / Listing 4
+# Field numbers from Spec Section 3.2.1 / Figure 4
 F_DEFAULT_PROB = 0
 F_PATH_ENTRIES = 1
 F_TIMESTAMP = 2

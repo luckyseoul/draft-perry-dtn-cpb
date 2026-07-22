@@ -2,10 +2,10 @@
 test_cpb.py -- round-trip and conformance tests for cpb.py.
 
 Verifies:
-  - Listing 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, timestamp,
+  - Figure 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, timestamp,
     validity duration -- inner CBOR map matches expected wire bytes.
-  - Listing 6 (Section 3.6): EDN form with default + 2 path entries + metric.
-  - Listing 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
+  - Figure 6 (Section 3.6): EDN form with default + 2 path entries + metric.
+  - Figure 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
   - Hex encoding table (Section 3.4.3): each (prob -> CBOR hex) row.
   - Section 3.4.1: NaN, +/-Inf rejection; out-of-range clamping on decode.
   - Round-trip: encode -> decode -> encode is byte-stable.
@@ -58,7 +58,7 @@ for prob, expected in table:
     ok(f"prob={prob:<5} -> {got}")
 
 
-# ---------------- Listing 2: minimal full CPB ----------------------------
+# ---------------- Figure 2: minimal full CPB ----------------------------
 # Expected inner BTSD content (the 23-byte CBOR map after the bstr header):
 #   A4                  ; map(4)
 #   00 F93A00           ; 0: 0.75
@@ -67,7 +67,7 @@ for prob, expected in table:
 #   02 1A 00F73A80      ; 2: timestamp 0x00F73A80 (16203904)
 #   04 19 0E10          ; 4: validity 3600
 
-print("\n== Listing 2 (Section 3.2): full CPB ==")
+print("\n== Figure 2 (Section 3.2): full CPB ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
     cpb.F_PATH_ENTRIES: [[100, 1.0]],
@@ -77,16 +77,16 @@ data = {
 expected_inner = "A400F93A0001818218 64F93C00021A00F73A8004190E10".replace(" ", "")
 got_inner = _hex(cpb.encode_cpb(data))
 if got_inner != expected_inner:
-    fail("Listing 2 inner CBOR mismatch", got=got_inner, expected=expected_inner)
-ok(f"inner CBOR ({len(got_inner)//2} bytes) matches Listing 2")
+    fail("Figure 2 inner CBOR mismatch", got=got_inner, expected=expected_inner)
+ok(f"inner CBOR ({len(got_inner)//2} bytes) matches Figure 2")
 
 decoded = cpb.decode_cpb(cpb.encode_cpb(data))
 if decoded != data:
-    fail("Listing 2 round-trip mismatch", got=decoded, expected=data)
+    fail("Figure 2 round-trip mismatch", got=decoded, expected=data)
 ok("decode(encode(L2)) == L2")
 
 
-# ---------------- Listing 7: per-path wire encoding ----------------------
+# ---------------- Figure 7: per-path wire encoding ----------------------
 # Expected:
 #   A3                       ; map(3)
 #   00 F93A00                ; 0: 0.75
@@ -95,7 +95,7 @@ ok("decode(encode(L2)) == L2")
 #       82 18 64 F93C00      ;   [100, 1.0]
 #   05 01                    ; 5: 1 (cgr-confidence)
 
-print("\n== Listing 7 (Section 3.6): per-path wire encoding ==")
+print("\n== Figure 7 (Section 3.6): per-path wire encoding ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
     cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
@@ -104,16 +104,16 @@ data = {
 expected = "A300F93A000182821 9012CF93800821864F93C000501".replace(" ", "")
 got = _hex(cpb.encode_cpb(data))
 if got != expected:
-    fail("Listing 7 mismatch", got=got, expected=expected)
-ok(f"wire encoding ({len(got)//2} bytes) matches Listing 7")
+    fail("Figure 7 mismatch", got=got, expected=expected)
+ok(f"wire encoding ({len(got)//2} bytes) matches Figure 7")
 
 decoded = cpb.decode_cpb(cpb.encode_cpb(data))
 if decoded != data:
-    fail("Listing 7 round-trip mismatch", got=decoded, expected=data)
+    fail("Figure 7 round-trip mismatch", got=decoded, expected=data)
 ok("decode(encode(L7)) == L7")
 
 
-# ---------------- BTSD wrap: Listing 2 wrapped as bstr -------------------
+# ---------------- BTSD wrap: Figure 2 wrapped as bstr -------------------
 
 print("\n== BTSD wrapping (Section 3.2: bstr .cbor cpb-data) ==")
 data = {
