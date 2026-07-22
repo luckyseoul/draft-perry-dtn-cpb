@@ -8,8 +8,8 @@ Reference implementation of the Contact Probability Block (CPB) defined in [draf
 |------|---------|
 | `cpb.py` | Encoder and decoder for the CPB block-type-specific data per §3.2 / §3.4. |
 | `test_cpb.py` | Conformance suite (original cases + many negative tests + Hypothesis property-based testing). |
-| `test_config1_policies.py` | Unit tests for draft §12 routing cost formulas used by the simulator. |
-| `config1_sim.py` | Discrete-event simulator for draft §12.5 (4-rover, 4-orbiter Mars relay). Strategies match §12: `baseline`, `cpb` (rate-aware), `cpb-risk` (quadratic risk penalty). CLI: `--quick`, `--battery`, `--strategy`, `--max-bundles`, `--age-conf`, `--csv`. |
+| `test_config1_policies.py` | Unit tests for the draft §12 rate-aware cost formula used by the simulator. |
+| `config1_sim.py` | Discrete-event simulator for draft §12.5 (4-rover, 4-orbiter Mars relay). Strategies: `baseline`, `cpb` (rate-aware). CLI: `--quick`, `--battery`, `--strategy`, `--max-bundles`, `--age-conf`, `--csv`. |
 | `requirements.txt` | Python dependencies. |
 
 See `../examples/` for small, runnable demonstrations of using the packaged `cpb` module.
@@ -30,15 +30,14 @@ python3 test_cpb.py
 python3 config1_sim.py --battery standard     # (this is now the default)
 
 # Paper battery (10 seeds) — rates reported in draft §12.5:
-python3 config1_sim.py --battery paper --strategy all
+python3 config1_sim.py --battery paper --strategy both
 
 # Fast smoke test:
 python3 config1_sim.py --quick
 
 # Other useful options:
 python3 config1_sim.py --battery standard --strategy cpb --csv results.csv
-python3 config1_sim.py --quick --strategy all --max-bundles 8000
-python3 config1_sim.py --strategy cpb-risk --age-conf
+python3 config1_sim.py --quick --strategy both --max-bundles 8000
 ```
 
 Expected `test_cpb.py` output: 23+ `PASS` lines (more with Hypothesis installed), zero failures.
@@ -47,11 +46,9 @@ Routing policy labels (must match draft §12):
 
 - **baseline** — earliest predicted arrival
 - **cpb** — `cost = latency / (confidence × bottleneck_rate)`
-- **cpb-risk** — `cost = latency + (1 − confidence)² × 5000`
 
 Paper-battery mean delivery (Configuration 1, 10 seeds, `--battery paper
---strategy all`): **baseline 0.9962**, **cpb 0.9998**, **cpb-risk 0.9998**
-(draft §12.5).
+--strategy both`): **baseline 0.9962**, **cpb 0.9998** (draft §12.5).
 
 ## Coverage
 

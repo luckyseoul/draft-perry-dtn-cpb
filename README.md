@@ -42,12 +42,12 @@ pip install -e '.[test]'
 # Run the full conformance suite (including property-based tests with Hypothesis)
 python3 test_cpb.py
 
-# Fast smoke test of the Mars relay simulation (baseline + cpb + cpb-risk)
+# Fast smoke test of the Mars relay simulation (baseline + cpb)
 python3 config1_sim.py --quick
 
 # Full paper-reproducing run (10 seeds; draft §12.5 rates)
-python3 config1_sim.py --battery paper --strategy all
-# Mean delivery (paper battery): baseline 0.9962, cpb/cpb-risk 0.9998
+python3 config1_sim.py --battery paper --strategy both
+# Mean delivery (paper battery): baseline 0.9962, cpb 0.9998
 ```
 
 Alternative (traditional):
@@ -63,19 +63,16 @@ Useful simulator options (all implemented on the real CLI):
 ```sh
 python3 config1_sim.py --help
 python3 config1_sim.py --strategy cpb --csv results.csv
-python3 config1_sim.py --strategy cpb-risk
 python3 config1_sim.py --max-bundles 8000 --quick
-python3 config1_sim.py --age-conf --strategy all
 ```
 
 Routing policy labels match draft §12:
 
 - **baseline** — earliest predicted arrival (confidence ignored)
 - **cpb** — rate-aware: `cost = latency / (confidence × bottleneck_rate)`
-- **cpb-risk** — risk-averse: `cost = latency + (1 − confidence)² × 5000`
 
 Paper battery mean delivery (Configuration 1, 10 seeds): **baseline 0.9962**,
-**cpb 0.9998**, **cpb-risk 0.9998** (same as draft §12.5).
+**cpb 0.9998** (same as draft §12.5).
 
 Build robustness, packaging, CI, stronger tests, and the simulator CLI are
 maintained on `main` so others can use, test, and build on the reference
