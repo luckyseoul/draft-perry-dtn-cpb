@@ -1858,12 +1858,12 @@ A3                   ; map with 3 entries
         <dd>
           Validation of CPB's routing impact was conducted via the pure-Python
           discrete-event simulator config1_sim.py, which implements vanilla
-          CGR (earliest-arrival) and the Section 12 consumers labeled "cpb"
-          (rate-aware) and "cpb-risk" (quadratic risk penalty) over
-          Configuration 1 (4 rovers, 4 orbiters, 1 relay, 3 ground stations).
+          CGR (earliest-arrival) and the Section 12 consumer labeled "cpb"
+          (rate-aware cost) over Configuration 1 (4 rovers, 4 orbiters,
+          1 relay, 3 ground stations).
           <xref target="experiment"/> reports the authoritative 10-seed
-          paper-battery results for those three policies, reproduced by
-          <tt>python3 config1_sim.py --battery paper --strategy all</tt>.
+          paper-battery results for those two policies, reproduced by
+          <tt>python3 config1_sim.py --battery paper --strategy both</tt>.
           The simulator is fully deterministic per seed on Python 3.10+ with
           cbor2 installed. CGR-UCoP <xref target="Fraire18"/> was used only
           as prior art for simulation parameters and basic validation.
@@ -1973,12 +1973,8 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
             Experimental consumer of CPB data (metric-type 1) that also
             incorporates negotiated data rates. Route cost is computed as
             <tt>latency / (confidence &#215; bottleneck_rate)</tt>.
-          </dd>
-          <dt>Risk-averse CPB consumer (labeled "cpb-risk")</dt>
-          <dd>
-            Risk-averse experimental consumer that applies an explicit quadratic
-            penalty on low-confidence links:
-            <tt>cost = latency + (1 &#8722; confidence)&#178; &#215; 5000</tt>.
+            Other consumers of the same metadata are possible; this document
+            evaluates one concrete policy against confidence-blind CGR.
           </dd>
         </dl>
       </section>
@@ -1998,7 +1994,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         <t>
           The paper battery uses 10 independent seeds. For each seed and
           each policy, the simulator executes over identical contact-failure
-          realizations. The primary policies exercised (and shipped in
+          realizations. The policies exercised (and shipped in
           config1_sim.py) are:
         </t>
         <ul>
@@ -2006,8 +2002,6 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
               per-contact confidence.</li>
           <li>Rate-aware CPB consumer ("cpb"): cost = latency /
               (confidence &#215; bottleneck_rate).</li>
-          <li>Risk-averse CPB consumer ("cpb-risk"): cost = latency +
-              (1 &#8722; confidence)&#178; &#215; 5000.</li>
         </ul>
       </section>
 
@@ -2017,50 +2011,39 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         <t>
           Results below are for Configuration 1 as implemented by
           config1_sim.py, 10 independent seeds, paper battery
-          (<tt>--battery paper --strategy all</tt>).
+          (<tt>--battery paper --strategy both</tt>).
         </t>
 
         <t>
-          For each seed, the following policies were exercised over identical
-          contact-failure realizations:
+          For each seed, baseline and "cpb" were exercised over identical
+          contact-failure realizations.
         </t>
-        <ul>
-          <li>Baseline (vanilla CGR): confidence-blind earliest-arrival routing.</li>
-          <li>Rate-aware CPB consumer ("cpb").</li>
-          <li>Risk-averse CPB consumer ("cpb-risk").</li>
-</ul>
 
         <t>
           <strong>Primary findings (Configuration 1, 10 seeds, paper battery
-          via config1_sim.py --battery paper --strategy all):</strong>
+          via config1_sim.py --battery paper --strategy both):</strong>
         </t>
         <ul>
           <li>Latency and tails: baseline mean p95 latency was &#8776;273 s;
-              both CPB consumers tightened p95 to 123 s (mean lat_avg drop
-              &#8776;13 s). This is the primary operational win on
-              Configuration 1.</li>
-          <li>Delivery ratio: baseline mean delivery was 0.9962; both the
-              rate-aware consumer ("cpb") and the risk-averse consumer
-              ("cpb-risk") reached mean delivery 0.9998. Paired
-              (cpb &#8722; baseline) delivery mean gain +0.00355
-              (t &#8776; 86 over 10 seeds).</li>
-          <li>On this topology the two CPB cost formulas selected the same
-              routes, so aggregate metrics match. They remain distinct
-              policies and can diverge when confidence and bottleneck rate
-              are less correlated.</li>
+              the rate-aware CPB consumer tightened p95 to 123 s (mean
+              lat_avg drop &#8776;13 s). This is the primary operational win
+              on Configuration 1.</li>
+          <li>Delivery ratio: baseline mean delivery was 0.9962; "cpb"
+              reached mean delivery 0.9998. Paired (cpb &#8722; baseline)
+              delivery mean gain +0.00355 (t &#8776; 86 over 10 seeds).</li>
         </ul>
 
         <t>
-          <strong>Interpretation.</strong> On Configuration 1, both Section 12
-          CPB consumers improve delivery ratio and tail latency relative to
-          confidence-blind earliest-arrival CGR. The rate-aware and risk-averse
-          costs remain distinct policies; they can diverge when confidence and
-          bottleneck rate are less correlated than in this topology.
+          <strong>Interpretation.</strong> On Configuration 1, the rate-aware
+          CPB consumer improves delivery ratio and tail latency relative to
+          confidence-blind earliest-arrival CGR. Other consumers of CPB
+          metadata are possible; this experiment evaluates one concrete
+          cost against the baseline.
         </t>
 
         <t>
           <strong>Limitations and caveats.</strong> Results are for the
-          Configuration 1 topology and cost formulas as shipped in
+          Configuration 1 topology and cost formula as shipped in
           config1_sim.py. The study does not address noisy or adversarially
           supplied confidence values; those questions are left for future work.
         </t>
@@ -2241,9 +2224,9 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           <li>Determine whether CPB-enhanced routing improves delivery ratio
               under stochastic contact conditions with rate-aware costing.
               <strong>Met.</strong> In the Configuration 1 paper battery
-              (10 seeds), baseline mean delivery was 0.9962 while both
-              "cpb" and "cpb-risk" reached mean delivery 0.9998, with
-              consistent gains on every seed.</li>
+              (10 seeds), baseline mean delivery was 0.9962 while "cpb"
+              reached mean delivery 0.9998, with consistent gains on every
+              seed.</li>
           <li>Quantify CPB byte overhead. <strong>Met by
               <xref target="overhead-analysis"/> analytical bounds:</strong>
               &lt;3% for 1 KB+ payloads with full CPB.</li>
@@ -2501,8 +2484,8 @@ pip install cbor2
 
 python3 impl/test_cpb.py
 python3 impl/test_config1_policies.py
-python3 impl/config1_sim.py --battery paper --strategy all
-# ~50s; mean delivery 0.9962 / 0.9998 (Section 12.5)
+python3 impl/config1_sim.py --battery paper --strategy both
+# ~50s; mean delivery baseline 0.9962 / cpb 0.9998 (Section 12.5)
 ]]></sourcecode>
         </figure>
         <t>

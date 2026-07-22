@@ -16,7 +16,7 @@ Each rover sees all 4 orbiters with different per-orbiter confidences
 Each orbiter forwards to the deep-space relay.  The relay sees all 3
 ground stations on staggered schedules.
 
-Three routing algorithms (names and costs match draft-perry-dtn-cpb §12):
+Two routing algorithms (names and costs match draft-perry-dtn-cpb §12):
 
   baseline (vanilla CGR / SABR earliest-arrival):
     For each bundle, search across (orbiter, ground_station) pairs and
@@ -28,10 +28,6 @@ Three routing algorithms (names and costs match draft-perry-dtn-cpb §12):
     where latency = predicted_arrival − now, confidence is the path
     product, and bottleneck_rate is the minimum hop data rate on the
     route (bits/s, relative scale).  Lowest cost wins.
-
-  cpb-risk (risk-averse CPB consumer, draft §12):
-    cost = latency + (1 − confidence)² × 5000
-    Explicit quadratic penalty on low-confidence paths.  Lowest cost wins.
 
 Optional confidence aging (--age-conf):
   Multiplies first-hop confidences by a smooth seasonal factor in
@@ -148,10 +144,6 @@ ROVER_ORBITER_RATE = {
 ORBITER_RELAY_RATE = {10: 1.0e7, 11: 1.0e7, 12: 1.0e7, 13: 1.0e7}
 GROUND_RATE = {30: 1.0e7, 31: 1.0e7, 32: 1.0e7}
 
-# Draft §12 risk-averse quadratic penalty constant.
-CPB_RISK_PENALTY = 5000.0
-
-
 # ---- sim parameters ----------------------------------------------------
 
 SIM_DURATION = 7 * 86400.0   # 7 days
@@ -213,18 +205,6 @@ def cpb_route_cost(latency: float, confidence: float,
     if confidence <= 0.0 or bottleneck_rate <= 0.0:
         return float("inf")
     return latency / (confidence * bottleneck_rate)
-
-
-def cpb_risk_route_cost(latency: float, confidence: float,
-                        penalty: float = CPB_RISK_PENALTY) -> float:
-    """Risk-averse CPB consumer cost (draft §12).
-
-    cost = latency + (1 − confidence)² × penalty
-    """
-    if latency < 0.0:
-        raise ValueError("latency must be non-negative")
-    conf = max(0.0, min(1.0, float(confidence)))
-    return latency + (1.0 - conf) ** 2 * penalty
 
 
 # ---- route enumeration -------------------------------------------------
@@ -293,21 +273,9 @@ def cpb_choose(t: float, rover: int, *, age: bool = False) -> Route:
     return min(candidates, key=cost)
 
 
-def cpb_risk_choose(t: float, rover: int, *, age: bool = False) -> Route:
-    """Risk-averse CPB consumer (draft §12): latency+(1-conf)²×5000."""
-    candidates = all_routes_from(rover)
-
-    def cost(r: Route) -> float:
-        latency = predicted_arrival(t, r) - t
-        return cpb_risk_route_cost(latency, r.confidence(t, age))
-
-    return min(candidates, key=cost)
-
-
 CHOOSERS = {
     "baseline": baseline_choose,
     "cpb": cpb_choose,
-    "cpb-risk": cpb_risk_choose,
 }
 
 
@@ -502,9 +470,9 @@ def main(argv: list[str] | None = None) -> None:
                         help="standard=3 seeds; paper=10 seeds (draft §12.5)")
     parser.add_argument(
         "--strategy",
-        choices=("baseline", "cpb", "cpb-risk", "both", "all"),
-        default="all",
-        help="routing policy; 'both'=baseline+cpb; 'all'=+cpb-risk (default)",
+        choices=("baseline", "cpb", "both", "all"),
+        default="both",
+        help="routing policy; 'both'/'all'=baseline+cpb (default both)",
     )
     parser.add_argument(
         "--max-bundles",
@@ -528,10 +496,8 @@ def main(argv: list[str] | None = None) -> None:
     else:
         seeds = list(SEEDS)
 
-    if args.strategy == "both":
+    if args.strategy in ("both", "all"):
         strategies = ("baseline", "cpb")
-    elif args.strategy == "all":
-        strategies = ("baseline", "cpb", "cpb-risk")
     else:
         strategies = (args.strategy,)
 
@@ -543,7 +509,7 @@ def main(argv: list[str] | None = None) -> None:
         print(f"(confidence aging ON, period={AGE_PERIOD_S:.0f}s)")
     if args.max_bundles is not None:
         print(f"(max-bundles={args.max_bundles})")
-    print("(cpb: rate-aware latency/(conf×rate); cpb-risk: latency+(1-conf)²×5000)")
+    print("(cpb: rate-aware cost = latency / (confidence × bottleneck_rate))")
 
     t_start = time.time()
     for seed in seeds:
@@ -566,10 +532,6 @@ def main(argv: list[str] | None = None) -> None:
     if len(seeds) >= 2:
         if "baseline" in strategies and "cpb" in strategies:
             _paired_block(rows, "baseline", "cpb", len(seeds))
-        if "baseline" in strategies and "cpb-risk" in strategies:
-            _paired_block(rows, "baseline", "cpb-risk", len(seeds))
-        if "cpb" in strategies and "cpb-risk" in strategies:
-            _paired_block(rows, "cpb", "cpb-risk", len(seeds))
 
     if args.csv and rows:
         args.csv.parent.mkdir(parents=True, exist_ok=True)

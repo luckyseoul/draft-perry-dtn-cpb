@@ -97,7 +97,6 @@ The shipped simulator `impl/config1_sim.py` uses **Configuration 1**:
 |-------|-------------|
 | **baseline** | Earliest predicted arrival (ignore confidence) |
 | **cpb** | `latency / (confidence × bottleneck_rate)` |
-| **cpb-risk** | `latency + (1 − confidence)² × 5000` |
 
 ### Headline results (paper battery)
 
@@ -107,19 +106,14 @@ The shipped simulator `impl/config1_sim.py` uses **Configuration 1**:
 |--------|---------------|------------------|
 | baseline | **0.9962** | ~**273 s** |
 | cpb | **0.9998** | **123 s** |
-| cpb-risk | **0.9998** | **123 s** |
-
-On this topology the two CPB cost formulas often select the **same** routes
-(so metrics match). They are still different policies and can diverge when
-confidence and rate are less aligned.
 
 Reproduce:
 
 ```sh
 cd impl
 python3 test_cpb.py
-python3 test_config1_policies.py   # pins the §12 cost formulas
-python3 config1_sim.py --battery paper --strategy all
+python3 test_config1_policies.py   # pins the §12 cost formula
+python3 config1_sim.py --battery paper --strategy both
 ```
 
 ---
@@ -158,7 +152,7 @@ Defaults to remember:
 1. Why is probability **not** allowed in the destination EID?  
 2. Name three CPB map fields and what they mean.  
 3. What does metric-type **forbid** between families?  
-4. Write the **cpb** and **cpb-risk** cost formulas.  
+4. Write the **cpb** cost formula used in the experiment.  
 5. What is the main Config 1 win: delivery points or **tail latency**?  
 6. What remains open (noise, adversaries, multi-domain, production stacks)?
 
