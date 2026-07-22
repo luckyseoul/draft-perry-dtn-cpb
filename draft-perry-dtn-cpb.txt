@@ -173,17 +173,17 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
      12.1.  Scope and Hypothesis . . . . . . . . . . . . . . . . . .  34
      12.2.  Test Configuration: Multi-Asset Mars Relay (CGR) . . . .  34
      12.3.  Routing Policies Tested  . . . . . . . . . . . . . . . .  35
-     12.4.  Methodology  . . . . . . . . . . . . . . . . . . . . . .  36
+     12.4.  Methodology  . . . . . . . . . . . . . . . . . . . . . .  35
      12.5.  Results  . . . . . . . . . . . . . . . . . . . . . . . .  36
      12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed) . . .  37
      12.7.  Goals (per RFC 2026 Section 4.2.1) . . . . . . . . . . .  40
-     12.8.  Success Criteria (Met) . . . . . . . . . . . . . . . . .  41
+     12.8.  Success Criteria (Met) . . . . . . . . . . . . . . . . .  40
      12.9.  Failure Criteria (Not Triggered) . . . . . . . . . . . .  41
      12.10. Deferred Configurations  . . . . . . . . . . . . . . . .  41
-     12.11. Open Experimental Questions  . . . . . . . . . . . . . .  42
+     12.11. Open Experimental Questions  . . . . . . . . . . . . . .  41
    13. Reference Implementation  . . . . . . . . . . . . . . . . . .  44
      13.1.  Repository . . . . . . . . . . . . . . . . . . . . . . .  44
-     13.2.  Reproducing the Experiment Results . . . . . . . . . . .  45
+     13.2.  Reproducing the Experiment Results . . . . . . . . . . .  44
      13.3.  Relationship to Updates of BPv7  . . . . . . . . . . . .  45
    14. Normative References  . . . . . . . . . . . . . . . . . . . .  45
    15. Informative References  . . . . . . . . . . . . . . . . . . .  46
@@ -1943,25 +1943,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       consumer that adds an explicit quadratic penalty on low-confidence
       links: cost = latency + (1 − confidence)² × 5000.
 
-   Other consumers (prophet, maxprop, spray)  PROPHET, MaxProp, and
-      Spray-and-Wait style consumers.  The PROPHET and MaxProp versions
-      maintain protocol state (delivery predictability and path costs,
-      respectively) and consult CPB confidence when available.  The
-      Spray-and-Wait version is more approximate due to simulator
-      architecture constraints and is presented as directional evidence
-      only (see Section 12.5).
-
-
-
-
-
-
-
-Perry                    Expires 9 January 2027                [Page 35]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 12.4.  Methodology
 
    The published simulator is config1_sim.py (Configuration 1): 4
@@ -1971,6 +1952,15 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    diversity creates a meaningful bottleneck independent of confidence.
    Each run covers 7 days of simulated time with bundles generated every
    30 s per rover after warm-up (≈80k bundles per arm per seed).
+
+
+
+
+
+Perry                    Expires 9 January 2027                [Page 35]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
 
    The paper battery uses 10 independent seeds.  For each seed and each
    policy, the simulator executes over identical contact-failure
@@ -2001,22 +1991,8 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    *  Risk-averse CPB consumer ("cpb-risk").
 
-   *  PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
-      each implemented in both a "classic" form (no use of CPB
-      confidence) and a "cpb" form that additionally consults the per-
-      contact confidence values carried in CPB blocks.
-
    *Primary findings (Configuration 1, 10 seeds, paper battery via
    config1_sim.py --battery paper --strategy all):*
-
-
-
-
-
-Perry                    Expires 9 January 2027                [Page 36]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    *  Baseline (vanilla CGR) mean delivery was 0.9962 with elevated tail
       latency (mean p95 ≈ 273 s across seeds).
@@ -2030,6 +2006,17 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       under the published cost formulas, so their aggregate metrics
       match; they remain distinct policies for other confidence/rate
       mixes.
+
+
+
+
+
+
+
+Perry                    Expires 9 January 2027                [Page 36]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
 
    *Interpretation.* On Configuration 1, both draft §12 CPB consumers
    improve delivery ratio and tail latency relative to confidence-blind
@@ -2066,14 +2053,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    binary16 float per draft Section 3.4 canonical CBOR encoding; the
    deployed cpb.py did not insert an F_VERSION key).
 
-
-
-
-Perry                    Expires 9 January 2027                [Page 37]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Phase 1 (72 messages): Each of the three real nodes sent the eight
    quirky one-liner payloads with-CPB (using the eight adversarial
    probabilities 0.65..0.99) to each of the three dedicated "my nodes"
@@ -2087,6 +2066,14 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    quirky payloads were sent bidirectional (Moon→Mars and Mars→Moon),
    both with-CPB and plain (no CPB block).  Bundles were created with
    source = originating emulated EID and destination = the other
+
+
+
+Perry                    Expires 9 January 2027                [Page 37]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
+
    emulated EID, then bputa-injected from soulkiller to the destination
    test entity's cfdp number (to 268484820 for all Moon→Mars bundles; to
    268484801 for all Mars→Moon bundles).  This batch was strictly
@@ -2118,6 +2105,19 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    8518c80011005150a200f939330181821a1000c0d4f9393384010000581b7361
    7665206120686f7273652c2072696465206120636f77626f79
 
+   Primary block (first CBOR array, 40 bytes): version 7, flags 0, CRC
+   type 0, source ipn:268484801.1, destination ipn:268484820.1, report-
+   to same as source, creation timestamp [1780731656, 0], lifetime 3600.
+   This matches the primary constructed by
+   packet.py:create_bundle_with_cpb.
+
+   Previous Node block (type 6): [6, 0, source EID].
+
+   Hop Count block (type 10): [10, 0, [0, 32]].
+
+
+
+
 
 
 
@@ -2129,16 +2129,6 @@ Perry                    Expires 9 January 2027                [Page 38]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
-
-   Primary block (first CBOR array, 40 bytes): version 7, flags 0, CRC
-   type 0, source ipn:268484801.1, destination ipn:268484820.1, report-
-   to same as source, creation timestamp [1780731656, 0], lifetime 3600.
-   This matches the primary constructed by
-   packet.py:create_bundle_with_cpb.
-
-   Previous Node block (type 6): [6, 0, source EID].
-
-   Hop Count block (type 10): [10, 0, [0, 32]].
 
    Extension block 200 (the CPB, bytes starting at offset 0x40): [200,
    0, 0x11 (REPLICATE|DISCARD), 0, BTSD].  The BTSD bstr is
@@ -2176,16 +2166,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    for that quirky line).  No path updates or probability changes were
    observed.
 
-
-
-
-
-
-Perry                    Expires 9 January 2027                [Page 39]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Full artifacts and reproduction details (the exact 32 bidirectional
    test-to-each-other bundles with+plain, representative 72-batch
    artifacts, pcap conversion scripts, the detailed bundle breakdown,
@@ -2195,6 +2175,16 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    other ONLY - completed" and "CPB decode verification" paragraphs,
    timeline1 snapshot directory, and tarballs) live in impl/real-pwg-
    deployment/timeline1/ and real_cpb_packet_test/.
+
+
+
+
+
+
+Perry                    Expires 9 January 2027                [Page 39]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
 
    *Limitations of this validation (distinct from the simulation).* The
    emulated targets (268484801/820) are plan + cfdp-entity constructs
@@ -2235,13 +2225,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    3.  Validate interoperability via byte-exact encoder.  *Met:* 23
        round-trip tests pass.
 
-
-
-Perry                    Expires 9 January 2027                [Page 40]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    4.  Assess float16 precision sufficiency. *Met:* binary16
        quantization produces identical route selections under the tested
        policies in the configurations used.
@@ -2251,6 +2234,13 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    1.  Statistically significant improvement (p < 0.05).  *Met.* Paired
        (cpb − baseline) delivery over the Configuration 1 paper battery
        yielded mean gain +0.00355 with t ≈ 86 (10 seeds).
+
+
+
+Perry                    Expires 9 January 2027                [Page 40]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
 
    2.  Sample size sufficient for the claims made. *Met:* 10 independent
        seeds on Configuration 1, with each policy exercised over
@@ -2288,16 +2278,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    end-to-end demonstration is deferred to integration work with a
    BPSec-enabled ION testbed.
 
-
-
-
-
-
-Perry                    Expires 9 January 2027                [Page 41]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 12.11.  Open Experimental Questions
 
    The experiment in this document establishes baseline plausibility:
@@ -2310,6 +2290,14 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    remains to be demonstrated.
 
    Robustness to noisy probability estimation  The simulator uses
+
+
+
+Perry                    Expires 9 January 2027                [Page 41]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
+
       ground-truth per-contact probabilities.  Real deployments must
       estimate probabilities from historical observations or model
       predictions, both of which are noisy.  Sensitivity analysis under
@@ -2346,14 +2334,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       of CPB-aware nodes would inform deployment phasing.
 
    Congestion collapse and storage pressure  Probability-aware routing
-
-
-
-Perry                    Expires 9 January 2027                [Page 42]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       concentrates traffic on high-confidence routes (Section 4.4).
       Under sustained load this risks congestion collapse on the
       preferred routes and storage pressure at intermediate nodes.  The
@@ -2362,6 +2342,18 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       delivery ratio would test the failure mode directly.
 
    Custody transfer interactions  CPB has been designed not to interfere
+
+
+
+
+
+
+
+Perry                    Expires 9 January 2027                [Page 42]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
+
       with BP custody transfer mechanisms ([RFC9171]), but the combined
       behavior of custody-bound bundles carrying CPB data has not been
       exercised end-to-end.  Particular attention should be paid to
@@ -2402,14 +2394,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       plus 32 messages (bidirectional between the two emulated test
       nodes, with-CPB + plain) were executed.  UFW exemptions for the
       DTN ports (4556/4557/12160) were added on all three hosts from the
-
-
-
-Perry                    Expires 9 January 2027                [Page 43]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       Tailscale ranges (per explicit operator instruction).  All source
       .bundle files, bplist snapshots, receiver logs, and timeline1
       snapshot artifacts are preserved.  Full consumption of CPB values
@@ -2418,6 +2402,14 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       open.
 
    Control-theoretic stability analysis  Section 4.4 identifies feedback
+
+
+
+Perry                    Expires 9 January 2027                [Page 43]
+
+Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
+
+
       dynamics qualitatively and recommends mitigations, but does not
       provide a formal stability proof.  A control-theoretic analysis
       (e.g., describing the routing system as a discrete-time dynamical
@@ -2459,14 +2451,20 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    https://github.com/luckyseoul/draft-perry-dtn-cpb
    (https://github.com/luckyseoul/draft-perry-dtn-cpb)
 
+13.2.  Reproducing the Experiment Results
+
+
+
+
+
+
+
 
 
 Perry                    Expires 9 January 2027                [Page 44]
 
 Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
-
-13.2.  Reproducing the Experiment Results
 
    git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
    cd draft-perry-dtn-cpb
@@ -2513,6 +2511,8 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       is defined in Section 3.2.1.
 
 14.  Normative References
+
+
 
 
 

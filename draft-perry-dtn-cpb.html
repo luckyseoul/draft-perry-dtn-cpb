@@ -3976,16 +3976,6 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
             penalty on low-confidence links:
             <code>cost = latency + (1 − confidence)² × 5000</code>.<a href="#section-12.3-2.6" class="pilcrow">¶</a>
 </dd>
-          <dd class="break"></dd>
-<dt id="section-12.3-2.7">Other consumers (prophet, maxprop, spray)</dt>
-          <dd style="margin-left: 1.5em" id="section-12.3-2.8">
-            PROPHET, MaxProp, and Spray-and-Wait style consumers. The PROPHET
-            and MaxProp versions maintain protocol state (delivery
-            predictability and path costs, respectively) and consult CPB
-            confidence when available. The Spray-and-Wait version is more
-            approximate due to simulator architecture constraints and is
-            presented as directional evidence only (see <a href="#exp-results" class="auto internal xref">Section 12.5</a>).<a href="#section-12.3-2.8" class="pilcrow">¶</a>
-</dd>
         <dd class="break"></dd>
 </dl>
 </section>
@@ -4040,11 +4030,6 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           <li class="normal" id="section-12.5-3.2">Rate-aware CPB consumer ("cpb").<a href="#section-12.5-3.2" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-12.5-3.3">Risk-averse CPB consumer ("cpb-risk").<a href="#section-12.5-3.3" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-12.5-3.4">PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
-              each implemented in both a "classic" form (no use of CPB
-              confidence) and a "cpb" form that additionally consults the
-              per-contact confidence values carried in CPB blocks.<a href="#section-12.5-3.4" class="pilcrow">¶</a>
 </li>
         </ul>
 <p id="section-12.5-4">

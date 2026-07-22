@@ -1980,15 +1980,6 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
             penalty on low-confidence links:
             <tt>cost = latency + (1 &#8722; confidence)&#178; &#215; 5000</tt>.
           </dd>
-          <dt>Other consumers (prophet, maxprop, spray)</dt>
-          <dd>
-            PROPHET, MaxProp, and Spray-and-Wait style consumers. The PROPHET
-            and MaxProp versions maintain protocol state (delivery
-            predictability and path costs, respectively) and consult CPB
-            confidence when available. The Spray-and-Wait version is more
-            approximate due to simulator architecture constraints and is
-            presented as directional evidence only (see <xref target="exp-results"/>).
-          </dd>
         </dl>
       </section>
 
@@ -2037,11 +2028,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           <li>Baseline (vanilla CGR): confidence-blind earliest-arrival routing.</li>
           <li>Rate-aware CPB consumer ("cpb").</li>
           <li>Risk-averse CPB consumer ("cpb-risk").</li>
-          <li>PROPHET-style, MaxProp-style, and Spray-and-Wait-style consumers,
-              each implemented in both a "classic" form (no use of CPB
-              confidence) and a "cpb" form that additionally consults the
-              per-contact confidence values carried in CPB blocks.</li>
-        </ul>
+</ul>
 
         <t>
           <strong>Primary findings (Configuration 1, 10 seeds, paper battery
