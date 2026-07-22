@@ -844,33 +844,59 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
         <dl>
           <dt>metric-type 0 (prophet-dp)</dt>
           <dd>
-            PRoPHET delivery predictability, an empirical encounter-history
-            statistic computed locally by each node per <xref target="RFC6693"/>.
-            Reflects observed past behavior, not a forward-looking estimate.
+            PRoPHET delivery predictability P_(A,B) as defined in
+            <xref target="RFC6693"/> Section 2.1.2: an empirical
+            encounter-history statistic in [0.0, 1.0]. Reflects observed past
+            co-location behavior (with aging and optional transitivity applied
+            <em>before</em> encoding), not a scheduled-contact success
+            probability. Values in a CPB <bcp14>MUST</bcp14> already be aged
+            at the producing node (Equation 2 of RFC 6693); receivers
+            <bcp14>MUST NOT</bcp14> re-apply a second aging constant unless
+            they recompute predictabilities from their own encounter base.
+            Default probability (field 0) <bcp14>SHOULD</bcp14> be interpreted
+            as P toward the bundle destination; per-path entries
+            <bcp14>SHOULD</bcp14> map next-hop node identifiers to the
+            producer's P_(producer, dest) when that next hop is the
+            intended forwarder (see <xref target="rel-prophet"/>).
           </dd>
           <dt>metric-type 1 (cgr-confidence)</dt>
           <dd>
-            Per-contact success probability against a known contact schedule.
-            Reflects forward-looking confidence in a planned contact occurring
-            as scheduled (link availability, atmospheric conditions, antenna
-            pointing).
+            Per-contact or per-next-hop success probability against a known
+            contact schedule (or contact-plan edge). Reflects forward-looking
+            confidence that a planned contact occurs as scheduled (link
+            availability, weather, pointing). Contact start/end times, one-way
+            light time, and residual volume remain in the contact plan, not
+            in CPB; CPB carries only the scalar confidence the plan or local
+            estimator associates with a hop or default path.
           </dd>
           <dt>metric-type 2 (maxprop-cost)</dt>
           <dd>
-            Inverted path cost from MaxProp. Lower MaxProp cost is mapped to
-            higher CPB probability. The inversion is lossy; the original cost
-            magnitude is not recoverable from the CPB value.
+            Delivery-likelihood proxy derived from MaxProp-style path cost.
+            Producers <bcp14>MUST</bcp14> map lower MaxProp cost to higher CPB
+            value in [0.0, 1.0] using a documented local inversion (for
+            example, 1/(1+cost) or a rank-normalized score). The inversion is
+            lossy; original cost magnitude and multi-hop cost vectors are not
+            recoverable from the CPB value. Hop-lists used for loop avoidance
+            and delete-ACKs remain local MaxProp state, not CPB fields.
           </dd>
           <dt>metric-type 3 (rapid-utility)</dt>
           <dd>
-            Per-packet utility function value from RAPID. Reflects an
-            optimization-derived score, not a direct probability of delivery.
+            Normalized per-packet utility from a RAPID-style optimizer,
+            scaled by the producer into [0.0, 1.0]. This is an
+            optimization-derived score (often over delay or resource
+            constraints), not a calibrated delivery probability. Unnormalized
+            utilities, delay distributions, and resource inventories are out
+            of band; if a deployment cannot normalize utility into [0.0, 1.0]
+            honestly, it <bcp14>SHOULD</bcp14> register a new metric-type or
+            use metric-type 4 only as advisory.
           </dd>
           <dt>metric-type 4 (generic)</dt>
           <dd>
             Unspecified semantic. The producer makes no claim beyond "value in
             [0.0, 1.0]". Consumers <bcp14>SHOULD NOT</bcp14> assume any
-            specific interpretation.
+            specific interpretation. Suitable for experimental social or
+            hybrid scores (centrality, similarity) until a dedicated
+            metric-type is registered.
           </dd>
         </dl>
         <t>
@@ -1169,28 +1195,71 @@ A3                   ; map with 3 entries
       <section anchor="rel-prophet">
         <name>PRoPHET (RFC 6693)</name>
         <t>
-          PRoPHET <xref target="RFC6693"/> computes delivery predictability
-          metrics at each node based on encounter history. A PRoPHET router
-          can consume CPB data as additional input to its predictability
-          calculations, or produce CPB entries with metric-type 0
-          (prophet-dp) based on its computed predictions.
+          PRoPHET <xref target="RFC6693"/> is an epidemic protocol with
+          strict pruning. Each node maintains delivery predictabilities
+          P_(A,B) updated on encounters (Eq. 1), aged over time (Eq. 2),
+          and optionally improved by transitivity via an intermediate
+          (Eq. 3). During a contact, peers exchange a Routing Information
+          Base (RIB) of destination-scoped predictabilities, then apply a
+          local forwarding strategy (for example GRTR / GTMX) and queueing
+          policy. Positive delivery acknowledgments prune residual copies.
+        </t>
+        <t>
+          <strong>What CPB carries for PRoPHET:</strong> metric-type 0
+          values that a producer has already computed (aged, optionally
+          transitive) for the bundle destination and/or candidate next
+          hops. CPB is an optional in-bundle hint so downstream nodes that
+          do not speak the full PRoPHET RIB exchange can still see a
+          snapshot of the producer's P.
+        </t>
+        <t>
+          <strong>What stays local (not CPB):</strong> aging constants
+          (gamma, K), P_encounter / beta parameters, the full RIB
+          dictionary, Hello / anti-entropy session state, bundle offer and
+          response TLVs, custody policy, and named forwarding/queueing
+          strategies. CPB does not replace the PRoPHET control plane in
+          RFC 6693 Sections 3–5.
         </t>
       </section>
 
       <section anchor="rel-maxprop">
         <name>MaxProp</name>
         <t>
-          MaxProp's drop policy (drop-least-expected-path-reliability)
-          naturally benefits from explicit CPB probabilities (metric-type 2).
+          MaxProp estimates delivery likelihood from encounter history,
+          prefers low path-cost relays, prioritizes new packets by hop
+          count, uses hop-lists to avoid cycles, and floods delete-ACKs so
+          peers can drop delivered bundles. Buffer drop order is tightly
+          coupled to the same likelihood metric used for forwarding.
+        </t>
+        <t>
+          <strong>What CPB carries:</strong> metric-type 2 as a lossy
+          [0.0, 1.0] inversion of path cost / delivery likelihood so
+          foreign nodes can rank next hops without MaxProp's full peer
+          exchange.
+        </t>
+        <t>
+          <strong>What stays local:</strong> cost vectors, hop-lists,
+          delete-ACK flooding, and the dual use of likelihood for
+          queue-drop priority (though a CPB-aware node
+          <bcp14>MAY</bcp14> use metric-type 2 values as one input to
+          local drop ranking; see <xref target="rel-summary"/>).
         </t>
       </section>
 
       <section anchor="rel-rapid">
         <name>RAPID</name>
         <t>
-          RAPID's per-packet utility function can directly incorporate CPB
-          probabilities (metric-type 3) instead of inferring delivery
-          likelihood from history.
+          RAPID treats routing as a resource allocation problem: it
+          computes a per-packet utility (often over expected delay under
+          bandwidth and storage constraints) and replicates in decreasing
+          marginal-utility order. Peers may exchange delay samples or
+          related metadata to refine utilities.
+        </t>
+        <t>
+          <strong>What CPB carries:</strong> metric-type 3 only after the
+          producer normalizes utility into [0.0, 1.0]. CPB does not carry
+          raw delay distributions, residual bandwidth, or multi-objective
+          utility vectors.
         </t>
       </section>
 
@@ -1198,31 +1267,75 @@ A3                   ; map with 3 entries
         <name>Spray-and-Wait Family</name>
         <t>
           Spray-and-Wait <xref target="Spyropoulos05"/> limits replication
-          to N copies sprayed to selected relays. Traditional Spray-and-Wait
-          sprays uniformly at random; CPB enables probability-aware target
-          selection.
+          to L copies. Binary spraying and Spray-and-Focus variants choose
+          relays uniformly or by a utility in the focus phase. The
+          remaining copy count is the primary control state.
+        </t>
+        <t>
+          <strong>What CPB carries:</strong> optional ranking hints
+          (metric-type 0/1/2/3/4) for <em>whom</em> to spray to when a
+          node chooses non-uniform targets.
+        </t>
+        <t>
+          <strong>What stays local / out of scope for CPB:</strong> the
+          integer L remaining-copy counter and spray-phase state. Those
+          are replication-control metadata, not probabilities; they need a
+          different extension or local header if standardized later. CPB
+          does not encode L.
+        </t>
+      </section>
+
+      <section anchor="rel-epidemic">
+        <name>Epidemic and Summary-Vector Protocols</name>
+        <t>
+          Classic epidemic routing and many DTN anti-entropy designs
+          exchange summary vectors of buffered bundle IDs so peers can
+          request missing copies. That inventory exchange is orthogonal to
+          probability metadata. CPB neither replaces summary vectors nor
+          carries bundle-set digests. A node may still attach a CPB when
+          forwarding a copy so receivers learn the forwarder's confidence
+          snapshot.
         </t>
       </section>
 
       <section anchor="rel-cgr">
         <name>Contact Graph Routing (CGR)</name>
         <t>
-          Contact Graph Routing computes optimal routes based on a
-          deterministic contact schedule. CPB adds uncertainty metrics
-          (metric-type 1, cgr-confidence). Extensions like CGR-UCoP (Contact
-          Graph Routing with Uncertain Contact Plans,
-          <xref target="Fraire18"/>) already incorporate contact failure
-          probabilities; CPB provides a standardized wire format for this
-          data. The closest architectural precedent is the CGR Extension
-          Block <xref target="CGREB"/>, which demonstrated that in-band
-          routing metadata in extension blocks was architecturally sound.
-          <xref target="experiment"/> reports an experiment in which two
-          simulator-internal routing policies (confidence-blind earliest
-          arrival, and one rate-aware consumer of ground-truth per-contact
-          confidences of the class CPB carries) are compared under
-          stochastic contact failures. CGR-UCoP <xref target="Fraire18"/>
-          is treated strictly as prior art for simulation validation, not
-          the conceptual basis for CPB.
+          Contact Graph Routing and SABR-style schedule-aware routing
+          compute earliest-arrival (or related) routes from a contact plan:
+          contact intervals, data rates, one-way light times, and residual
+          volume. CGR-UCoP <xref target="Fraire18"/> and related work add
+          contact-failure probabilities to that plan so cost can trade
+          latency against reliability.
+        </t>
+        <t>
+          <strong>What CPB carries:</strong> metric-type 1 confidences for
+          default or per-next-hop edges so in-bundle state can move with
+          the traffic when contact-plan dissemination is slow or partial.
+        </t>
+        <t>
+          <strong>What stays in the contact plan:</strong> time windows,
+          rates, OWLT, and residual capacity. CPB is not a substitute
+          contact plan. The closest architectural precedent for in-band
+          routing metadata is the CGR Extension Block
+          <xref target="CGREB"/>. <xref target="experiment"/> compares
+          confidence-blind earliest arrival to one rate-aware consumer of
+          ground-truth confidences of the CPB class under stochastic
+          contact failures; CGR-UCoP is prior art for simulation, not the
+          definition of the block.
+        </t>
+      </section>
+
+      <section anchor="rel-social">
+        <name>Social and Hybrid Metrics</name>
+        <t>
+          Protocols such as BubbleRap, SimBet, and related social DTN
+          routers use centrality, community labels, or similarity rather
+          than pure encounter probability. Those scores may be published
+          as metric-type 4 (generic) with local documentation, or as new
+          metric-type codepoints via the IANA sub-registry in
+          <xref target="iana-considerations"/>. CPB still forbids mixing
+          them arithmetically with prophet-dp or cgr-confidence.
         </t>
       </section>
 
@@ -1239,11 +1352,24 @@ A3                   ; map with 3 entries
       <section anchor="rel-summary">
         <name>Summary: CPB as Cross-Cutting Metadata</name>
         <t>
-          The Contact Probability Block is designed as a cross-protocol
-          metadata layer rather than a replacement for existing algorithms.
-          Each algorithm can optionally consume CPB data from upstream nodes
-          or produce CPB data for downstream nodes, without requiring any
-          internal changes to the algorithm itself.
+          Across the families above, a recurring split appears:
+        </t>
+        <ul>
+          <li><strong>In-bundle scalar quality (CPB):</strong> a
+              [0.0, 1.0] score with an explicit metric-type, optional
+              per-next-hop list, timestamp, and validity.</li>
+          <li><strong>Control-plane state (not CPB):</strong> encounter
+              RIBs, contact plans, summary vectors, copy counts, hop-lists,
+              delete-ACKs, Hello sessions, and strategy/queue policy
+              parameters.</li>
+        </ul>
+        <t>
+          The Contact Probability Block is designed as that cross-protocol
+          scalar layer rather than a replacement for any algorithm.
+          Algorithms <bcp14>MAY</bcp14> consume CPB for forwarding rank,
+          replication target choice, or buffer-drop priority, and
+          <bcp14>MAY</bcp14> produce CPB for downstream nodes, without
+          requiring the peer to implement the producer's full protocol.
         </t>
       </section>
     </section>
@@ -2945,6 +3071,12 @@ python3 impl/config1_sim.py --battery paper --strategy both
               wire-format vs routing-value-of-metadata parts; honest
               deferred-configurations list; sim↔CPB bridge tests; open
               questions framed as Standards Track follow-ons, not -00 gaps.</li>
+          <li>2026-07-22 probabilistic-routing alignment: expand metric-type
+              and Section 5 mapping against PRoPHET (RFC 6693 aging /
+              RIB / strategies), MaxProp, RAPID, Spray-and-Wait (L out of
+              band), epidemic summary vectors, CGR contact-plan split, and
+              social/hybrid metrics; clarify what CPB carries vs control
+              plane state.</li>
         </ul>
       </section>
     </section>

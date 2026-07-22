@@ -32,7 +32,9 @@ confidence metadata between nodes. It is a **transport for estimates**, not
 a replacement for CGR, PRoPHET, MaxProp, etc.
 
 Those protocols can **produce or consume** CPB data; they keep their own
-algorithms.
+algorithms. CPB is only the **in-bundle scalar** ([0,1] + metric-type).
+Encounter RIBs, contact plans, summary vectors, Spray copy-count **L**,
+and MaxProp hop-lists stay in each protocol’s control plane (draft §5).
 
 ![Bundle anatomy](images/02-bundle-anatomy.png)
 
