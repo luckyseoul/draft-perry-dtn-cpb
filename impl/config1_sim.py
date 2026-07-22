@@ -16,40 +16,26 @@ Each rover sees all 4 orbiters with different per-orbiter confidences
 Each orbiter forwards to the deep-space relay.  The relay sees all 3
 ground stations on staggered schedules.
 
-Three routing algorithms:
+Three routing algorithms (names and costs match draft-perry-dtn-cpb §12):
 
   baseline (vanilla CGR / SABR earliest-arrival):
     For each bundle, search across (orbiter, ground_station) pairs and
-    pick the (route) with earliest predicted arrival time.  Confidence
+    pick the route with earliest predicted arrival time.  Confidence
     ignored.
 
-  cpb (CGR-UCoP per Fraire et al., DOI 10.1109/TAES.2017.2738278):
-    Cost(route) = (arrival_time - now) / product_of_confidences.
-    Picks the lowest-cost route, balancing latency vs reliability.
+  cpb (rate-aware CPB consumer, draft §12):
+    cost = latency / (confidence × bottleneck_rate)
+    where latency = predicted_arrival − now, confidence is the path
+    product, and bottleneck_rate is the minimum hop data rate on the
+    route (bits/s, relative scale).  Lowest cost wins.
 
-  cpb-risk (reliability-constrained earliest-arrival; new):
-    First discard routes whose end-to-end confidence product is below a
-    configurable floor (default 0.85).  Among survivors, pick earliest
-    predicted arrival (not UCoP).  If no route clears the floor, fall
-    back to the highest-confidence route (hard reliability preference).
-
-    This is intentionally distinct from cpb (UCoP): cpb trades latency
-    against confidence continuously; cpb-risk treats confidence as a
-    hard admission control then optimizes delay among admissible paths.
-    That matches how ops often express SLAs ("never use a path below
-    X% expected success") rather than a soft cost weight.
-
-    Motivation (2025–2026 landscape):
-      - draft-birrane-dtn-rel: reliability as a first-class DTN concern
-      - operational CGR practice: avoid low-probability first hops even
-        when they look earliest-arrival on paper
-      - draft-perry-dtn-cpb path confidence product is exactly the
-        predicate this policy uses
+  cpb-risk (risk-averse CPB consumer, draft §12):
+    cost = latency + (1 − confidence)² × 5000
+    Explicit quadratic penalty on low-confidence paths.  Lowest cost wins.
 
 Optional confidence aging (--age-conf):
-  Multiplies hop confidences by a smooth seasonal factor in [0.70, 1.0]
-  (dust-storm / solar-weather model).  Tests whether risk floors remain
-  useful when CPB validity windows matter.
+  Multiplies first-hop confidences by a smooth seasonal factor in
+  [0.70, 1.0] (dust-storm / solar-weather model).
 
 Discrete-event sim, deterministic per seed.  10 seeds for paired CI.
 ~80K bundles per arm per seed, 7-day simulated traffic.
@@ -88,9 +74,9 @@ Contact window (600 s) and inter-hop delays (60 s):
   delay represents queuing + light-time at Mars-scale (Mars one-way
   light time is 4-24 minutes; we use a conservative 60 s as a stand-in
   for queuing-dominated processing in the simulator's discrete-event
-  model).  Section 11 of the spec documents these as deployment-class
-  parameters; sensitivity to changes within +/- 50% does not change
-  the qualitative result (paired t > 50 in all sensitivity tests).
+  model).  Draft §12 documents these as deployment-class parameters;
+  sensitivity to changes within +/- 50% does not change the qualitative
+  result (paired t > 50 in all sensitivity tests).
 
 Bundle generation (every 30 s per rover, 7-day sim):
   30 s is the spec's recommended interval for telemetry-class traffic.
@@ -151,6 +137,20 @@ GROUND_CONFIDENCE = {30: 0.99, 31: 0.99, 32: 0.99}
 ORBITER_TO_RELAY_DELAY = 60.0
 RELAY_TO_GROUND_DELAY  = 60.0
 
+# Relative hop data rates (bits/s scale) for rate-aware CPB cost.
+# First hop is the bottleneck diversity; space-side links are high-rate.
+ROVER_ORBITER_RATE = {
+    1: {10: 5.0e5, 11: 2.0e6, 12: 1.0e6, 13: 3.0e6},
+    2: {10: 1.0e6, 11: 5.0e5, 12: 3.0e6, 13: 2.0e6},
+    3: {10: 2.0e6, 11: 3.0e6, 12: 5.0e5, 13: 1.0e6},
+    4: {10: 3.0e6, 11: 1.0e6, 12: 2.0e6, 13: 5.0e5},
+}
+ORBITER_RELAY_RATE = {10: 1.0e7, 11: 1.0e7, 12: 1.0e7, 13: 1.0e7}
+GROUND_RATE = {30: 1.0e7, 31: 1.0e7, 32: 1.0e7}
+
+# Draft §12 risk-averse quadratic penalty constant.
+CPB_RISK_PENALTY = 5000.0
+
 
 # ---- sim parameters ----------------------------------------------------
 
@@ -183,9 +183,6 @@ def attempt_hop(t: float, period: float, window: float, p: float,
     return False, close_t, 1
 
 
-# Default risk floor for cpb-risk (path product). Tunable via CLI.
-DEFAULT_RISK_FLOOR = 0.85
-
 # Seasonal aging period (seconds): one "dust storm cycle" ~ 1.5 simulated days
 AGE_PERIOD_S = 1.5 * 86400.0
 
@@ -201,6 +198,33 @@ def confidence_age_factor(t: float, enabled: bool) -> float:
     # cos from 1.0 → 0.70 → 1.0 over AGE_PERIOD_S
     phase = (t % AGE_PERIOD_S) / AGE_PERIOD_S  # [0, 1)
     return 0.85 + 0.15 * math.cos(2.0 * math.pi * phase)
+
+
+# ---- pure cost functions (draft §12; unit-testable) --------------------
+
+def cpb_route_cost(latency: float, confidence: float,
+                   bottleneck_rate: float) -> float:
+    """Rate-aware CPB consumer cost (draft §12).
+
+    cost = latency / (confidence × bottleneck_rate)
+    """
+    if latency < 0.0:
+        raise ValueError("latency must be non-negative")
+    if confidence <= 0.0 or bottleneck_rate <= 0.0:
+        return float("inf")
+    return latency / (confidence * bottleneck_rate)
+
+
+def cpb_risk_route_cost(latency: float, confidence: float,
+                        penalty: float = CPB_RISK_PENALTY) -> float:
+    """Risk-averse CPB consumer cost (draft §12).
+
+    cost = latency + (1 − confidence)² × penalty
+    """
+    if latency < 0.0:
+        raise ValueError("latency must be non-negative")
+    conf = max(0.0, min(1.0, float(confidence)))
+    return latency + (1.0 - conf) ** 2 * penalty
 
 
 # ---- route enumeration -------------------------------------------------
@@ -226,6 +250,12 @@ class Route:
         p3 = GROUND_CONFIDENCE[self.ground]
         return p1, p2, p3
 
+    def bottleneck_rate(self) -> float:
+        r1 = ROVER_ORBITER_RATE[self.rover][self.orbiter]
+        r2 = ORBITER_RELAY_RATE[self.orbiter]
+        r3 = GROUND_RATE[self.ground]
+        return min(r1, r2, r3)
+
 
 def all_routes_from(rover: int) -> list[Route]:
     return [Route(rover, o, g) for o in ORBITERS for g in GROUNDS]
@@ -245,41 +275,33 @@ def predicted_arrival(t: float, route: Route) -> float:
 
 # ---- routing algorithms -----------------------------------------------
 
-def baseline_choose(t: float, rover: int, *, age: bool = False,
-                    risk_floor: float = DEFAULT_RISK_FLOOR) -> Route:
+def baseline_choose(t: float, rover: int, *, age: bool = False) -> Route:
     """Vanilla CGR: pick route with earliest predicted arrival."""
-    del age, risk_floor  # unused; shared chooser signature
+    del age  # shared chooser signature
     candidates = all_routes_from(rover)
     return min(candidates, key=lambda r: predicted_arrival(t, r))
 
 
-def cpb_choose(t: float, rover: int, *, age: bool = False,
-               risk_floor: float = DEFAULT_RISK_FLOOR) -> Route:
-    """CGR-UCoP: cost = (arrival_time - now) / product_of_confidences."""
-    del risk_floor
+def cpb_choose(t: float, rover: int, *, age: bool = False) -> Route:
+    """Rate-aware CPB consumer (draft §12): latency/(confidence×rate)."""
     candidates = all_routes_from(rover)
+
     def cost(r: Route) -> float:
-        conf = r.confidence(t, age)
-        if conf <= 0.0:
-            return float("inf")
-        return (predicted_arrival(t, r) - t) / conf
+        latency = predicted_arrival(t, r) - t
+        return cpb_route_cost(latency, r.confidence(t, age), r.bottleneck_rate())
+
     return min(candidates, key=cost)
 
 
-def cpb_risk_choose(t: float, rover: int, *, age: bool = False,
-                    risk_floor: float = DEFAULT_RISK_FLOOR) -> Route:
-    """Reliability-constrained earliest-arrival.
-
-    Routes with confidence product < risk_floor are excluded.  Among
-    admissible routes, pick earliest predicted arrival.  If every route
-    fails the floor, pick the highest-confidence route (never fall back
-    to unconstrained earliest-arrival — reliability is the hard constraint).
-    """
+def cpb_risk_choose(t: float, rover: int, *, age: bool = False) -> Route:
+    """Risk-averse CPB consumer (draft §12): latency+(1-conf)²×5000."""
     candidates = all_routes_from(rover)
-    feasible = [r for r in candidates if r.confidence(t, age) >= risk_floor]
-    if not feasible:
-        return max(candidates, key=lambda r: r.confidence(t, age))
-    return min(feasible, key=lambda r: predicted_arrival(t, r))
+
+    def cost(r: Route) -> float:
+        latency = predicted_arrival(t, r) - t
+        return cpb_risk_route_cost(latency, r.confidence(t, age))
+
+    return min(candidates, key=cost)
 
 
 CHOOSERS = {
@@ -304,7 +326,7 @@ class Bundle:
 
 
 def simulate(seed: int, strategy: str, *, age: bool = False,
-             risk_floor: float = DEFAULT_RISK_FLOOR) -> list[Bundle]:
+             max_bundles: int | None = None) -> list[Bundle]:
     rng = random.Random(seed)
     bundles: list[Bundle] = []
 
@@ -314,15 +336,19 @@ def simulate(seed: int, strategy: str, *, age: bool = False,
         # Stagger rovers by their address so they don't all fire at t=WARMUP
         t = WARMUP + (rover - ROVERS[0]) * 7.5
         while t < SIM_DURATION:
+            if max_bundles is not None and bid >= max_bundles:
+                break
             bundles.append(Bundle(bid=bid, rover=rover, created_at=t))
             bid += 1
             t += BUNDLE_RATE
+        if max_bundles is not None and bid >= max_bundles:
+            break
 
     chooser = CHOOSERS[strategy]
 
     for b in bundles:
         t = b.created_at
-        b.chosen_route = chooser(t, b.rover, age=age, risk_floor=risk_floor)
+        b.chosen_route = chooser(t, b.rover, age=age)
         route = b.chosen_route
         attempts = 0
         p1, p2, p3 = route.hop_probs(t, age)
@@ -473,15 +499,20 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--quick", action="store_true",
                         help="fast smoke test (1 seed, 1-day sim)")
     parser.add_argument("--battery", choices=("standard", "paper"), default="standard",
-                        help="standard=3 seeds; paper=10 seeds (draft §11.5)")
+                        help="standard=3 seeds; paper=10 seeds (draft §12.5)")
     parser.add_argument(
         "--strategy",
         choices=("baseline", "cpb", "cpb-risk", "both", "all"),
         default="all",
         help="routing policy; 'both'=baseline+cpb; 'all'=+cpb-risk (default)",
     )
-    parser.add_argument("--risk-floor", type=float, default=DEFAULT_RISK_FLOOR,
-                        help=f"min path confidence for cpb-risk (default {DEFAULT_RISK_FLOOR})")
+    parser.add_argument(
+        "--max-bundles",
+        type=int,
+        default=None,
+        metavar="N",
+        help="cap total bundles generated across all rovers (for short experiments)",
+    )
     parser.add_argument("--age-conf", action="store_true",
                         help="enable seasonal confidence aging (dust/solar model)")
     parser.add_argument("--csv", type=Path, default=None, help="optional CSV output path")
@@ -510,19 +541,20 @@ def main(argv: list[str] | None = None) -> None:
     print("-" * 100)
     if args.age_conf:
         print(f"(confidence aging ON, period={AGE_PERIOD_S:.0f}s)")
-    if "cpb-risk" in strategies:
-        print(f"(cpb-risk floor={args.risk_floor})")
+    if args.max_bundles is not None:
+        print(f"(max-bundles={args.max_bundles})")
+    print("(cpb: rate-aware latency/(conf×rate); cpb-risk: latency+(1-conf)²×5000)")
 
     t_start = time.time()
     for seed in seeds:
         for strategy in strategies:
             t0 = time.time()
             bundles = simulate(
-                seed, strategy, age=args.age_conf, risk_floor=args.risk_floor)
+                seed, strategy, age=args.age_conf, max_bundles=args.max_bundles)
             r = report_run(bundles, strategy, seed)
             r["walltime_s"] = round(time.time() - t0, 2)
-            r["risk_floor"] = args.risk_floor
             r["age_conf"] = args.age_conf
+            r["max_bundles"] = args.max_bundles
             rows.append(r)
             print(f"{strategy:<10} {seed:>9} {r['created']:>9} "
                   f"{r['delivered']:>10} {r['delivery']:>9.4f} "

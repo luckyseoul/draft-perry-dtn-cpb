@@ -8,7 +8,7 @@
 ]>
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
      ipr="trust200902"
-     docName="draft-perry-dtn-cpb-latest"
+     docName="draft-perry-dtn-cpb-00"
      category="exp"
      submissionType="independent"
      xml:lang="en"
@@ -22,7 +22,7 @@
     <title abbrev="DTN Probabilistic Routing Metadata">
       Probabilistic Contact Metadata for DTN Bundle Routing
     </title>
-    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-latest"/>
+    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-00"/>
 
     <author fullname="Nicholas Perry" initials="N." surname="Perry">
       <organization>Independent</organization>
@@ -1857,16 +1857,16 @@ A3                   ; map with 3 entries
         <dt>Simulation-Based Validation</dt>
         <dd>
           Validation of CPB's routing impact was conducted via the pure-Python
-          discrete-event simulator config1_sim.py, which implements both
-          vanilla CGR (earliest-arrival) and several experimental consumers
-          of CPB confidence data over a multi-asset adversarial Mars topology.
-          <xref target="experiment"/> reports the authoritative 80-seed
-          adversarial massive topology study (12 rovers, 8 orbiters, 2 relays,
-          6 grounds). The simulator
-          is fully deterministic per seed and reproduces to the digit on any
-          Python 3.10+ environment with cbor2 installed. CGR-UCoP
-          <xref target="Fraire18"/> was used only as prior art for
-          simulation parameters and basic validation.
+          discrete-event simulator config1_sim.py, which implements vanilla
+          CGR (earliest-arrival) and the draft §12 consumers labeled "cpb"
+          (rate-aware) and "cpb-risk" (quadratic risk penalty) over
+          Configuration 1 (4 rovers, 4 orbiters, 1 relay, 3 ground stations).
+          <xref target="experiment"/> reports the authoritative 10-seed
+          paper-battery results for those three policies, reproduced by
+          <tt>python3 config1_sim.py --battery paper --strategy all</tt>.
+          The simulator is fully deterministic per seed on Python 3.10+ with
+          cbor2 installed. CGR-UCoP <xref target="Fraire18"/> was used only
+          as prior art for simulation parameters and basic validation.
         </dd>
 
         <dt>Implementations Considered but Not Exercised</dt>
@@ -1995,34 +1995,28 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
       <section anchor="exp-methodology">
         <name>Methodology</name>
         <t>
-          The simulator is a Python implementation using the adversarial
-          "massive" contact topology (12 rovers, 8 orbiters, 2 relays, 6
-          grounds) with contact success probabilities in the 0.55&#8211;0.72 range
-          on the critical rover-orbiter hop and data rates generated
-          independently of confidence. Each simulation runs for 7 days of
-          simulated time with bundles generated every 30 s per rover after
-          warm-up.
+          The published simulator is config1_sim.py (Configuration 1): 4
+          rovers, 4 orbiters, 1 deep-space relay, and 3 ground stations.
+          Rover-orbiter confidences are in [0.78, 0.96]; space-side hops
+          use 0.99. Per-hop data rates are generated so that first-hop rate
+          diversity creates a meaningful bottleneck independent of
+          confidence. Each run covers 7 days of simulated time with bundles
+          generated every 30 s per rover after warm-up (&#8776;80k bundles
+          per arm per seed).
         </t>
         <t>
-          The study used 80 independent seeds on high-core x86 hardware.
-          For each seed and each policy, the simulator executes over
-          identical contact-failure realizations. The primary policies
-          exercised were:
+          The paper battery uses 10 independent seeds. For each seed and
+          each policy, the simulator executes over identical contact-failure
+          realizations. The primary policies exercised (and shipped in
+          config1_sim.py) are:
         </t>
         <ul>
           <li>Baseline (vanilla CGR): earliest-arrival routing with no use of
               per-contact confidence.</li>
-          <li>Rate-aware CPB consumer ("cpb"): cost = latency / rate +
-              light explicit penalty on low confidence.</li>
+          <li>Rate-aware CPB consumer ("cpb"): cost = latency /
+              (confidence &#215; bottleneck_rate).</li>
           <li>Risk-averse CPB consumer ("cpb-risk"): cost = latency +
-              (1 &#8722; confidence)&#178; &#215; constant.</li>
-          <li>PROPHET-style, MaxProp-style, and Spray-and-Wait-style
-              consumers, each implemented in two forms: a "classic" version
-              that does not consult CPB confidence values, and a "cpb"
-              version that additionally uses the confidence metadata carried
-              in CPB blocks (metric-type 1) to initialize or adjust internal
-              state (delivery predictability for PROPHET, path costs for
-              MaxProp, spray-target selection for Spray-and-Wait).</li>
+              (1 &#8722; confidence)&#178; &#215; 5000.</li>
         </ul>
       </section>
 
@@ -2030,12 +2024,9 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         <name>Results</name>
 
         <t>
-          The study used the adversarial "massive" topology (12 rovers, 8
-          orbiters, 2 relays, 6 grounds) with contact success probabilities
-          deliberately generated in the 0.55&#8211;0.72 range on the critical
-          rover-orbiter hop and per-contact data rates generated independently
-          of confidence. 80 independent seeds were executed on high-core x86
-          hardware.
+          Results below are for Configuration 1 as implemented by
+          config1_sim.py, 10 independent seeds, paper battery
+          (<tt>--battery paper --strategy all</tt>).
         </t>
 
         <t>
@@ -2053,50 +2044,35 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         </ul>
 
         <t>
-          <strong>Primary findings (80 seeds, adversarial massive topology):</strong>
+          <strong>Primary findings (Configuration 1, 10 seeds, paper battery
+          via config1_sim.py --battery paper --strategy all):</strong>
         </t>
         <ul>
-          <li>Baseline (vanilla CGR) delivery was 0.9762 with high tail latency
-              (p95 &#8776; 455 s).</li>
+          <li>Baseline (vanilla CGR) mean delivery was 0.9962 with elevated
+              tail latency (mean p95 &#8776; 273 s across seeds).</li>
           <li>The rate-aware CPB consumer ("cpb") and risk-averse CPB consumer
-              ("cpb-risk") both achieved 0.9996 delivery with tight tails
-              (p95 = 120 s).</li>
-          <li>PROPHET classic (no CPB): 0.9819 delivery, low average latency
-              but poor tails (p95 &#8776; 369 s). With CPB: 0.9996 delivery, p95 =
-              120 s.</li>
-          <li>MaxProp classic (no CPB): 0.9822 delivery, similarly optimistic
-              latency but weak tails. With CPB: 0.9996 delivery, p95 = 120 s.</li>
-          <li>Spray-and-Wait classic (no CPB): 0.9663 delivery (worse than
-              baseline) with anomalous latency behavior in early implementations.
-              With CPB: 0.9946 delivery and materially improved tails (p95 &#8776;
-              203 s). Even with the guard, Spray-and-Wait remains the weakest
-              of the advanced consumers.</li>
+              ("cpb-risk") both achieved mean delivery 0.9998 with tight tails
+              (p95 = 123 s). Paired (cpb &#8722; baseline) delivery mean gain
+              +0.00355 (t &#8776; 86 over 10 seeds).</li>
+          <li>In this topology the two CPB consumers selected the same routes
+              under the published cost formulas, so their aggregate metrics
+              match; they remain distinct policies for other confidence/rate
+              mixes.</li>
         </ul>
 
         <t>
-          <strong>Interpretation.</strong> The data demonstrate that CPB
-          confidence metadata provides substantial, consistent reliability
-          gains to probabilistic routing protocols (PROPHET, MaxProp, and
-          Spray-and-Wait) when they can consult it. In the absence of CPB,
-          these protocols are optimistic: they achieve better latency on the
-          bundles that succeed, but suffer materially higher loss rates and
-          worse tails under adversarial conditions. When CPB confidence is
-          available, they become better calibrated and the loss rate drops
-          dramatically.
+          <strong>Interpretation.</strong> On Configuration 1, both draft §12
+          CPB consumers improve delivery ratio and tail latency relative to
+          confidence-blind earliest-arrival CGR. The rate-aware and risk-averse
+          costs remain distinct policies; they can diverge when confidence and
+          bottleneck rate are less correlated than in this topology.
         </t>
 
         <t>
-          <strong>Limitations and caveats.</strong> The Spray-and-Wait
-          implementations are the most constrained by the simulator
-          architecture (bundle-centric rather than full per-node event-driven).
-          Early versions produced anomalous (including negative) latency
-          values; a runtime guard was added to enforce forward-looking route
-          selection. The Spray-and-Wait results should therefore be treated as
-          directional only. In operational deployments, Spray-and-Wait with
-          CPB is best regarded as a method of last resort when more capable
-          probability-aware forwarding is unavailable. The study also does not
-          address noisy or adversarially supplied confidence values; those
-          questions are left for future work.
+          <strong>Limitations and caveats.</strong> Results are for the
+          Configuration 1 topology and cost formulas as shipped in
+          config1_sim.py. The study does not address noisy or adversarially
+          supplied confidence values; those questions are left for future work.
         </t>
       </section>
 
@@ -2274,11 +2250,10 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <ol>
           <li>Determine whether CPB-enhanced routing improves delivery ratio
               under adversarial conditions with rate-aware costing.
-              <strong>Met.</strong> In the 80-seed adversarial massive study,
-              baseline delivery was 0.9762 while the CPB-augmented policies
-              (cpb, cpb-risk, and the CPB-augmented versions of PROPHET and
-              MaxProp) reached 0.9996, with the Spray-and-Wait CPB version
-              reaching 0.9946. Gains were consistent across all 80 seeds.</li>
+              <strong>Met.</strong> In the Configuration 1 paper battery
+              (10 seeds), baseline mean delivery was 0.9962 while both
+              "cpb" and "cpb-risk" reached mean delivery 0.9998, with
+              consistent gains on every seed.</li>
           <li>Quantify CPB byte overhead. <strong>Met by
               <xref target="overhead-analysis"/> analytical bounds:</strong>
               &lt;3% for 1 KB+ payloads with full CPB.</li>
@@ -2294,14 +2269,13 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <name>Success Criteria (Met)</name>
         <ol>
           <li>Statistically significant improvement (p &lt; 0.05).
-              <strong>Met.</strong> The reliability gains for CPB-augmented
-              policies versus baseline and versus the corresponding classic
-              (no-CPB) versions of PROPHET, MaxProp, and Spray-and-Wait were
-              consistent and large across all 80 seeds.</li>
+              <strong>Met.</strong> Paired (cpb &#8722; baseline) delivery
+              over the Configuration 1 paper battery yielded mean gain
+              +0.00355 with t &#8776; 86 (10 seeds).</li>
           <li>Sample size sufficient for the claims made. <strong>Met:</strong>
-              80 independent seeds on the adversarial massive topology, with
-              each policy exercised over identical contact realizations per
-              seed.</li>
+              10 independent seeds on Configuration 1, with each policy
+              exercised over identical contact realizations per seed
+              (&#8776;80k bundles per arm per seed).</li>
           <li>CPB byte overhead below 5% for 1 KB+ payloads. <strong>Met
               analytically.</strong></li>
           <li>No fundamental architectural conflicts with BPv7. <strong>Met
@@ -2512,12 +2486,13 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <li><strong>test_cpb.py</strong> - 23-test conformance suite. All
             passing on Python 3.10+ with cbor2 5.9.0.</li>
         <li><strong>config1_sim.py</strong> - the discrete-event simulator
-            that produced the <xref target="experiment"/> results.</li>
+            that produced the Configuration 1 results in
+            <xref target="experiment"/> (paper battery).</li>
       </ul>
 
       <section anchor="repo">
         <name>Repository</name>
-        <t>Source code is published under the MIT License License at:</t>
+        <t>Source code is published under the MIT License at:</t>
         <t>
           <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
             https://github.com/luckyseoul/draft-perry-dtn-cpb
@@ -2534,8 +2509,10 @@ git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
 cd draft-perry-dtn-cpb
 pip install cbor2
 
-python3 test_cpb.py       # 23 PASS lines
-python3 config1_sim.py    # ~45 s walltime, matching Section 11.5
+python3 impl/test_cpb.py
+python3 impl/test_config1_policies.py
+python3 impl/config1_sim.py --battery paper --strategy all
+# ~50 s walltime; mean delivery baseline 0.9962, cpb/cpb-risk 0.9998 (§12.5)
 ]]></sourcecode>
         </figure>
         <t>
