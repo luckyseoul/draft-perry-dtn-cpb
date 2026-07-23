@@ -21,6 +21,11 @@ package-lock.json
 report.xml
 !requirements.txt
 
+# Ship built draft artifacts on main (make builds txt + html + pdf)
+!draft-perry-dtn-cpb.txt
+!draft-perry-dtn-cpb.html
+!draft-perry-dtn-cpb.pdf
+
 # Python cache
 __pycache__/
 *.py[cod]
