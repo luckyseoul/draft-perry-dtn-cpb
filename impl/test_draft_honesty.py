@@ -35,7 +35,7 @@ def test_abstract_does_not_claim_adversarial_routing_eval():
     assert "adversarial conditions" not in abstract, (
         "Abstract must not claim adversarial routing evaluation"
     )
-    assert "stochastic" in abstract
+    assert "confidence-weighted" in abstract or "ground-truth" in abstract
 
 
 def test_sim_only_baseline_and_cpb_choosers():
@@ -62,10 +62,32 @@ def test_bcb_comment_points_to_section_8():
     assert "Section 7.2.3" not in text
 
 
+def test_no_false_identical_realizations_claim():
+    text = XML.read_text(encoding="utf-8")
+    assert "identical contact-failure" not in text
+    assert "identical contact realizations" not in text
+
+
+def test_no_stale_paper_numbers():
+    text = XML.read_text(encoding="utf-8")
+    # superseded pre-CRN battery numbers must not reappear
+    assert "0.9962" not in text
+    assert "0.9998" not in text
+    assert "0.9965" in text and "0.9984" in text
+
+
+def test_published_cost_is_latency_over_confidence():
+    text = XML.read_text(encoding="utf-8")
+    assert "latency / confidence" in text or "latency / confidence" in text.replace("&#215;", "×")
+
+
 if __name__ == "__main__":
     test_no_dead_real_cpb_packet_test_path()
     test_abstract_does_not_claim_adversarial_routing_eval()
     test_sim_only_baseline_and_cpb_choosers()
     test_docs_do_not_advertise_hypothesis_tests()
     test_bcb_comment_points_to_section_8()
+    test_no_false_identical_realizations_claim()
+    test_no_stale_paper_numbers()
+    test_published_cost_is_latency_over_confidence()
     print("All draft honesty tests passed.")

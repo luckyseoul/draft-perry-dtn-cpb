@@ -98,7 +98,7 @@ The shipped simulator `impl/config1_sim.py` uses **Configuration 1**:
 | Label | Cost / rule |
 |-------|-------------|
 | **baseline** | Earliest predicted arrival (ignore confidence) |
-| **cpb** | `latency / (confidence × bottleneck_rate)` |
+| **cpb** | `latency / confidence` |
 
 ### Headline results (paper battery)
 
@@ -106,8 +106,10 @@ The shipped simulator `impl/config1_sim.py` uses **Configuration 1**:
 
 | Policy | Mean delivery | Mean p95 latency |
 |--------|---------------|------------------|
-| baseline | **0.9962** | ~**273 s** |
-| cpb | **0.9998** | **123 s** |
+| baseline | **0.9965** | mean lat ~**508 s**, p95 ~**1604 s** |
+| cpb | **0.9984** | mean lat ~**484 s**, p95 ~**1665 s** |
+
+Honest note: cpb **improves delivery and mean latency** on Config 1; **p95 is not improved** (slightly worse). Path confidence is higher under cpb.
 
 **Two experiment parts (draft §12.1):** (1) wire format + ION data-plane
 survival of the extension block; (2) routing value of confidences of the
@@ -161,7 +163,7 @@ Defaults to remember:
 2. Name three CPB map fields and what they mean.  
 3. What does metric-type **forbid** between families?  
 4. Write the **cpb** cost formula used in the experiment.  
-5. What is the main Config 1 win: delivery points or **tail latency**?  
+5. On Config 1, which improve under cpb: delivery, mean latency, and/or p95?  
 6. What remains open (noise, adversaries, multi-domain, production stacks)?
 
 ---
