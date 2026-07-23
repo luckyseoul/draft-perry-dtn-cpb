@@ -23,11 +23,12 @@ Two routing algorithms (names and costs match draft-perry-dtn-cpb §12):
     pick the route with earliest predicted arrival time.  Confidence
     ignored.
 
-  cpb (rate-aware CPB consumer, draft §12):
-    cost = latency / (confidence × bottleneck_rate)
-    where latency = predicted_arrival − now, confidence is the path
-    product, and bottleneck_rate is the minimum hop data rate on the
-    route (bits/s, relative scale).  Lowest cost wins.
+  cpb (confidence-weighted CPB consumer, draft §12):
+    cost = latency / confidence
+    where latency = predicted_arrival − now and confidence is the
+    end-to-end path success-probability product.  Lowest cost wins.
+    (Operational deployments MAY fold in bottleneck rate; the published
+    experiment isolates confidence so gains are not confounded with rate.)
 
 Optional confidence aging (--age-conf):
   Multiplies first-hop confidences by a smooth seasonal factor in
@@ -90,8 +91,8 @@ Seeds (10 fixed primes/distinguished integers):
 from __future__ import annotations
 
 import csv
+import hashlib
 import math
-import random
 import statistics
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -135,11 +136,14 @@ RELAY_TO_GROUND_DELAY  = 60.0
 
 # Relative hop data rates (bits/s scale) for rate-aware CPB cost.
 # First hop is the bottleneck diversity; space-side links are high-rate.
+# Intentionally NOT rank-aligned with ROVER_ORBITER_CONFIDENCE so rate and
+# confidence are separable factors in the cost function (latin-square
+# permutation of rates differs from the confidence square).
 ROVER_ORBITER_RATE = {
-    1: {10: 5.0e5, 11: 2.0e6, 12: 1.0e6, 13: 3.0e6},
-    2: {10: 1.0e6, 11: 5.0e5, 12: 3.0e6, 13: 2.0e6},
-    3: {10: 2.0e6, 11: 3.0e6, 12: 5.0e5, 13: 1.0e6},
-    4: {10: 3.0e6, 11: 1.0e6, 12: 2.0e6, 13: 5.0e5},
+    1: {10: 3.0e6, 11: 5.0e5, 12: 2.0e6, 13: 1.0e6},
+    2: {10: 2.0e6, 11: 3.0e6, 12: 5.0e5, 13: 1.0e6},
+    3: {10: 5.0e5, 11: 1.0e6, 12: 3.0e6, 13: 2.0e6},
+    4: {10: 1.0e6, 11: 2.0e6, 12: 1.0e6, 13: 3.0e6},
 }
 ORBITER_RELAY_RATE = {10: 1.0e7, 11: 1.0e7, 12: 1.0e7, 13: 1.0e7}
 GROUND_RATE = {30: 1.0e7, 31: 1.0e7, 32: 1.0e7}
@@ -155,23 +159,69 @@ SEEDS        = [42, 137, 1729, 31337, 65521,
 
 # ---- contact-window mechanics ------------------------------------------
 
-def next_window_open(t: float, period: float) -> float:
-    cycle_start = math.floor(t / period) * period
-    open_t = cycle_start
-    if t > open_t + period:  # not in current window's holding pattern
-        open_t += period
-    return open_t
+# Max Bernoulli trials per hop (documented in draft §12.4). After a failed
+# window the next cycle is attempted; success chance per hop is thus
+# 1-(1-p)^MAX_HOP_RETRIES if windows keep arriving.
+MAX_HOP_RETRIES = 3
 
 
-def attempt_hop(t: float, period: float, window: float, p: float,
-                rng: random.Random) -> tuple[bool, float, int]:
-    """One contact window = one Bernoulli trial."""
-    open_t = next_window_open(t, period)
+def next_window_open(t: float, period: float, window: float) -> float:
+    """Start time of the contact window that is open at t, or the next one.
+
+    Windows are [k*period, k*period + window) for integer k >= 0.
+    If t falls in the closed portion of cycle k, return (k+1)*period.
+    """
+    if period <= 0.0 or window <= 0.0:
+        raise ValueError("period and window must be positive")
+    k = int(math.floor(t / period))
+    open_t = k * period
+    close_t = open_t + window
+    if t < open_t:
+        return open_t
+    if t < close_t:
+        return open_t
+    return (k + 1) * period
+
+
+def _crn_uniform(seed: int, contact_key: tuple, trial: int) -> float:
+    """Strategy-independent U[0,1) for common-random-number contact trials."""
+    payload = f"{seed}|{contact_key!r}|{trial}".encode()
+    digest = hashlib.sha256(payload).digest()
+    return int.from_bytes(digest[:8], "big") / float(2**64)
+
+
+def attempt_hop(
+    t: float,
+    period: float,
+    window: float,
+    p: float,
+    *,
+    seed: int,
+    contact_id: int,
+    trial: int,
+) -> tuple[bool, float, int]:
+    """One contact window = one Bernoulli trial under CRN.
+
+    Success/failure for (seed, contact_id, window_index, trial) is identical
+    across routing strategies. On failure, time advances to window close so
+    the next retry uses the next cycle.
+    """
+    open_t = next_window_open(t, period, window)
     if t < open_t:
         t = open_t
     close_t = open_t + window
-    if rng.random() < p:
-        return True, t + 1.0, 1
+    if t >= close_t:
+        open_t = next_window_open(t, period, window)
+        t = max(t, open_t)
+        close_t = open_t + window
+    window_index = int(round(open_t / period)) if period else 0
+    u = _crn_uniform(seed, (contact_id, window_index), trial)
+    if u < p and t < close_t:
+        # 1 s in-window transmit time; never leave the open window.
+        tx = min(t + 1.0, close_t - 1e-9)
+        if tx < t:
+            tx = t
+        return True, tx, 1
     return False, close_t, 1
 
 
@@ -195,16 +245,21 @@ def confidence_age_factor(t: float, enabled: bool) -> float:
 # ---- pure cost functions (draft §12; unit-testable) --------------------
 
 def cpb_route_cost(latency: float, confidence: float,
-                   bottleneck_rate: float) -> float:
-    """Rate-aware CPB consumer cost (draft §12).
+                   bottleneck_rate: float | None = None) -> float:
+    """Confidence-weighted CPB consumer cost (draft §12).
 
-    cost = latency / (confidence × bottleneck_rate)
+    cost = latency / confidence
+
+    bottleneck_rate is accepted for API compatibility with older call
+    sites and optional operational extensions; it is not used in the
+    published Configuration 1 cost (avoids rate×confidence confounding).
     """
+    del bottleneck_rate  # unused in published experiment cost
     if latency < 0.0:
         raise ValueError("latency must be non-negative")
-    if confidence <= 0.0 or bottleneck_rate <= 0.0:
+    if confidence <= 0.0:
         return float("inf")
-    return latency / (confidence * bottleneck_rate)
+    return latency / confidence
 
 
 # ---- route enumeration -------------------------------------------------
@@ -243,13 +298,15 @@ def all_routes_from(rover: int) -> list[Route]:
 
 def predicted_arrival(t: float, route: Route) -> float:
     """Predicted arrival time at ground station for a route, starting at t."""
-    o_open = next_window_open(t, ORBITER_PERIOD[route.orbiter])
-    if t > o_open:
-        o_open = next_window_open(t, ORBITER_PERIOD[route.orbiter])
+    o_open = next_window_open(t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW)
     arr_orbiter = max(t, o_open) + ORBITER_WINDOW / 2
-    arr_relay   = arr_orbiter + ORBITER_TO_RELAY_DELAY
-    g_open = next_window_open(arr_relay, GROUND_PERIOD[route.ground])
-    arr_ground  = max(arr_relay + RELAY_TO_GROUND_DELAY, g_open) + GROUND_WINDOW / 2
+    arr_relay = arr_orbiter + ORBITER_TO_RELAY_DELAY
+    g_open = next_window_open(
+        arr_relay + RELAY_TO_GROUND_DELAY,
+        GROUND_PERIOD[route.ground],
+        GROUND_WINDOW,
+    )
+    arr_ground = max(arr_relay + RELAY_TO_GROUND_DELAY, g_open) + GROUND_WINDOW / 2
     return arr_ground
 
 
@@ -263,12 +320,12 @@ def baseline_choose(t: float, rover: int, *, age: bool = False) -> Route:
 
 
 def cpb_choose(t: float, rover: int, *, age: bool = False) -> Route:
-    """Rate-aware CPB consumer (draft §12): latency/(confidence×rate)."""
+    """Confidence-weighted CPB consumer (draft §12): latency/confidence."""
     candidates = all_routes_from(rover)
 
     def cost(r: Route) -> float:
         latency = predicted_arrival(t, r) - t
-        return cpb_route_cost(latency, r.confidence(t, age), r.bottleneck_rate())
+        return cpb_route_cost(latency, r.confidence(t, age))
 
     return min(candidates, key=cost)
 
@@ -295,7 +352,8 @@ class Bundle:
 
 def simulate(seed: int, strategy: str, *, age: bool = False,
              max_bundles: int | None = None) -> list[Bundle]:
-    rng = random.Random(seed)
+    # Contact outcomes use seed-keyed CRN (strategy-independent). Bundle
+    # creation is deterministic; choosers are deterministic given t.
     bundles: list[Bundle] = []
 
     # Generate creations: each rover emits independently
@@ -322,35 +380,36 @@ def simulate(seed: int, strategy: str, *, age: bool = False,
         p1, p2, p3 = route.hop_probs(t, age)
         b.path_confidence = p1 * p2 * p3
 
-        # Hop 1: rover -> orbiter
-        # use aged first-hop probability at decision time (held for the hop)
-        retries = 3
+        # Hop 1: rover -> orbiter (up to MAX_HOP_RETRIES windows)
+        trial = 0
         ok = False
-        while retries > 0 and t < SIM_DURATION:
+        while trial < MAX_HOP_RETRIES and t < SIM_DURATION:
             ok, t_new, atts = attempt_hop(
-                t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW, p1, rng)
+                t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW, p1,
+                seed=seed, contact_id=route.orbiter, trial=trial)
             attempts += atts
             t = t_new
+            trial += 1
             if ok:
                 break
-            retries -= 1
         if not ok:
             b.total_attempts = attempts
             b.failed = True
             continue
 
-        # Hop 2: orbiter -> relay (uses orbiter period for next contact opp)
+        # Hop 2: orbiter -> relay
         t += ORBITER_TO_RELAY_DELAY
-        retries = 3
+        trial = 0
         ok = False
-        while retries > 0 and t < SIM_DURATION:
+        while trial < MAX_HOP_RETRIES and t < SIM_DURATION:
             ok, t_new, atts = attempt_hop(
-                t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW, p2, rng)
+                t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW, p2,
+                seed=seed, contact_id=1000 + route.orbiter, trial=trial)
             attempts += atts
             t = t_new
+            trial += 1
             if ok:
                 break
-            retries -= 1
         if not ok:
             b.total_attempts = attempts
             b.failed = True
@@ -358,16 +417,17 @@ def simulate(seed: int, strategy: str, *, age: bool = False,
 
         # Hop 3: relay -> ground
         t += RELAY_TO_GROUND_DELAY
-        retries = 3
+        trial = 0
         ok = False
-        while retries > 0 and t < SIM_DURATION:
+        while trial < MAX_HOP_RETRIES and t < SIM_DURATION:
             ok, t_new, atts = attempt_hop(
-                t, GROUND_PERIOD[route.ground], GROUND_WINDOW, p3, rng)
+                t, GROUND_PERIOD[route.ground], GROUND_WINDOW, p3,
+                seed=seed, contact_id=2000 + route.ground, trial=trial)
             attempts += atts
             t = t_new
+            trial += 1
             if ok:
                 break
-            retries -= 1
         if not ok:
             b.total_attempts = attempts
             b.failed = True
@@ -509,7 +569,7 @@ def main(argv: list[str] | None = None) -> None:
         print(f"(confidence aging ON, period={AGE_PERIOD_S:.0f}s)")
     if args.max_bundles is not None:
         print(f"(max-bundles={args.max_bundles})")
-    print("(cpb: rate-aware cost = latency / (confidence × bottleneck_rate))")
+    print("(cpb: confidence-weighted cost = latency / confidence)")
 
     t_start = time.time()
     for seed in seeds:

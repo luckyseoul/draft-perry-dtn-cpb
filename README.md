@@ -50,7 +50,7 @@ python3 config1_sim.py --quick
 
 # Full paper-reproducing run (10 seeds; draft §12.5 rates)
 python3 config1_sim.py --battery paper --strategy both
-# Mean delivery (paper battery): baseline 0.9962, cpb 0.9998
+# Mean delivery (paper battery): baseline 0.9965, cpb 0.9984
 ```
 
 Alternative (traditional):
@@ -72,10 +72,10 @@ python3 config1_sim.py --max-bundles 8000 --quick
 Routing policy labels match draft §12:
 
 - **baseline** — earliest predicted arrival (confidence ignored)
-- **cpb** — rate-aware: `cost = latency / (confidence × bottleneck_rate)`
+- **cpb** — confidence-weighted: `cost = latency / confidence`
 
-Paper battery mean delivery (Configuration 1, 10 seeds): **baseline 0.9962**,
-**cpb 0.9998** (same as draft §12.5).
+Paper battery mean delivery (Configuration 1, 10 seeds): **baseline 0.9965**,
+**cpb 0.9984** (same as draft §12.5).
 
 Build robustness, packaging, CI, stronger tests, and the simulator CLI are
 maintained on `main` so others can use, test, and build on the reference

@@ -8,10 +8,10 @@ Reference implementation of the Contact Probability Block (CPB) defined in [draf
 |------|---------|
 | `cpb.py` | Encoder and decoder for the CPB block-type-specific data per §3.2 / §3.4. |
 | `test_cpb.py` | Conformance suite (encode/decode, hex tables, invalid floats, path-array SHOULD). |
-| `test_config1_policies.py` | Unit tests for the draft §12 rate-aware cost formula used by the simulator. |
-| `test_sim_cpb_bridge.py` | Bridge: Config 1 confidences encode/decode as metric-type 1 CPB without changing rate-aware ranking. |
+| `test_config1_policies.py` | Unit tests for the draft §12 confidence-weighted cost formula used by the simulator. |
+| `test_sim_cpb_bridge.py` | Bridge: Config 1 confidences encode/decode as metric-type 1 CPB without changing confidence-weighted ranking. |
 | `test_draft_honesty.py` | Structural checks that draft/docs claims match shipped code. |
-| `config1_sim.py` | Discrete-event simulator for draft §12.5 (4-rover, 4-orbiter Mars relay). Strategies: `baseline`, `cpb` (rate-aware). CLI: `--quick`, `--battery`, `--strategy`, `--max-bundles`, `--age-conf`, `--csv`. |
+| `config1_sim.py` | Discrete-event simulator for draft §12.5 (4-rover, 4-orbiter Mars relay). Strategies: `baseline`, `cpb` (confidence-weighted). CLI: `--quick`, `--battery`, `--strategy`, `--max-bundles`, `--age-conf`, `--csv`. |
 | `requirements.txt` | Python dependencies. |
 
 See `../examples/` for small, runnable demonstrations of using the packaged `cpb` module.
@@ -47,10 +47,10 @@ Expected `test_cpb.py` output: 23+ `PASS` lines, zero failures.
 Routing policy labels (must match draft §12):
 
 - **baseline** — earliest predicted arrival
-- **cpb** — `cost = latency / (confidence × bottleneck_rate)`
+- **cpb** — `cost = latency / confidence`
 
 Paper-battery mean delivery (Configuration 1, 10 seeds, `--battery paper
---strategy both`): **baseline 0.9962**, **cpb 0.9998** (draft §12.5).
+--strategy both`): **baseline 0.9965**, **cpb 0.9984** (draft §12.5).
 
 ## Coverage
 
