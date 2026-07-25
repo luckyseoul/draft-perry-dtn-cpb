@@ -1,5 +1,10 @@
 # Probabilistic Contact Metadata for DTN Bundle Routing
 
+<p align="center">
+  <img src="logo.png" alt="DTN CPB routing" width="168" />
+</p>
+
+
 Working area for the individual Internet-Draft "Probabilistic Contact Metadata
 for DTN Bundle Routing" (draft-perry-dtn-cpb-00). Defines the Contact Probability
 Block (CPB), a BPv7 extension block carrying per-contact probability metadata
