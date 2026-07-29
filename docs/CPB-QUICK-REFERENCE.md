@@ -110,15 +110,20 @@ The simulator `impl/config1_sim.py` uses **Configuration 1**:
 
 ![Results](images/06-paper-battery-results.png)
 
-| Policy | Mean delivery | Latency summary |
-|--------|---------------|-----------------|
-| baseline | **≈0.9789** | mean lat ~**469 s**, p95 ~**1394 s** |
-| cpb | **≈0.9901** | mean lat ~**462 s**, p95 ~**1592 s** |
+**Delivery first.** Contact-window retries per hop (`R`) are a lever — not
+“cpb always wins”:
 
-On Configuration 1 with two contact-window trials per hop (`MAX_HOP_RETRIES=2`),
-**cpb** improves delivery (paired gain ≈+0.011) and mean latency; **p95 is
-not improved** (worse on this topology). Path confidence is higher under
-**cpb**. (Draft §12.5 may still show older R=3 ceiling numbers.)
+| R | baseline deliv | cpb deliv | Δ delivery |
+|---|----------------|-----------|------------|
+| **2** (tight budget) | ≈0.9789 | ≈0.9901 | **≈+0.011** |
+| **3** (draft default) | ≈0.9965 | ≈0.9984 | ≈+0.0019 |
+| **4** (more retries) | ≈0.9988 | ≈0.9991 | ≈+0.0003 |
+
+On Configuration 1, **cpb** improves **delivery** and usually **mean latency**;
+**p95 is often worse** (longer-period high-confidence paths). Path confidence
+is higher under **cpb**. Use small R when the traffic class values delivery
+under few contact attempts; large R when absolute completion rate matters
+more and extra windows are acceptable.
 
 **Two experiment parts (draft §12.1):** (1) wire format and ION data-plane
 survival of the extension block; (2) routing value of confidences of the
