@@ -49,11 +49,19 @@ Routing policy labels (must match draft §12):
 - **baseline** — earliest predicted arrival
 - **cpb** — `cost = latency / confidence`
 
-Paper-battery mean delivery (Configuration 1, 10 seeds, `--battery paper
---strategy both`, `MAX_HOP_RETRIES=2`): **baseline ≈0.9789**, **cpb ≈0.9901**
-(paired delivery gain ≈+0.011). Same CRN and `cost = latency / confidence`.
-Draft §12.5 still cites the earlier R=3 ceiling-regime numbers until the
-I-D narrative is revised.
+**Delivery primary.** Hop-retry count `R` is a lever (`--hop-retries` /
+`--sweep-hop-retries 2,3,4`). Same CRN and `cost = latency / confidence`
+for both arms. Paper battery (10 seeds):
+
+| R | baseline | cpb | Δ delivery |
+|---|----------|-----|------------|
+| 2 | ≈0.9789 | ≈0.9901 | ≈+0.011 |
+| 3 | ≈0.9965 | ≈0.9984 | ≈+0.0019 (draft default) |
+| 4 | ≈0.9988 | ≈0.9991 | ≈+0.0003 |
+
+Tighter R → larger cpb delivery edge (high-value / short-budget traffic).
+Larger R → higher absolute delivery, smaller gap. p95 is not a free win.
+Parallel: `--workers 86` (ProcessPool; GPU unused — pure Python DES).
 
 ## Coverage
 
