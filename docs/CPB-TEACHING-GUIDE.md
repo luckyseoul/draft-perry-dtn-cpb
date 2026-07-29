@@ -1,12 +1,18 @@
 # Contact Probability Block (CPB) — Quick Teaching Guide
 
-Fifteen-minute visual intro to **draft-perry-dtn-cpb-00**
-(*Probabilistic Contact Metadata for DTN Bundle Routing*). Normative text is
-in the Internet-Draft ([`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml));
-this guide is non-normative.
+**Purpose:** a quick catch-up so anyone reading this repo (or reviewing the
+draft later) can understand the *concept* without first reading the full
+Internet-Draft at length.
 
-**Audience:** readers who know BPv7 basics and want why / what / how before
-opening the full draft.
+Fifteen-minute visual intro to **draft-perry-dtn-cpb-00**
+(*Probabilistic Contact Metadata for DTN Bundle Routing*): problem, wire idea,
+fields, lifecycle, experiment headline, and security defaults. Normative text
+stays in the Internet-Draft
+([`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml)); this guide is
+non-normative.
+
+**Audience:** people who know BPv7 basics and need why / what / how before (or
+instead of) a full draft pass.
 
 ---
 
