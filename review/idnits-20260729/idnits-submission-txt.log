@@ -1,0 +1,7 @@
+FAIL - Document /home/nick/Projects/dtn/dtn/draft-perry-dtn-cpb/draft-perry-dtn-cpb.txt has nits. (mode: submission)
+
+[1] Error | FILENAME_INVALID_VERSION_SUFFIX | Filename must end with a version in format 00.
+[2] Error | FILENAME_DOCNAME_MISMATCH | Filename does not match the name declared in the document.
+[3] Warning | DOC_DATE_IN_PAST | The document date is 8 days in the past. Is this intentional?
+[4] Warning | LINE_TOO_LONG | The document contains 3 over-long lines of more than 72 characters.
+[5] Warning | COMMENT_OUT_OF_CODE_BLOCK | Found something which looks like a code comment -- if you have code sections in the document, please surround them with '<CODE BEGINS>' and '<CODE ENDS>' lines.
