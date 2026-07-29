@@ -50,7 +50,10 @@ Routing policy labels (must match draft §12):
 - **cpb** — `cost = latency / confidence`
 
 Paper-battery mean delivery (Configuration 1, 10 seeds, `--battery paper
---strategy both`): **baseline 0.9965**, **cpb 0.9984** (draft §12.5).
+--strategy both`, `MAX_HOP_RETRIES=2`): **baseline ≈0.9789**, **cpb ≈0.9901**
+(paired delivery gain ≈+0.011). Same CRN and `cost = latency / confidence`.
+Draft §12.5 still cites the earlier R=3 ceiling-regime numbers until the
+I-D narrative is revised.
 
 ## Coverage
 
