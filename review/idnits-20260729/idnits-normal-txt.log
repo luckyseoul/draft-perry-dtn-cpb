@@ -1,0 +1,12 @@
+FAIL - Document /home/nick/Projects/dtn/dtn/draft-perry-dtn-cpb/draft-perry-dtn-cpb.txt has nits. (mode: normal)
+
+[1] Error | FILENAME_INVALID_VERSION_SUFFIX | Filename must end with a version in format 00.
+[2] Comment | NON_ASCII_UTF8 | Review RFC7997 to ensure your document respects UTF-8 rules for non-ASCII.
+[3] Error | FILENAME_DOCNAME_MISMATCH | Filename does not match the name declared in the document.
+[4] Error | MULTIPLE_REFERENCES_SECTION_TITLES | Multiple occurrences of the References section title detected. There should only be one top-level References section.
+[5] Warning | PREFER_BCP14_REF | Consider referencing BCP14 instead of (or in addition to) RFC2119/RFC8174, as BCP14 encompasses both specifications.
+[6] Warning | DOC_DATE_IN_PAST | The document date is 8 days in the past. Is this intentional?
+[7] Error | LINE_TOO_LONG | The document contains 3 over-long lines of more than 72 characters.
+[8] Warning | COMMENT_OUT_OF_CODE_BLOCK | Found something which looks like a code comment -- if you have code sections in the document, please surround them with '<CODE BEGINS>' and '<CODE ENDS>' lines.
+[9] Warning | SECTION_TITLE_HAS_UNEXPECTED_INDENTATION | Document has unexpected indentation in Appendix.
+[10] Warning | SECTION_TITLE_HAS_UNEXPECTED_INDENTATION | Document has unexpected indentation in Appendix.

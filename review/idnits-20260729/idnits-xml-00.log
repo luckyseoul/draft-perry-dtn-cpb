@@ -1,0 +1,15 @@
+FAIL - Document /tmp/idnits-cpb-139321/draft-perry-dtn-cpb-00.xml has nits. (mode: normal)
+
+[1] Comment | NON_ASCII_UTF8 | Review RFC7997 to ensure your document respects UTF-8 rules for non-ASCII.
+[2] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "SHOULD" should be enclosed in <bcp14></bcp14> tags.
+[3] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "MAY" should be enclosed in <bcp14></bcp14> tags.
+[4] Comment | INVALID_REQLEVEL_KEYWORD | not MUST is not a valid BCP14 Requirement Level keyword.
+[5] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "SHOULD" should be enclosed in <bcp14></bcp14> tags.
+[6] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "MUST" should be enclosed in <bcp14></bcp14> tags.
+[7] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "SHOULD" should be enclosed in <bcp14></bcp14> tags.
+[8] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "SHOULD" should be enclosed in <bcp14></bcp14> tags.
+[9] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "SHOULD" should be enclosed in <bcp14></bcp14> tags.
+[10] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "MUST" should be enclosed in <bcp14></bcp14> tags.
+[11] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "MUST" should be enclosed in <bcp14></bcp14> tags.
+[12] Comment | MISSING_BCP14_TAGS | The BCP14 keyword "SHOULD" should be enclosed in <bcp14></bcp14> tags.
+[13] Warning | DOC_DATE_IN_PAST | The document date is 8 days in the past. Is this intentional?
