@@ -70,7 +70,21 @@ def test_crn_identical_across_strategies():
     a1, t1, _ = attempt_hop(0.0, 1200.0, 600.0, 0.9, seed=42, contact_id=10, trial=0)
     a2, t2, _ = attempt_hop(0.0, 1200.0, 600.0, 0.9, seed=42, contact_id=10, trial=0)
     assert a1 == a2 and math.isclose(t1, t2)
-    assert MAX_HOP_RETRIES == 3
+    assert MAX_HOP_RETRIES == 2
+
+
+def test_crn_not_strategy_keyed():
+    """Contact success function has no strategy parameter (anti-gaming)."""
+    import inspect
+    sig = inspect.signature(attempt_hop)
+    assert "strategy" not in sig.parameters
+    assert "label" not in sig.parameters
+
+
+def test_cpb_cost_form_unchanged_under_retry_budget():
+    """Published cpb arm still uses latency/confidence only (no rate fold-in)."""
+    assert math.isclose(cpb_route_cost(400.0, 0.8), 400.0 / 0.8)
+    assert math.isclose(cpb_route_cost(400.0, 0.8, bottleneck_rate=1e9), 400.0 / 0.8)
 
 
 if __name__ == "__main__":

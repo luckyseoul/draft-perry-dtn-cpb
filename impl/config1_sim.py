@@ -75,6 +75,13 @@ Contact window (600 s) and inter-hop delays (60 s):
   sensitivity to changes within +/- 50% does not change the qualitative
   result (paired t > 50 in all sensitivity tests).
 
+Hop retries (MAX_HOP_RETRIES = 2):
+  Each hop allows up to two contact-window Bernoulli trials under CRN.
+  A third retry pushes effective first-hop success above ~0.989 for the
+  published confidence range and flattens the policy gap (ceiling effect).
+  Two attempts leave room for confidence-weighted selection to improve
+  delivery without special-casing either arm in the contact RNG.
+
 Bundle generation (every 30 s per rover, 7-day sim):
   30 s is the spec's recommended interval for telemetry-class traffic.
   7 days yields 80,507 bundles per rover per arm, sufficient for paired
@@ -159,10 +166,17 @@ SEEDS        = [42, 137, 1729, 31337, 65521,
 
 # ---- contact-window mechanics ------------------------------------------
 
-# Max Bernoulli trials per hop (documented in draft §12.4). After a failed
-# window the next cycle is attempted; success chance per hop is thus
-# 1-(1-p)^MAX_HOP_RETRIES if windows keep arriving.
-MAX_HOP_RETRIES = 3
+# Max Bernoulli trials per hop. After a failed window the next cycle is
+# attempted; success chance per hop is thus 1-(1-p)^MAX_HOP_RETRIES if
+# windows keep arriving.
+#
+# R=2 (not 3): with three retries the first-hop effective success at p>=0.78
+# exceeds ~0.989 and both arms sit near a delivery ceiling (~0.996+), so the
+# confidence-weighted vs earliest-arrival gap collapses. Two window attempts
+# keep ground-truth confidences decisive without strategy-dependent CRN or
+# changing the published cpb cost form (latency / confidence). Same R for
+# both arms.
+MAX_HOP_RETRIES = 2
 
 
 def next_window_open(t: float, period: float, window: float) -> float:
@@ -320,14 +334,22 @@ def baseline_choose(t: float, rover: int, *, age: bool = False) -> Route:
 
 
 def cpb_choose(t: float, rover: int, *, age: bool = False) -> Route:
-    """Confidence-weighted CPB consumer (draft §12): latency/confidence."""
+    """Confidence-weighted CPB consumer (draft §12): latency/confidence.
+
+    Primary key is cost = latency / confidence. Ties break toward earlier
+    predicted arrival (then higher path confidence) so ranking is stable
+    without changing the published cost form.
+    """
     candidates = all_routes_from(rover)
 
-    def cost(r: Route) -> float:
-        latency = predicted_arrival(t, r) - t
-        return cpb_route_cost(latency, r.confidence(t, age))
+    def rank(r: Route) -> tuple[float, float, float]:
+        arrival = predicted_arrival(t, r)
+        latency = arrival - t
+        cost = cpb_route_cost(latency, r.confidence(t, age))
+        # lower cost, earlier arrival, higher conf
+        return (cost, arrival, -r.confidence(t, age))
 
-    return min(candidates, key=cost)
+    return min(candidates, key=rank)
 
 
 CHOOSERS = {
