@@ -4,18 +4,14 @@
   <img src="logo.png" alt="DTN CPB routing" width="168" />
 </p>
 
+Individual Internet-Draft defining the Contact Probability Block (CPB): a
+BPv7 extension block that carries per-contact probability metadata in-bundle
+so delay-tolerant routers can use confidence-weighted forwarding without
+rewriting endpoint identifiers.
 
-Working area for the individual Internet-Draft "Probabilistic Contact Metadata
-for DTN Bundle Routing" (draft-perry-dtn-cpb-00). Defines the Contact Probability
-Block (CPB), a BPv7 extension block carrying per-contact probability metadata
-in-bundle to support confidence-weighted routing in delay-tolerant networks.
-
-**Current line of development is `main`.** That branch holds the vetted draft,
-CI, reference implementation, and the timeline1 PWG testbed snapshot.
-
-**Teaching aid:** a short visual intro is in
-[`docs/CPB-TEACHING-GUIDE.md`](docs/CPB-TEACHING-GUIDE.md) (with diagrams under
-`docs/images/`).
+- **Draft:** `draft-perry-dtn-cpb-00` (Experimental)
+- **Teaching aid:** [`docs/CPB-TEACHING-GUIDE.md`](docs/CPB-TEACHING-GUIDE.md)
+  (diagrams under `docs/images/`)
 
 ## Building the draft
 
@@ -23,42 +19,42 @@ CI, reference implementation, and the timeline1 PWG testbed snapshot.
 make
 ```
 
-Builds `draft-perry-dtn-cpb.txt` and `draft-perry-dtn-cpb.html` from the XML
-source using xml2rfc.
+Produces `draft-perry-dtn-cpb.txt` and `draft-perry-dtn-cpb.html` from the XML
+source via xml2rfc. The `lib/` i-d-template submodule is initialized on first
+`make`, or run `git submodule update --init`.
 
-The build system is more robust than a stock IETF template setup:
-- Automatically handles environments where `python3 -m venv` + `ensurepip` is broken (common on Python 3.12+, minimal Ubuntu, containers).
-- See `scripts/ensure-template-venv.sh` and the early bootstrap logic in the top-level `Makefile`.
-
-The `lib/` submodule (i-d-template) is cloned automatically on first `make`, or you can run `git submodule update --init`.
+If `python3 -m venv` / `ensurepip` fails on your system, see
+`scripts/ensure-template-venv.sh` and the bootstrap logic in the top-level
+`Makefile`.
 
 ## Reference implementation
 
-See [`impl/`](impl/) for the CPB encoder/decoder (Section 3), conformance tests, and the discrete-event simulator that produced the results in Section 12.5.
+[`impl/`](impl/) contains the CPB encoder/decoder (draft §3), conformance
+tests, and the discrete-event simulator used for the Configuration 1 results
+in draft §12.5. PWG ION data-plane artifacts live under
+`impl/real-pwg-deployment/` and `impl/real-cpb-ion-test/`.
 
-### Quick start (recommended)
+### Quick start
 
 ```sh
 cd impl
 
-# Modern way: install as a proper package (includes cbor2)
 pip install -e '.[test]'
 
-# Run the full conformance suite (wire encode/decode + hex tables)
+# Conformance and honesty checks
 python3 test_cpb.py
 python3 test_config1_policies.py
-python3 test_sim_cpb_bridge.py   # Config1 confidences through CPB wire format
+python3 test_sim_cpb_bridge.py
 python3 test_draft_honesty.py
 
-# Fast smoke test of the Mars relay simulation (baseline + cpb)
+# Fast sim smoke test (baseline + cpb)
 python3 config1_sim.py --quick
 
-# Full paper-reproducing run (10 seeds; draft §12.5 rates)
+# Paper battery (10 seeds; matches draft §12.5)
 python3 config1_sim.py --battery paper --strategy both
-# Mean delivery (paper battery): baseline 0.9965, cpb 0.9984
 ```
 
-Alternative (traditional):
+Alternative:
 
 ```sh
 pip install -r requirements.txt
@@ -66,7 +62,7 @@ python3 test_cpb.py
 python3 config1_sim.py --quick
 ```
 
-Useful simulator options (all implemented on the real CLI):
+Useful simulator options:
 
 ```sh
 python3 config1_sim.py --help
@@ -74,26 +70,22 @@ python3 config1_sim.py --strategy cpb --csv results.csv
 python3 config1_sim.py --max-bundles 8000 --quick
 ```
 
-Routing policy labels match draft §12:
+Policy labels (draft §12):
 
-- **baseline** — earliest predicted arrival (confidence ignored)
-- **cpb** — confidence-weighted: `cost = latency / confidence`
+| Label | Rule |
+|-------|------|
+| **baseline** | Earliest predicted arrival; confidence ignored |
+| **cpb** | `cost = latency / confidence` |
 
 Paper battery mean delivery (Configuration 1, 10 seeds): **baseline 0.9965**,
-**cpb 0.9984** (same as draft §12.5).
-
-Build robustness, packaging, CI, stronger tests, and the simulator CLI are
-maintained on `main` so others can use, test, and build on the reference
-implementation.
+**cpb 0.9984** (same as draft §12.5). Mean latency improves under **cpb**;
+p95 does not on this topology.
 
 ## License
 
-Reference implementation in [`impl/`](impl/): [MIT](LICENSE).
-Draft text: IETF Trust Legal Provisions (BCP 78).
+- Reference code in [`impl/`](impl/): [MIT](LICENSE)
+- Draft text: IETF Trust Legal Provisions (BCP 78)
 
-Note: `CONTRIBUTING.md` is the stock IETF template language about
-contributions to the IETF Standards Process (BCP 78/79 and the Trust Legal
-Provisions). Code *in this repository* is licensed under the MIT License in
-`LICENSE`; the Simplified BSD wording in CONTRIBUTING applies only insofar as
-IETF contribution rules govern material submitted into the IETF process, and
-does not relicense the MIT-licensed reference implementation.
+`CONTRIBUTING.md` is the standard IETF template for contributions that enter
+the IETF standards process. Repository code remains MIT-licensed under
+`LICENSE`.
