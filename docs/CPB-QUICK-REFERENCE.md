@@ -164,14 +164,34 @@ Defaults to remember:
 
 ---
 
-## 8. Checklist (10-minute quiz)
+## 8. Recap (question → answer)
 
-1. Why is probability **not** allowed in the destination EID?
-2. Name three CPB map fields and what they mean.
-3. What does metric-type **forbid** between families?
-4. Write the **cpb** cost formula used in the experiment.
-5. On Config 1, which improve under cpb: delivery, mean latency, and/or p95?
-6. What remains open (noise, adversaries, multi-domain, production stacks)?
+**Why is probability not allowed in the destination EID?**  
+BPv7 EIDs must stay immutable. Stuffing `?prob=…` into the URI invites
+rewrites that break integrity bindings and the endpoint model. Put estimates
+in an extension block instead.
+
+**Name three CPB map fields and what they mean.**  
+Examples: **0** default probability; **1** per-path `[next-hop, probability]`
+list; **5** metric-type (which semantic family the scalar belongs to). Also
+common: **2** timestamp, **4** validity TTL, **7** format version.
+
+**What does metric-type forbid between families?**  
+Cross-metric arithmetic — e.g. averaging a PRoPHET delivery predictability
+with a CGR confidence. Consume only matching metric-types (draft §3.5).
+
+**What cost formula does the Config 1 “cpb” policy use?**  
+`cost = latency / confidence` (end-to-end path confidence product). Baseline
+uses earliest arrival only and ignores confidence.
+
+**On Config 1, what improves under cpb?**  
+**Delivery** and **mean latency** improve; **p95 latency does not** (slightly
+worse on this topology). Path confidence is higher under cpb.
+
+**What remains open for Standards Track / ops?**  
+Noisy or adversarial estimates, multi-domain trust, partial deployment
+quality, production-stack interop, and in-band consumption by live CGR (or
+similar) — listed in draft §12.11; not claimed solved by Experimental -00.
 
 ---
 
