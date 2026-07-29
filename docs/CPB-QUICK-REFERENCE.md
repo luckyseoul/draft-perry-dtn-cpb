@@ -1,4 +1,4 @@
-# Contact Probability Block (CPB) — Quick Teaching Guide
+# Contact Probability Block (CPB) — Quick Reference Guide
 
 **Purpose:** a quick catch-up so anyone reading this repo (or reviewing the
 draft later) can understand the *concept* without first reading the full
@@ -164,7 +164,7 @@ Defaults to remember:
 
 ---
 
-## 8. Teaching checklist (10-minute quiz)
+## 8. Checklist (10-minute quiz)
 
 1. Why is probability **not** allowed in the destination EID?
 2. Name three CPB map fields and what they mean.
