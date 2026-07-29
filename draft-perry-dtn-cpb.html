@@ -1266,7 +1266,7 @@ li > p:last-of-type:only-child {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Perry</td>
-<td class="center">Expires 23 January 2027</td>
+<td class="center">Expires 30 January 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1279,12 +1279,12 @@ li > p:last-of-type:only-child {
 <dd class="internet-draft">draft-perry-dtn-cpb-00</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-07-22" class="published">22 July 2026</time>
+<time datetime="2026-07-29" class="published">29 July 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Experimental</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-01-23">23 January 2027</time></dd>
+<dd class="expires"><time datetime="2027-01-30">30 January 2027</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1352,7 +1352,7 @@ li > p:last-of-type:only-child {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 23 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 30 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1928,11 +1928,14 @@ li > p:last-of-type:only-child {
           An earlier design considered encoding probability as a URI query
           parameter in the destination EID:<a href="#section-2.1-1" class="pilcrow">¶</a></p>
 <div class="lang-abnf sourcecode" id="section-2.1-2">
-<pre>ipn:100.1?prob=0.75   ;; ARCHITECTURALLY FLAWED APPROACH</pre><a href="#section-2.1-2" class="pilcrow">¶</a>
+<pre>&lt;CODE BEGINS&gt;
+ipn:100.1?prob=0.75
+
+&lt;CODE ENDS&gt;</pre><a href="#section-2.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-2.1-3">
-          This approach violates fundamental DTN principles for the following
-          reasons:<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+          That construction is architecturally flawed: it violates fundamental
+          DTN principles for the following reasons:<a href="#section-2.1-3" class="pilcrow">¶</a></p>
 <div id="eid-immutability">
 <section id="section-2.1.1">
           <h4 id="name-endpoint-identifier-immutab">
@@ -2101,7 +2104,7 @@ li > p:last-of-type:only-child {
 <span id="name-cpb-concrete-example-type-h"></span><div id="fig-listing-2">
 <figure id="figure-2">
           <div class="lang-hex sourcecode" id="section-3.2-5.1">
-<pre>
+<pre>&lt;CODE BEGINS&gt;
 18 C8                ; type=200 (exp per RFC9171 &amp;#167;9.1)
 02                   ; num=2
 11                   ; flags=0x11 (replicate; discard-if-unproc)
@@ -2115,7 +2118,8 @@ li > p:last-of-type:only-child {
       F93C00         ;       prob=1.0
    02 1A 00F73A80    ;   2: timestamp (CPB epoch seconds)
    04 19 0E10        ;   4: validity=3600s
-</pre>
+
+&lt;CODE ENDS&gt;</pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
 <a href="#name-cpb-concrete-example-type-h" class="selfRef">CPB Concrete Example (type: hex)</a>
@@ -2129,15 +2133,16 @@ li > p:last-of-type:only-child {
 <span id="name-cpb-extension-block-binding"></span><div id="fig-listing-3">
 <figure id="figure-3">
           <div class="lang-cddl sourcecode" id="section-3.2-7.1">
-<pre>
+<pre>&lt;CODE BEGINS&gt;
 ; Integration with RFC 9171 canonical block structure.
 ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
-; CPB used for hop-by-hop routing MUST remain readable by forwarders;
-; do not BCB-encrypt the CPB (see Section 8.3.3).
+; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 8.3.3).
+; Plain bstr alt = RFC 9171 embedded-cbor (opaque BTSD).
 
 $extension-block /=
-    extension-block-use&lt;200, (bstr .cbor cpb-data)&gt;
-</pre>
+    extension-block-use&lt;200, (bstr .cbor cpb-data / bstr)&gt;
+
+&lt;CODE ENDS&gt;</pre>
 </div>
 <figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
 <a href="#name-cpb-extension-block-binding" class="selfRef">CPB Extension Block Binding (type: cddl)</a>
@@ -2146,11 +2151,11 @@ $extension-block /=
 <span id="name-cpb-data-structure-type-cdd"></span><div id="fig-listing-4">
 <figure id="figure-4">
           <div class="lang-cddl sourcecode" id="section-3.2-8.1">
-<pre>
+<pre>&lt;CODE BEGINS&gt;
 cpb-data = {
     ? 0: probability,         ; Default/overall probability
-    ? 1: [* path-entry],      ; per-path (senders SHOULD limit size; Sec 3.4)
-    ? 2: uint,                ; Timestamp (CPB epoch seconds; see Field 2)
+    ? 1: [* path-entry],      ; per-path (SHOULD limit size; Sec 3.4)
+    ? 2: uint,                ; Timestamp (CPB epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
     ? 4: uint,                ; Validity duration (seconds, TTL)
     ? 5: metric-type,         ; Metric type identifier
@@ -2161,9 +2166,8 @@ cpb-data = {
 
 probability = float           ; See Section 3.4 for encoding
 
-; At least one of field 0 or field 1 SHOULD be present for a usable estimate.
-; An empty map is syntactically valid CBOR but provides no routing signal.
-
+; At least one of field 0 or field 1 SHOULD be present for a
+; usable estimate. An empty map is valid CBOR but no routing signal.
 
 path-entry = [
     next-hop: eid-reference,  ; Next-hop node identifier
@@ -2179,7 +2183,8 @@ metric-type = &amp;(
     rapid-utility:   3,       ; RAPID utility metric
     generic:         4,       ; Unspecified/generic probability
 ) / uint                      ; Extensible via future assignment
-</pre>
+
+&lt;CODE ENDS&gt;</pre>
 </div>
 <figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
 <a href="#name-cpb-data-structure-type-cdd" class="selfRef">CPB Data Structure (type: cddl)</a>
@@ -2189,10 +2194,12 @@ metric-type = &amp;(
           <strong>Note on bstr .cbor embedding:</strong> The CDDL .cbor
           control operator (<span>[<a href="#RFC8610" class="cite xref">RFC8610</a>]</span> Section 3.8.4) indicates
           that the byte string contains valid CBOR matching the cpb-data
-          rule. The plain bstr alternative accommodates cases where the BTSD
-          has been encrypted by a security context applied to the enclosing
-          extension block structure; in this case the original CBOR content
-          is opaque until decryption.<a href="#section-3.2-9" class="pilcrow">¶</a></p>
+          rule. The plain <code>bstr</code> alternative in the extension-block
+          binding matches the RFC 9171 <code>embedded-cbor</code> pattern and
+          accommodates BTSD that is opaque under a confidentiality context
+          applied to the enclosing block structure. For hop-by-hop routing
+          use, CPB MUST remain readable (see Section 8.3.3); do not BCB-encrypt
+          the CPB in that deployment mode.<a href="#section-3.2-9" class="pilcrow">¶</a></p>
 <p id="section-3.2-10"><strong>Field Semantics:</strong><a href="#section-3.2-10" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-3.2-11">
           <dt id="section-3.2-11.1">Field 0: Default Probability</dt>
@@ -2773,7 +2780,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
 <span id="name-cpb-with-per-path-probabili"></span><div id="fig-listing-6">
 <figure id="figure-6">
           <div class="lang-cbor-diag sourcecode" id="section-3.6-4.1">
-<pre>
+<pre>&lt;CODE BEGINS&gt;
 / CBOR Extended Diagnostic Notation (EDN) /
 {
     0: 0.75,                    / Default probability /
@@ -2783,7 +2790,8 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
     ],
     5: 1                        / metric-type: cgr-confidence /
 }
-</pre>
+
+&lt;CODE ENDS&gt;</pre>
 </div>
 <figcaption><a href="#figure-6" class="selfRef">Figure 6</a>:
 <a href="#name-cpb-with-per-path-probabili" class="selfRef">CPB with Per-Path Probabilities (type: cbor-diag)</a>
@@ -2791,8 +2799,8 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
 </div>
 <span id="name-cpb-per-path-wire-encoding-"></span><div id="fig-listing-7">
 <figure id="figure-7">
-          <div class="alignLeft art-ascii-art art-text artwork" id="section-3.6-5.1">
-<pre>
+          <div class="lang-hex sourcecode" id="section-3.6-5.1">
+<pre>&lt;CODE BEGINS&gt;
 A3                   ; map with 3 entries
    00 F93A00         ; key 0: default prob = 0.75
    01 82             ; key 1: array with 2 path entries
@@ -2800,7 +2808,8 @@ A3                   ; map with 3 entries
       19 012C F93800 ;   node 300, prob 0.5
       18 64 F93C00   ;   node 100, prob 1.0
    05 01             ; key 5: metric-type = cgr-confidence
-</pre>
+
+&lt;CODE ENDS&gt;</pre>
 </div>
 <figcaption><a href="#figure-7" class="selfRef">Figure 7</a>:
 <a href="#name-cpb-per-path-wire-encoding-" class="selfRef">CPB Per-Path Wire Encoding (type: hex)</a>
@@ -4775,7 +4784,7 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
 <span id="name-reproduction-commands"></span><div id="fig-reproduce">
 <figure id="figure-9">
           <div class="lang-bash sourcecode" id="section-13.2-1.1">
-<pre>
+<pre>&lt;CODE BEGINS&gt;
 git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
 cd draft-perry-dtn-cpb
 pip install cbor2
@@ -4785,14 +4794,18 @@ python3 impl/test_config1_policies.py
 python3 impl/test_sim_cpb_bridge.py
 python3 impl/test_draft_honesty.py
 python3 impl/config1_sim.py --battery paper --strategy both
-# ~45s; mean delivery baseline 0.9965 / cpb 0.9984 (Section 12.5)
-</pre>
+
+&lt;CODE ENDS&gt;</pre>
 </div>
 <figcaption><a href="#figure-9" class="selfRef">Figure 9</a>:
 <a href="#name-reproduction-commands" class="selfRef">Reproduction Commands</a>
           </figcaption></figure>
 </div>
 <p id="section-13.2-2">
+          The paper battery run takes on the order of tens of seconds and
+          should reproduce the Section 12.5 mean delivery figures for the
+          published R=3 methodology (baseline about 0.9965, cpb about 0.9984).<a href="#section-13.2-2" class="pilcrow">¶</a></p>
+<p id="section-13.2-3">
           The 2-node real-stack transmission results (with-CPB vs plain
           bundles using the 8 fixed test confidence values, bputa injection
           after cfdpadmin rc update, and observed delivery) are reproduced
@@ -4805,7 +4818,7 @@ python3 impl/config1_sim.py --battery paper --strategy both
           Tailscale link, and IPN activation state; the bundle creation,
           cfdp rc changes, bputa invocation, and decode steps are
           self-contained and runnable on any ION installation that
-          supports bputa.<a href="#section-13.2-2" class="pilcrow">¶</a></p>
+          supports bputa.<a href="#section-13.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="bpv7-updates">

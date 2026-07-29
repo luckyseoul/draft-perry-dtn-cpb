@@ -28,7 +28,6 @@
       <organization>Independent</organization>
       <address>
         <postal>
-          <street/>
           <city>Council Bluffs</city>
           <region>Iowa</region>
           <country>United States of America</country>
@@ -37,7 +36,7 @@
       </address>
     </author>
 
-    <date year="2026" month="July" day="22"/>
+    <date year="2026" month="July" day="29"/>
 
     <area>Internet</area>
 
@@ -310,10 +309,12 @@
           An earlier design considered encoding probability as a URI query
           parameter in the destination EID:
         </t>
-        <sourcecode type="abnf">ipn:100.1?prob=0.75   ;; ARCHITECTURALLY FLAWED APPROACH</sourcecode>
+        <sourcecode type="abnf" markers="true"><![CDATA[
+ipn:100.1?prob=0.75
+]]></sourcecode>
         <t>
-          This approach violates fundamental DTN principles for the following
-          reasons:
+          That construction is architecturally flawed: it violates fundamental
+          DTN principles for the following reasons:
         </t>
 
         <section anchor="eid-immutability">
@@ -449,7 +450,7 @@
         </t>
         <figure anchor="fig-listing-2">
           <name>CPB Concrete Example (type: hex)</name>
-          <sourcecode type="hex"><![CDATA[
+          <sourcecode type="hex" markers="true"><![CDATA[
 18 C8                ; type=200 (exp per RFC9171 &#167;9.1)
 02                   ; num=2
 11                   ; flags=0x11 (replicate; discard-if-unproc)
@@ -473,23 +474,23 @@
         </t>
         <figure anchor="fig-listing-3">
           <name>CPB Extension Block Binding (type: cddl)</name>
-          <sourcecode type="cddl"><![CDATA[
+          <sourcecode type="cddl" markers="true"><![CDATA[
 ; Integration with RFC 9171 canonical block structure.
 ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
-; CPB used for hop-by-hop routing MUST remain readable by forwarders;
-; do not BCB-encrypt the CPB (see Section 8.3.3).
+; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 8.3.3).
+; Plain bstr alt = RFC 9171 embedded-cbor (opaque BTSD).
 
 $extension-block /=
-    extension-block-use<200, (bstr .cbor cpb-data)>
+    extension-block-use<200, (bstr .cbor cpb-data / bstr)>
 ]]></sourcecode>
         </figure>
         <figure anchor="fig-listing-4">
           <name>CPB Data Structure (type: cddl)</name>
-          <sourcecode type="cddl"><![CDATA[
+          <sourcecode type="cddl" markers="true"><![CDATA[
 cpb-data = {
     ? 0: probability,         ; Default/overall probability
-    ? 1: [* path-entry],      ; per-path (senders SHOULD limit size; Sec 3.4)
-    ? 2: uint,                ; Timestamp (CPB epoch seconds; see Field 2)
+    ? 1: [* path-entry],      ; per-path (SHOULD limit size; Sec 3.4)
+    ? 2: uint,                ; Timestamp (CPB epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
     ? 4: uint,                ; Validity duration (seconds, TTL)
     ? 5: metric-type,         ; Metric type identifier
@@ -500,9 +501,8 @@ cpb-data = {
 
 probability = float           ; See Section 3.4 for encoding
 
-; At least one of field 0 or field 1 SHOULD be present for a usable estimate.
-; An empty map is syntactically valid CBOR but provides no routing signal.
-
+; At least one of field 0 or field 1 SHOULD be present for a
+; usable estimate. An empty map is valid CBOR but no routing signal.
 
 path-entry = [
     next-hop: eid-reference,  ; Next-hop node identifier
@@ -524,10 +524,12 @@ metric-type = &(
           <strong>Note on bstr .cbor embedding:</strong> The CDDL .cbor
           control operator (<xref target="RFC8610"/> Section 3.8.4) indicates
           that the byte string contains valid CBOR matching the cpb-data
-          rule. The plain bstr alternative accommodates cases where the BTSD
-          has been encrypted by a security context applied to the enclosing
-          extension block structure; in this case the original CBOR content
-          is opaque until decryption.
+          rule. The plain <tt>bstr</tt> alternative in the extension-block
+          binding matches the RFC 9171 <tt>embedded-cbor</tt> pattern and
+          accommodates BTSD that is opaque under a confidentiality context
+          applied to the enclosing block structure. For hop-by-hop routing
+          use, CPB MUST remain readable (see Section 8.3.3); do not BCB-encrypt
+          the CPB in that deployment mode.
         </t>
 
         <t><strong>Field Semantics:</strong></t>
@@ -997,7 +999,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
         </t>
         <figure anchor="fig-listing-6">
           <name>CPB with Per-Path Probabilities (type: cbor-diag)</name>
-          <sourcecode type="cbor-diag"><![CDATA[
+          <sourcecode type="cbor-diag" markers="true"><![CDATA[
 / CBOR Extended Diagnostic Notation (EDN) /
 {
     0: 0.75,                    / Default probability /
@@ -1011,7 +1013,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
         </figure>
         <figure anchor="fig-listing-7">
           <name>CPB Per-Path Wire Encoding (type: hex)</name>
-          <artwork type="ascii-art"><![CDATA[
+          <sourcecode type="hex" markers="true"><![CDATA[
 A3                   ; map with 3 entries
    00 F93A00         ; key 0: default prob = 0.75
    01 82             ; key 1: array with 2 path entries
@@ -1019,7 +1021,7 @@ A3                   ; map with 3 entries
       19 012C F93800 ;   node 300, prob 0.5
       18 64 F93C00   ;   node 100, prob 1.0
    05 01             ; key 5: metric-type = cgr-confidence
-]]></artwork>
+]]></sourcecode>
         </figure>
 
         <section anchor="per-path-matching">
@@ -2723,7 +2725,7 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <name>Reproducing the Experiment Results</name>
         <figure anchor="fig-reproduce">
           <name>Reproduction Commands</name>
-          <sourcecode type="bash"><![CDATA[
+          <sourcecode type="bash" markers="true"><![CDATA[
 git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
 cd draft-perry-dtn-cpb
 pip install cbor2
@@ -2733,9 +2735,13 @@ python3 impl/test_config1_policies.py
 python3 impl/test_sim_cpb_bridge.py
 python3 impl/test_draft_honesty.py
 python3 impl/config1_sim.py --battery paper --strategy both
-# ~45s; mean delivery baseline 0.9965 / cpb 0.9984 (Section 12.5)
 ]]></sourcecode>
         </figure>
+        <t>
+          The paper battery run takes on the order of tens of seconds and
+          should reproduce the Section 12.5 mean delivery figures for the
+          published R=3 methodology (baseline about 0.9965, cpb about 0.9984).
+        </t>
         <t>
           The 2-node real-stack transmission results (with-CPB vs plain
           bundles using the 8 fixed test confidence values, bputa injection
