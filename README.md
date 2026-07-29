@@ -9,7 +9,10 @@ BPv7 extension block that carries per-contact probability metadata in-bundle
 so delay-tolerant routers can use confidence-weighted forwarding without
 rewriting endpoint identifiers.
 
-- **Draft:** `draft-perry-dtn-cpb-00` (Experimental)
+- **Draft:** `draft-perry-dtn-cpb-00` (Experimental) — GitHub working copy;
+  not yet filed on the IETF Internet-Drafts repository. The rendered
+  **Expires** line is xml2rfc boilerplate (document date + 6 months), not a
+  datatracker clock.
 - **Quick reference:** [`docs/CPB-QUICK-REFERENCE.md`](docs/CPB-QUICK-REFERENCE.md)
   — short catch-up (why / what / how + diagrams) so a reader can grasp the
   concept without working through the full Internet-Draft first. Non-normative;
