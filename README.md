@@ -79,9 +79,10 @@ Policy labels (draft §12):
 | **baseline** | Earliest predicted arrival; confidence ignored |
 | **cpb** | `cost = latency / confidence` |
 
-Paper battery mean delivery (Configuration 1, 10 seeds): **baseline 0.9965**,
-**cpb 0.9984** (same as draft §12.5). Mean latency improves under **cpb**;
-p95 does not on this topology.
+Paper battery mean delivery (Configuration 1, 10 seeds, `MAX_HOP_RETRIES=2`):
+**baseline ≈0.9789**, **cpb ≈0.9901** (paired gain ≈+0.011). Mean latency
+improves under **cpb**; p95 does not on this topology. Draft §12.5 still
+lists the earlier R=3 ceiling-regime figures until that section is revised.
 
 ## License
 

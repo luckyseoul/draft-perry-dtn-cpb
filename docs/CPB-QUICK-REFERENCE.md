@@ -112,11 +112,13 @@ The simulator `impl/config1_sim.py` uses **Configuration 1**:
 
 | Policy | Mean delivery | Latency summary |
 |--------|---------------|-----------------|
-| baseline | **0.9965** | mean lat ~**508 s**, p95 ~**1604 s** |
-| cpb | **0.9984** | mean lat ~**484 s**, p95 ~**1665 s** |
+| baseline | **≈0.9789** | mean lat ~**469 s**, p95 ~**1394 s** |
+| cpb | **≈0.9901** | mean lat ~**462 s**, p95 ~**1592 s** |
 
-On Configuration 1, **cpb** improves delivery and mean latency; **p95 is not
-improved** (slightly worse). Path confidence is higher under **cpb**.
+On Configuration 1 with two contact-window trials per hop (`MAX_HOP_RETRIES=2`),
+**cpb** improves delivery (paired gain ≈+0.011) and mean latency; **p95 is
+not improved** (worse on this topology). Path confidence is higher under
+**cpb**. (Draft §12.5 may still show older R=3 ceiling numbers.)
 
 **Two experiment parts (draft §12.1):** (1) wire format and ION data-plane
 survival of the extension block; (2) routing value of confidences of the
