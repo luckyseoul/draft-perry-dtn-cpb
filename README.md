@@ -79,10 +79,19 @@ Policy labels (draft §12):
 | **baseline** | Earliest predicted arrival; confidence ignored |
 | **cpb** | `cost = latency / confidence` |
 
-Paper battery mean delivery (Configuration 1, 10 seeds, `MAX_HOP_RETRIES=2`):
-**baseline ≈0.9789**, **cpb ≈0.9901** (paired gain ≈+0.011). Mean latency
-improves under **cpb**; p95 does not on this topology. Draft §12.5 still
-lists the earlier R=3 ceiling-regime figures until that section is revised.
+**Delivery is primary.** Hop-retry budget `R` (`--hop-retries` /
+`--sweep-hop-retries`) is a lever, not a claim that cpb wins every axis:
+
+| R | baseline deliv | cpb deliv | Δ delivery | notes |
+|---|----------------|-----------|------------|--------|
+| 2 | ≈0.9789 | ≈0.9901 | **≈+0.011** | tight contact budget — larger cpb delivery edge |
+| 3 | ≈0.9965 | ≈0.9984 | ≈+0.0019 | draft §12.5 / default |
+| 4 | ≈0.9988 | ≈0.9991 | ≈+0.0003 | ceiling — absolute delivery high, gap shrinks |
+
+Mean latency usually improves under **cpb**; **p95 often does not**. Use
+tighter R when delivery of certain traffic matters more than waiting for
+extra windows. Parallel paper sweep:  
+`python3 impl/config1_sim.py --battery paper --strategy both --sweep-hop-retries 2,3,4 --workers 86`
 
 ## License
 

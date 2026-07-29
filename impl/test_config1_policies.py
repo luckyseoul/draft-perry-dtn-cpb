@@ -70,7 +70,7 @@ def test_crn_identical_across_strategies():
     a1, t1, _ = attempt_hop(0.0, 1200.0, 600.0, 0.9, seed=42, contact_id=10, trial=0)
     a2, t2, _ = attempt_hop(0.0, 1200.0, 600.0, 0.9, seed=42, contact_id=10, trial=0)
     assert a1 == a2 and math.isclose(t1, t2)
-    assert MAX_HOP_RETRIES == 2
+    assert MAX_HOP_RETRIES == 3  # default draft-aligned; override via hop_retries=
 
 
 def test_crn_not_strategy_keyed():

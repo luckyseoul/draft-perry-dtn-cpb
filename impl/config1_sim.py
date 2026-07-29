@@ -75,12 +75,14 @@ Contact window (600 s) and inter-hop delays (60 s):
   sensitivity to changes within +/- 50% does not change the qualitative
   result (paired t > 50 in all sensitivity tests).
 
-Hop retries (MAX_HOP_RETRIES = 2):
-  Each hop allows up to two contact-window Bernoulli trials under CRN.
-  A third retry pushes effective first-hop success above ~0.989 for the
-  published confidence range and flattens the policy gap (ceiling effect).
-  Two attempts leave room for confidence-weighted selection to improve
-  delivery without special-casing either arm in the contact RNG.
+Hop retries (MAX_HOP_RETRIES default = 3; CLI --hop-retries):
+  Each hop allows up to R contact-window Bernoulli trials under CRN
+  (same R for both arms). R is a *delivery lever*, not a universal
+  ranking of policies: tighter R makes first-hop confidence more
+  decisive (larger paired delivery gain for cpb); larger R raises
+  absolute delivery for everyone and shrinks the gap (ceiling).
+  Delivery is the primary success metric; latency/p95 are secondary
+  and may move the other way under confidence-weighting.
 
 Bundle generation (every 30 s per rover, 7-day sim):
   30 s is the spec's recommended interval for telemetry-class traffic.
@@ -100,6 +102,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import math
+import os
 import statistics
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -166,17 +169,18 @@ SEEDS        = [42, 137, 1729, 31337, 65521,
 
 # ---- contact-window mechanics ------------------------------------------
 
-# Max Bernoulli trials per hop. After a failed window the next cycle is
-# attempted; success chance per hop is thus 1-(1-p)^MAX_HOP_RETRIES if
-# windows keep arriving.
+# Default max Bernoulli trials per hop. After a failed window the next
+# cycle is attempted; success chance per hop is 1-(1-p)^R if windows keep
+# arriving. Override per run via simulate(..., hop_retries=R) or CLI
+# --hop-retries. Same R for baseline and cpb (never strategy-keyed).
 #
-# R=2 (not 3): with three retries the first-hop effective success at p>=0.78
-# exceeds ~0.989 and both arms sit near a delivery ceiling (~0.996+), so the
-# confidence-weighted vs earliest-arrival gap collapses. Two window attempts
-# keep ground-truth confidences decisive without strategy-dependent CRN or
-# changing the published cpb cost form (latency / confidence). Same R for
-# both arms.
-MAX_HOP_RETRIES = 2
+# Empirically (10-seed paper battery, cost=latency/confidence):
+#   R=2 → larger paired delivery gain (~+0.011); absolute delivery lower
+#   R=3 → draft §12.5 regime (~+0.0019 gain); absolute delivery ~0.996+
+#   R=4 → still higher absolute delivery; gap shrinks further
+# Use R as an ops lever for high-value traffic (tight contact budget) vs
+# bulk traffic that can wait for extra windows — not as "cpb always wins."
+MAX_HOP_RETRIES = 3
 
 
 def next_window_open(t: float, period: float, window: float) -> float:
@@ -372,10 +376,22 @@ class Bundle:
     path_confidence: float = 0.0
 
 
-def simulate(seed: int, strategy: str, *, age: bool = False,
-             max_bundles: int | None = None) -> list[Bundle]:
+def simulate(
+    seed: int,
+    strategy: str,
+    *,
+    age: bool = False,
+    max_bundles: int | None = None,
+    hop_retries: int | None = None,
+) -> list[Bundle]:
     # Contact outcomes use seed-keyed CRN (strategy-independent). Bundle
     # creation is deterministic; choosers are deterministic given t.
+    # hop_retries R is a delivery lever (same for both strategies).
+    if hop_retries is None:
+        hop_retries = MAX_HOP_RETRIES
+    if hop_retries < 1:
+        raise ValueError("hop_retries must be >= 1")
+
     bundles: list[Bundle] = []
 
     # Generate creations: each rover emits independently
@@ -402,10 +418,10 @@ def simulate(seed: int, strategy: str, *, age: bool = False,
         p1, p2, p3 = route.hop_probs(t, age)
         b.path_confidence = p1 * p2 * p3
 
-        # Hop 1: rover -> orbiter (up to MAX_HOP_RETRIES windows)
+        # Hop 1: rover -> orbiter (up to hop_retries windows)
         trial = 0
         ok = False
-        while trial < MAX_HOP_RETRIES and t < SIM_DURATION:
+        while trial < hop_retries and t < SIM_DURATION:
             ok, t_new, atts = attempt_hop(
                 t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW, p1,
                 seed=seed, contact_id=route.orbiter, trial=trial)
@@ -423,7 +439,7 @@ def simulate(seed: int, strategy: str, *, age: bool = False,
         t += ORBITER_TO_RELAY_DELAY
         trial = 0
         ok = False
-        while trial < MAX_HOP_RETRIES and t < SIM_DURATION:
+        while trial < hop_retries and t < SIM_DURATION:
             ok, t_new, atts = attempt_hop(
                 t, ORBITER_PERIOD[route.orbiter], ORBITER_WINDOW, p2,
                 seed=seed, contact_id=1000 + route.orbiter, trial=trial)
@@ -441,7 +457,7 @@ def simulate(seed: int, strategy: str, *, age: bool = False,
         t += RELAY_TO_GROUND_DELAY
         trial = 0
         ok = False
-        while trial < MAX_HOP_RETRIES and t < SIM_DURATION:
+        while trial < hop_retries and t < SIM_DURATION:
             ok, t_new, atts = attempt_hop(
                 t, GROUND_PERIOD[route.ground], GROUND_WINDOW, p3,
                 seed=seed, contact_id=2000 + route.ground, trial=trial)
@@ -541,9 +557,46 @@ def _paired_block(rows: list[dict], a: str, b: str, n_seeds: int) -> None:
         print(fmt.format(md, sd, t))
 
 
+def _sim_job(payload: dict) -> dict:
+    """Picklable worker: one (seed, strategy, hop_retries) run.
+
+    Pure-Python discrete-event sim — ProcessPool fan-out over independent
+    seeds/strategies/R values. GPU not used (no dense batch kernel).
+    """
+    import time as _time
+
+    # Module-level duration for this process (quick mode shortens sim).
+    global SIM_DURATION
+    if payload.get("sim_duration") is not None:
+        SIM_DURATION = float(payload["sim_duration"])
+
+    seed = int(payload["seed"])
+    strategy = str(payload["strategy"])
+    hop_retries = int(payload["hop_retries"])
+    age = bool(payload.get("age", False))
+    max_bundles = payload.get("max_bundles")
+
+    t0 = _time.time()
+    bundles = simulate(
+        seed, strategy, age=age, max_bundles=max_bundles, hop_retries=hop_retries)
+    r = report_run(bundles, strategy, seed)
+    r["walltime_s"] = round(_time.time() - t0, 2)
+    r["age_conf"] = age
+    r["max_bundles"] = max_bundles
+    r["hop_retries"] = hop_retries
+    return r
+
+
+def _default_workers() -> int:
+    """Use nearly all cores; leave 2 for interactive/system."""
+    n = os.cpu_count() or 1
+    return max(1, n - 2)
+
+
 def main(argv: list[str] | None = None) -> None:
     import argparse
     import time
+    from concurrent.futures import ProcessPoolExecutor, as_completed
 
     parser = argparse.ArgumentParser(description="Configuration 1 CPB routing simulator")
     parser.add_argument("--quick", action="store_true",
@@ -565,14 +618,39 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--age-conf", action="store_true",
                         help="enable seasonal confidence aging (dust/solar model)")
+    parser.add_argument(
+        "--hop-retries",
+        type=int,
+        default=None,
+        metavar="R",
+        help="max contact-window trials per hop (default: module MAX_HOP_RETRIES=3). "
+             "Same R for both arms; delivery lever (tighter R → larger cpb delivery gain).",
+    )
+    parser.add_argument(
+        "--sweep-hop-retries",
+        type=str,
+        default=None,
+        metavar="LIST",
+        help="comma-separated R values to run as one parallel job fan-out "
+             "(e.g. 2,3,4). Overrides --hop-retries. Delivery-lever comparison.",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        metavar="W",
+        help="ProcessPool workers (default: nproc-2). Independent seed×strategy×R jobs.",
+    )
     parser.add_argument("--csv", type=Path, default=None, help="optional CSV output path")
     args = parser.parse_args(argv)
 
     global SIM_DURATION
     seeds = list(SEEDS)
+    sim_duration: float | None = None
     if args.quick:
         seeds = [42]
         SIM_DURATION = 86400.0
+        sim_duration = 86400.0
     elif args.battery == "standard":
         seeds = SEEDS[:3]
     else:
@@ -583,37 +661,74 @@ def main(argv: list[str] | None = None) -> None:
     else:
         strategies = (args.strategy,)
 
-    rows = []
-    print(f"{'strategy':<10} {'seed':>9} {'created':>9} {'delivered':>10} "
+    if args.sweep_hop_retries:
+        hop_list = [int(x.strip()) for x in args.sweep_hop_retries.split(",") if x.strip()]
+        if not hop_list or any(r < 1 for r in hop_list):
+            raise SystemExit("--sweep-hop-retries needs positive integers, e.g. 2,3,4")
+    else:
+        r = args.hop_retries if args.hop_retries is not None else MAX_HOP_RETRIES
+        if r < 1:
+            raise SystemExit("--hop-retries must be >= 1")
+        hop_list = [r]
+
+    jobs: list[dict] = []
+    for hop_retries in hop_list:
+        for seed in seeds:
+            for strategy in strategies:
+                jobs.append({
+                    "seed": seed,
+                    "strategy": strategy,
+                    "hop_retries": hop_retries,
+                    "age": args.age_conf,
+                    "max_bundles": args.max_bundles,
+                    "sim_duration": sim_duration,
+                })
+
+    n_workers = args.workers if args.workers is not None else _default_workers()
+    n_workers = max(1, min(n_workers, len(jobs)))
+
+    print(f"{'strategy':<10} {'seed':>9} {'R':>3} {'created':>9} {'delivered':>10} "
           f"{'delivery':>9} {'lat_avg':>9} {'lat_p95':>10} {'path_p':>8} {'#routes':>8}")
-    print("-" * 100)
+    print("-" * 110)
     if args.age_conf:
         print(f"(confidence aging ON, period={AGE_PERIOD_S:.0f}s)")
     if args.max_bundles is not None:
         print(f"(max-bundles={args.max_bundles})")
-    print("(cpb: confidence-weighted cost = latency / confidence)")
+    print(f"(hop-retries R in {hop_list}; same R for both arms — delivery lever)")
+    print("(cpb: confidence-weighted cost = latency / confidence; delivery primary)")
+    print(f"(ProcessPool workers={n_workers} for {len(jobs)} jobs; GPU unused — pure Python DES)")
 
     t_start = time.time()
-    for seed in seeds:
-        for strategy in strategies:
-            t0 = time.time()
-            bundles = simulate(
-                seed, strategy, age=args.age_conf, max_bundles=args.max_bundles)
-            r = report_run(bundles, strategy, seed)
-            r["walltime_s"] = round(time.time() - t0, 2)
-            r["age_conf"] = args.age_conf
-            r["max_bundles"] = args.max_bundles
+    rows: list[dict] = []
+    if n_workers == 1 or len(jobs) == 1:
+        for job in jobs:
+            r = _sim_job(job)
             rows.append(r)
-            print(f"{strategy:<10} {seed:>9} {r['created']:>9} "
-                  f"{r['delivered']:>10} {r['delivery']:>9.4f} "
-                  f"{r['lat_avg']:>9.1f} {r['lat_p95']:>10.1f} "
-                  f"{r['path_conf']:>8.4f} {r['n_routes']:>8d}  ({r['walltime_s']}s)")
+    else:
+        # Spawn pool sized to independent (seed, strategy, R) units.
+        with ProcessPoolExecutor(max_workers=n_workers) as pool:
+            futs = [pool.submit(_sim_job, job) for job in jobs]
+            for fut in as_completed(futs):
+                rows.append(fut.result())
 
-    print(f"\ntotal walltime: {time.time() - t_start:.1f}s")
+    # Stable print order: R, seed, strategy
+    strat_order = {s: i for i, s in enumerate(strategies)}
+    rows.sort(key=lambda r: (r["hop_retries"], r["seed"], strat_order.get(r["label"], 99)))
 
-    if len(seeds) >= 2:
-        if "baseline" in strategies and "cpb" in strategies:
-            _paired_block(rows, "baseline", "cpb", len(seeds))
+    for r in rows:
+        print(f"{r['label']:<10} {r['seed']:>9} {r['hop_retries']:>3} {r['created']:>9} "
+              f"{r['delivered']:>10} {r['delivery']:>9.4f} "
+              f"{r['lat_avg']:>9.1f} {r['lat_p95']:>10.1f} "
+              f"{r['path_conf']:>8.4f} {r['n_routes']:>8d}  ({r['walltime_s']}s)")
+
+    print(f"\ntotal walltime: {time.time() - t_start:.1f}s  "
+          f"({len(jobs)} jobs, {n_workers} workers)")
+
+    if len(seeds) >= 2 and "baseline" in strategies and "cpb" in strategies:
+        for hop_retries in hop_list:
+            sub = [r for r in rows if r["hop_retries"] == hop_retries]
+            print(f"\n--- R={hop_retries} ---")
+            _paired_block(sub, "baseline", "cpb", len(seeds))
 
     if args.csv and rows:
         args.csv.parent.mkdir(parents=True, exist_ok=True)
