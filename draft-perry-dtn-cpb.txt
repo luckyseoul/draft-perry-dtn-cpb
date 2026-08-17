@@ -168,8 +168,9 @@ Table of Contents
    14. Normative References
    15. Informative References
    Appendix A.  Mars Mission Scenario
-   Appendix B.  Change Log
-     B.1.  draft-perry-dtn-cpb-00 (July 2026)
+   Appendix B.  Acknowledgements
+   Appendix C.  Change Log
+     C.1.  draft-perry-dtn-cpb-00 (July 2026)
    Author's Address
 
 1.  Introduction
@@ -2377,14 +2378,22 @@ Appendix A.  Mars Mission Scenario
    the validity_duration was 3600s, receiving routers recognize the CPB
    as expired and apply decay: P_aged = 0.6 * 0.98^10 = 0.49.
 
-Appendix B.  Change Log
+Appendix B.  Acknowledgements
+
+   Brian Sipos provided review comments on CDDL, BTSD embedding,
+   fragmentation pruning, identical-timestamp tie-breaking, the per-path
+   array size limit, scheme-mismatch logging, future-dated timestamp
+   discard, and IANA considerations.  Those comments improved this
+   draft.  Remaining errors are the author's.
+
+Appendix C.  Change Log
 
    This section is to be removed before publishing as an RFC.
 
    _[RFC Editor Note: Please remove this entire section before
    publication.]_
 
-B.1.  draft-perry-dtn-cpb-00 (July 2026)
+C.1.  draft-perry-dtn-cpb-00 (July 2026)
 
    *  Initial Experimental -00: Contact Probability Block wire format,
       metric-type registry, operational and security considerations, and

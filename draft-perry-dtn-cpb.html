@@ -1510,15 +1510,18 @@ svg :is([fill="white"], [fill^="#fff"]) {
             <p id="section-toc.1-1.16.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-mars-mission-scenario" class="internal xref">Mars Mission Scenario</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17">
-            <p id="section-toc.1-1.17.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-change-log" class="internal xref">Change Log</a></p>
+            <p id="section-toc.1-1.17.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-acknowledgements" class="internal xref">Acknowledgements</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18">
+            <p id="section-toc.1-1.18.1"><a href="#appendix-C" class="auto internal xref">Appendix C</a>.  <a href="#name-change-log" class="internal xref">Change Log</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.1">
-                <p id="section-toc.1-1.17.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-draft-perry-dtn-cpb-00-july" class="internal xref">draft-perry-dtn-cpb-00 (July 2026)</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18.2.1">
+                <p id="section-toc.1-1.18.2.1.1"><a href="#appendix-C.1" class="auto internal xref">C.1</a>.  <a href="#name-draft-perry-dtn-cpb-00-july" class="internal xref">draft-perry-dtn-cpb-00 (July 2026)</a></p>
 </li>
             </ul>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18">
-            <p id="section-toc.1-1.18.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.19">
+            <p id="section-toc.1-1.19.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
 </li>
         </ul>
 </nav>
@@ -4758,53 +4761,66 @@ python3 impl/config1_sim.py --battery paper --strategy both
         0.6 * 0.98^10 = 0.49.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="app-changelog">
+<div id="acknowledgements">
 <section id="appendix-B">
-      <h2 id="name-change-log">
-<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-change-log" class="section-name selfRef">Change Log</a>
+      <h2 id="name-acknowledgements">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-acknowledgements" class="section-name selfRef">Acknowledgements</a>
       </h2>
-<p id="appendix-B-1">This section is to be removed before publishing as an RFC.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
-<p id="appendix-B-2">
+<p id="appendix-B-1">
+        Brian Sipos provided review comments on CDDL, BTSD embedding,
+        fragmentation pruning, identical-timestamp tie-breaking, the
+        per-path array size limit, scheme-mismatch logging, future-dated
+        timestamp discard, and IANA considerations. Those comments
+        improved this draft. Remaining errors are the author's.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="app-changelog">
+<section id="appendix-C">
+      <h2 id="name-change-log">
+<a href="#appendix-C" class="section-number selfRef">Appendix C. </a><a href="#name-change-log" class="section-name selfRef">Change Log</a>
+      </h2>
+<p id="appendix-C-1">This section is to be removed before publishing as an RFC.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+<p id="appendix-C-2">
         <em>[RFC Editor Note: Please remove this entire section before
-        publication.]</em><a href="#appendix-B-2" class="pilcrow">¶</a></p>
+        publication.]</em><a href="#appendix-C-2" class="pilcrow">¶</a></p>
 <div id="changelog-00">
-<section id="appendix-B.1">
+<section id="appendix-C.1">
         <h3 id="name-draft-perry-dtn-cpb-00-july">
-<a href="#appendix-B.1" class="section-number selfRef">B.1. </a><a href="#name-draft-perry-dtn-cpb-00-july" class="section-name selfRef">draft-perry-dtn-cpb-00 (July 2026)</a>
+<a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-draft-perry-dtn-cpb-00-july" class="section-name selfRef">draft-perry-dtn-cpb-00 (July 2026)</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="appendix-B.1-1.1">Initial Experimental -00: Contact Probability Block wire
+<li class="normal" id="appendix-C.1-1.1">Initial Experimental -00: Contact Probability Block wire
               format, metric-type registry, operational and security
-              considerations, and IANA requests.<a href="#appendix-B.1-1.1" class="pilcrow">¶</a>
+              considerations, and IANA requests.<a href="#appendix-C.1-1.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.2">CBOR float16 encoding with deterministic encoding rules;
+          <li class="normal" id="appendix-C.1-1.2">CBOR float16 encoding with deterministic encoding rules;
               format version field (key 7); per-path array size guidance
-              as SHOULD with local enforcement on constrained links.<a href="#appendix-B.1-1.2" class="pilcrow">¶</a>
+              as SHOULD with local enforcement on constrained links.<a href="#appendix-C.1-1.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.3">BPSec integrity models (append-only and strip-and-replace);
-              BCB encryption of CPB prohibited for routing use.<a href="#appendix-B.1-1.3" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-C.1-1.3">BPSec integrity models (append-only and strip-and-replace);
+              BCB encryption of CPB prohibited for routing use.<a href="#appendix-C.1-1.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.4">Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
-              and DTNMA; IPNSIG Section 4.2 problem framing.<a href="#appendix-B.1-1.4" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-C.1-1.4">Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
+              and DTNMA; IPNSIG Section 4.2 problem framing.<a href="#appendix-C.1-1.4" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.5">Configuration 1 simulation (baseline earliest-arrival CGR vs
+          <li class="normal" id="appendix-C.1-1.5">Configuration 1 simulation (baseline earliest-arrival CGR vs
               one confidence-weighted consumer) with CRN contact trials;
               delivery and mean latency improvements reported; p95 not
-              improved on that topology.<a href="#appendix-B.1-1.5" class="pilcrow">¶</a>
+              improved on that topology.<a href="#appendix-C.1-1.5" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.6">Limited ION data-plane validation of extension-block carriage
-              (not in-band CGR consumption of CPB).<a href="#appendix-B.1-1.6" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-C.1-1.6">Limited ION data-plane validation of extension-block carriage
+              (not in-band CGR consumption of CPB).<a href="#appendix-C.1-1.6" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.7">Reference implementation and reproduction commands
-              (<a href="#reference-implementation" class="auto internal xref">Section 13</a>).<a href="#appendix-B.1-1.7" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-C.1-1.7">Reference implementation and reproduction commands
+              (<a href="#reference-implementation" class="auto internal xref">Section 13</a>).<a href="#appendix-C.1-1.7" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.8">Aligns with RFC 9171 errata relevant to CRC handling and
+          <li class="normal" id="appendix-C.1-1.8">Aligns with RFC 9171 errata relevant to CRC handling and
               fragmentation; cites <span>[<a href="#RFC9713" class="cite xref">RFC9713</a>]</span> and
               <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> as updates related to BPv7
-              administration and the ipn scheme.<a href="#appendix-B.1-1.8" class="pilcrow">¶</a>
+              administration and the ipn scheme.<a href="#appendix-C.1-1.8" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.9">CDDL, BTSD embedding, fragmentation pruning, timestamp
-              tie-breaker, and IANA text.<a href="#appendix-B.1-1.9" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-C.1-1.9">CDDL, BTSD embedding, fragmentation pruning, timestamp
+              tie-breaker, and IANA text.<a href="#appendix-C.1-1.9" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
@@ -4812,7 +4828,7 @@ python3 impl/config1_sim.py --battery paper --strategy both
 </section>
 </div>
 <div id="authors-addresses">
-<section id="appendix-C">
+<section id="appendix-D">
       <h2 id="name-authors-address">
 <a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
       </h2>
