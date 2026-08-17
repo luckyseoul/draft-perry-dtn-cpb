@@ -86,14 +86,10 @@ Hop retries (MAX_HOP_RETRIES default = 3; CLI --hop-retries):
 
 Bundle generation (every 30 s per rover, 7-day sim):
   30 s is the spec's recommended interval for telemetry-class traffic.
-  7 days yields 80,507 bundles per rover per arm, sufficient for paired
-  t-test with t > 80 on delivery and t > 90 on latency.  Shorter sims
-  (1 day) reproduce the directional result but with weaker significance.
-
-Seeds (10 fixed primes/distinguished integers):
-  Five-seed runs gave directionally consistent results at t > 4; the
-  10-seed runs reported here were chosen to push significance below
-  p < 10^-13 and provide tight confidence intervals.
+  7 days yields about 80,507 bundles per arm (four rovers), not per
+  rover. Published §12.5 paired t is about 7 on delivery and -9.7 on
+  mean latency (10 seeds, R=3). Shorter sims reproduce direction
+  with weaker significance.
 ================================================================
 """
 

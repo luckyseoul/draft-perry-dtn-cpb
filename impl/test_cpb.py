@@ -4,7 +4,7 @@ test_cpb.py -- round-trip and conformance tests for cpb.py.
 Verifies:
   - Figure 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, timestamp,
     validity duration -- inner CBOR map matches expected wire bytes.
-  - Figure 6 (Section 3.6): EDN form with default + 2 path entries + metric.
+  - Figure 2 / Figure 7 hex and the Section 3.4.3 table.
   - Figure 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
   - Hex encoding table (Section 3.4.3): each (prob -> CBOR hex) row.
   - Section 3.4.1: NaN, +/-Inf rejection; out-of-range clamping on decode.

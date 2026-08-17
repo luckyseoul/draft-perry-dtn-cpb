@@ -453,7 +453,7 @@ ipn:100.1?prob=0.75
         <figure anchor="fig-listing-2">
           <name>CPB Concrete Example (type: hex)</name>
           <sourcecode type="hex" markers="true"><![CDATA[
-18 C8                ; type=200 (exp per RFC9171 &#167;9.1)
+18 C8                ; type=200 (RFC 9171 experimental range)
 02                   ; num=2
 11                   ; flags=0x11 (replicate; discard-if-unproc)
 00                   ; crc-type=0 (no CRC; CRC field omitted)
@@ -482,6 +482,8 @@ ipn:100.1?prob=0.75
 ; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 8.3.3).
 ; Plain bstr alt = RFC 9171 embedded-cbor (opaque BTSD).
 
+; 200 = experimental-range example used in this document
+; (RFC 9171 192-255). Replace after IANA assignment.
 $extension-block /=
     extension-block-use<200, (bstr .cbor cpb-data / bstr)>
 ]]></sourcecode>
@@ -628,18 +630,24 @@ metric-type = &(
           <name>Block Processing Flags</name>
           <t>
             The CPB <bcp14>MUST</bcp14> set the block processing control flags
-            (<xref target="RFC9171"/> Section 4.4.1) as follows:
+            (<xref target="RFC9171"/> Section 4.2.4) as follows:
           </t>
           <ul>
             <li><strong>Bit 0 (0x01): Replicate in all fragments:</strong>
                 Implementers <bcp14>MUST</bcp14> set this bit so that if a
                 bundle with a CPB is fragmented during transmission, each
                 fragment carries a copy of the CPB.</li>
-            <li><strong>Bit 4 (0x10): Discard if can't process:</strong>
+            <li><strong>Bit 4 (0x10): Discard block if it can't be
+                processed:</strong>
                 Implementers <bcp14>MUST</bcp14> set this bit because the CPB
                 is advisory routing metadata, not critical to bundle
                 delivery.</li>
-            <li><strong>Bits 1-3, 5-7:</strong> Leave as 0 (reserved).</li>
+            <li><strong>Bit 1 (status report if unprocessable) and bit 2
+                (delete bundle if unprocessable):</strong> <bcp14>MUST</bcp14>
+                be 0. CPB is advisory; an unreadable CPB <bcp14>MUST NOT</bcp14>
+                generate a status report or delete the bundle.</li>
+            <li><strong>Bits 3 and 5-7:</strong> <bcp14>MUST</bcp14> be 0
+                (unassigned in <xref target="RFC9171"/>).</li>
           </ul>
           <t>
             In practice, both flags set means the block processing flags byte
@@ -659,7 +667,7 @@ metric-type = &(
         <section anchor="crc-handling">
           <name>Cyclic Redundancy Check (CRC) Handling</name>
           <t>
-            The block-data CRC field (<xref target="RFC9171"/> Section 4.4.1)
+            The block-data CRC field (<xref target="RFC9171"/> Section 4.3.2)
             is optional:
           </t>
           <ul>
@@ -686,7 +694,7 @@ metric-type = &(
           <t>
             Bundles carrying a CPB <bcp14>SHOULD</bcp14> also carry a Hop
             Count block (block type 10, <xref target="RFC9171"/> Section
-            4.4.2). The Hop Count block provides a loop termination guarantee
+            4.4.3). The Hop Count block provides a loop termination guarantee
             independent of probability-based routing decisions.
           </t>
         </section>
@@ -708,8 +716,9 @@ metric-type = &(
             <xref target="RFC9171"/>). Until IANA assignment:
           </t>
           <ul>
-            <li>Implementations <bcp14>MAY</bcp14> use values in the 192-254
-                range for experimental/private use</li>
+            <li>Implementations <bcp14>MAY</bcp14> use values in the 192-255
+                range for experimental/private use (<xref target="RFC9171"/>
+                Section 4.3.2)</li>
             <li>The example hex dump uses code 200 (0xC8) for illustration</li>
             <li>Production deployments <bcp14>SHOULD</bcp14> use the
                 IANA-assigned code</li>
@@ -719,17 +728,17 @@ metric-type = &(
         <section anchor="backwards-compat">
           <name>Backwards Compatibility</name>
           <t>
-            Routers that don't recognize the CPB block type code will:
+            Routers that do not recognize the CPB block type code process
+            the canonical block as specified in <xref target="RFC9171"/>
+            Section 4.2.4:
           </t>
           <ol>
-            <li>Check the block processing control flags (byte 2 in the
-                extension block)</li>
-            <li>If flags indicate "discard if can't process", drop the block
-                silently</li>
-            <li>If flags indicate "remove if can't process", strip it before
-                forwarding</li>
-            <li>Continue routing the bundle using remaining blocks
-                (backwards compatible)</li>
+            <li>Read the block processing control flags (the third element
+                of the canonical block array, not a fixed octet offset).</li>
+            <li>If bit 4 (0x10) is set, as this specification requires,
+                discard the unrecognized CPB and continue the bundle.</li>
+            <li>There is no BPv7 flag meaning "remove if can't process"
+                (that language is from BPv6). Do not invent one.</li>
           </ol>
         </section>
       </section>
@@ -778,8 +787,9 @@ metric-type = &(
           constrained deployments <bcp14>SHOULD</bcp14> enforce a local limit
           (default 8) and treat excess entries as malformed for that link,
           logging the event per <xref target="RFC9675"/> Section 4.3.
-          This guidance is normative for resource protection; the CDDL
-          schema provides a default bound of 8.
+          This guidance is normative for resource protection. The CDDL
+          for field 1 is <tt>[* path-entry]</tt> (unbounded); the limit
+          of 8 is prose, not a CDDL constraint.
         </t>
 
         <section anchor="invalid-float-handling">
@@ -1854,38 +1864,62 @@ A3                   ; map with 3 entries
     <section anchor="iana-considerations">
       <name>IANA Considerations</name>
       <t>
-        This document requests IANA to assign a new codepoint from the
-        "Bundle Block Types" registry as defined in <xref target="RFC9171"/>,
-        Section 9.1, under the Specification Required registration policy
-        (<xref target="RFC8126"/>).
+        This document requests IANA to assign a code point from the
+        Bundle Block Types registry (<xref target="RFC9171"/> Section 9.1)
+        under the Specification Required policy
+        (<xref target="RFC8126"/>). This document does not request a
+        specific numeric value.
+      </t>
+      <table anchor="tab-iana-block-type">
+        <name>Bundle Block Types registration request</name>
+        <thead>
+          <tr>
+            <th>Value</th>
+            <th>Description</th>
+            <th>Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>TBD</td>
+            <td>Contact Probability Block</td>
+            <td>This document</td>
+          </tr>
+        </tbody>
+      </table>
+      <t>
+        Hex dumps, CDDL examples, and ION artifacts in this document use
+        block type 200 (0xC8). That value is in the RFC 9171 experimental
+        and private-use range (192-255) and is for illustration and
+        laboratory interoperation with those examples only. After IANA
+        assignment, implementations <bcp14>SHOULD</bcp14> parameterize the
+        block-type code so the assigned value can replace 200.
       </t>
       <t>
-        Hex dumps and ION testbed artifacts in this document use block
-        type 200 (0xC8). That value is in the RFC 9171 experimental and
-        private-use range (192-254) and is for illustration and
-        laboratory use only. IANA assigns the permanent code point;
-        this document does not request a specific numeric value.
-        Implementations <bcp14>MUST NOT</bcp14> hardcode 0xC8 and
-        <bcp14>SHOULD</bcp14> parameterize the block-type code so that
-        the IANA-assigned value can be substituted after assignment.
+        This document also requests IANA to create a new "CPB Metric
+        Types" registry in the Bundle Protocol registries group (not a
+        sub-registry of Bundle Block Types). The registration policy is
+        Specification Required. The value space is unsigned integers;
+        this document assigns 0-4. Values 5-255 are unassigned for
+        compact encodings; values above 255 are available if needed.
       </t>
-      <t>
-        This document additionally requests IANA to create a "CPB Metric
-        Types" sub-registry of the Bundle Block Types registry.  The
-        registration policy for the sub-registry is Specification Required.
-        Initial registrations are:
-      </t>
-      <ul>
-        <li>0: PRoPHET Delivery Predictability</li>
-        <li>1: CGR Contact Confidence</li>
-        <li>2: MaxProp Path Cost (inverted)</li>
-        <li>3: RAPID Utility Metric</li>
-        <li>4: Generic Probability</li>
-      </ul>
-      <t>
-        Values 5-255 are unassigned.  Future assignments in this range
-        require a specification and expert review.
-      </t>
+      <table anchor="tab-iana-metric-types">
+        <name>Initial CPB Metric Types registrations</name>
+        <thead>
+          <tr>
+            <th>Value</th>
+            <th>Description</th>
+            <th>Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>0</td><td>PRoPHET Delivery Predictability</td><td>This document</td></tr>
+          <tr><td>1</td><td>CGR Contact Confidence</td><td>This document</td></tr>
+          <tr><td>2</td><td>MaxProp Path Cost (inverted)</td><td>This document</td></tr>
+          <tr><td>3</td><td>RAPID Utility Metric</td><td>This document</td></tr>
+          <tr><td>4</td><td>Generic Probability</td><td>This document</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- =================================================================== -->
@@ -2063,7 +2097,8 @@ A3                   ; map with 3 entries
           decode on-wire CPB extension blocks.
           <xref target="experiment"/> reports the authoritative 10-seed
           paper-battery results for those two policies, reproduced by
-          <tt>python3 config1_sim.py --battery paper --strategy both</tt>.
+          <tt>python3 impl/config1_sim.py --battery paper --strategy both</tt>
+          from the repository root.
           The simulator is fully deterministic per seed on Python 3.10+
           (contact CRN does not require cbor2; the encoder does). CGR-UCoP <xref target="Fraire18"/> was used only
           as prior art for simulation parameters and basic validation.
@@ -2386,17 +2421,24 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
 7665206120686f7273652c2072696465206120636f77626f79
 ]]></artwork>
         <t>
-          Primary block (first CBOR array, 40 bytes): version 7, flags 0,
-          CRC type 0, source ipn:268484801.1, destination ipn:268484820.1,
-          report-to same as source, creation timestamp [1780731656, 0],
-          lifetime 3600. This matches the primary constructed by
-          packet.py:create_bundle_with_cpb.
+          The dump is the laboratory assembler in
+          <tt>packet.py</tt>, not a claim of RFC 9171-canonical encoding.
+          Observed deviations: EIDs are bstr-wrapped CBOR arrays (not
+          bare EID arrays); the scheme code is 1 (IANA "dtn", not
+          "ipn"); primary dest/source order follows that assembler
+          rather than RFC 9171 dest-then-source; the creation timestamp
+          uses Unix seconds rather than DTN time; Hop Count is
+          encoded as <tt>[10, 0, [0, 32]]</tt> (hop limit 0 is not a
+          legal RFC 9171 hop limit of 1-255). Previous Node and payload
+          arrays are similarly assembler-shaped. The CPB BTSD map
+          itself is valid CBOR
+          (<tt>{0: float16 ~0.65, 1: [[268484820, ~0.65]]}</tt>).
         </t>
         <t>
-          Previous Node block (type 6): [6, 0, source EID].
-        </t>
-        <t>
-          Hop Count block (type 10): [10, 0, [0, 32]].
+          Primary block (first CBOR array): version 7, flags 0, CRC
+          type 0, assembler EID fields as above, creation timestamp
+          [1780731656, 0], lifetime 3600. This matches
+          packet.py:create_bundle_with_cpb, not a production BPA.
         </t>
         <t>
           Extension block 200 (the CPB, bytes starting at offset 0x40):
@@ -3087,21 +3129,22 @@ python3 impl/config1_sim.py --battery paper --strategy both
         <li><strong>Initial contact:</strong> Rover creates a critical status
             bundle with a CPB indicating default probability 0.6 (dusty
             conditions), metric-type 1 (cgr-confidence), validity_duration
-            3600s</li>
-        <li><strong>Rover-to-orbiter:</strong> Router at rover checks 0.6
-            &lt; 0.7 -&gt; wait for better conditions</li>
-        <li><strong>Later contact:</strong> Dust clears, CPB is refreshed
-            with probability 0.95, new timestamp</li>
-        <li><strong>Orbiter processes:</strong> Router at orbiter checks
-            0.95 &gt; 0.7 -&gt; forward immediately</li>
-        <li><strong>Result:</strong> Both bundles are delivered with minimal
-            latency.</li>
+            3600s.</li>
+        <li><strong>Rover-to-orbiter:</strong> A confidence-weighted
+            consumer using cost = latency / confidence prefers a later,
+            higher-confidence contact when that cost is lower than the
+            dusty path.</li>
+        <li><strong>Later contact:</strong> Dust clears; the rover
+            appends or replaces the CPB with probability 0.95 and a new
+            timestamp.</li>
+        <li><strong>Downstream:</strong> Relays consume the fresh CPB
+            (after trust/BIB policy) for ranking only.</li>
       </ol>
       <t>
-        <strong>Decay example:</strong> If the first bundle (P=0.6) is
-        delayed 10 hours and the validity_duration was 3600s, receiving
-        routers recognize the CPB as expired and apply decay: P_aged =
-        0.6 * 0.98^10 = 0.49.
+        If the first CPB (P=0.6, validity 3600 s) is delayed 10 hours,
+        field 4 has expired. Per <xref target="op-creation"/>, receivers
+        <bcp14>SHOULD</bcp14> ignore that CPB for routing. This document
+        does not define a residual decay formula after expiry.
       </t>
     </section>
 

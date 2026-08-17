@@ -54,6 +54,10 @@ test:
 	@cd impl && python3 -m pip install -q -e '.[test]' 2>/dev/null || pip install -q -e '.[test]'
 	@echo "==> CPB reference implementation tests"
 	@cd impl && python3 test_cpb.py
+	@cd impl && python3 test_config1_policies.py
+	@cd impl && python3 test_sim_cpb_bridge.py
+	@cd impl && python3 test_draft_consistency.py
+	@cd impl && python3 test_paper_battery_numbers.py
 	@echo
 	@echo "==> Simulator smoke test (--quick)"
 	@cd impl && python3 config1_sim.py --quick

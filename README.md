@@ -36,32 +36,28 @@ in draft §12.5. ION data-plane artifacts live under
 
 ### Quick start
 
+From the repository root:
+
 ```sh
 cd impl
-
 pip install -e '.[test]'
-
 python3 test_cpb.py
 python3 test_config1_policies.py
 python3 test_sim_cpb_bridge.py
 python3 test_draft_consistency.py
-
-# Fast sim smoke test (baseline + CPB)
 python3 config1_sim.py --quick
-
-# Paper battery (10 seeds; matches draft §12.5)
 python3 config1_sim.py --battery paper --strategy both
 ```
 
-Alternative:
+Alternative (also from the repository root):
 
 ```sh
 pip install -r impl/requirements.txt
-python3 test_cpb.py
-python3 config1_sim.py --quick
+python3 impl/test_cpb.py
+python3 impl/config1_sim.py --quick
 ```
 
-Useful simulator options:
+Useful simulator options (from `impl/`):
 
 ```sh
 python3 config1_sim.py --help
@@ -88,7 +84,7 @@ Policy labels (draft §12):
 Mean latency usually improves under **CPB**; **p95 often does not**. Use
 tighter R when delivery of certain traffic matters more than waiting for
 extra windows. Parallel paper sweep:  
-`python3 impl/config1_sim.py --battery paper --strategy both --sweep-hop-retries 2,3,4 --workers 86`
+`python3 impl/config1_sim.py --battery paper --strategy both --sweep-hop-retries 2,3,4`
 
 ## License
 

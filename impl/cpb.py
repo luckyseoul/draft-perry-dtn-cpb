@@ -97,7 +97,7 @@ def _encode_prob_float16(value: float, strict: bool = False) -> bytes:
 def encode_cpb(data: dict) -> bytes:
     """Encode a cpb-data dict to CBOR bytes per Spec Section 3.2.
 
-    The dict keys are the integer field numbers (0..6) plus optionally any
+    The dict keys are the integer field numbers (0..7) plus optionally any
     int > 6 for future-extension fields (passed through unchanged).
 
     Probability fields (0, 6, and the second element of each path-entry) are

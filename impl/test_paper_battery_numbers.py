@@ -101,8 +101,7 @@ def test_paper_battery_sweep_if_enabled():
 
 
 if __name__ == "__main__":
-    os.environ.setdefault("RUN_PAPER_BATTERY", "1")
     test_structural_pins_and_default_r()
     test_paper_battery_default_r3_if_enabled()
     test_paper_battery_r2_if_enabled()
-    print("Paper battery numbers OK.")
+    print("Paper battery structural pins OK.")
