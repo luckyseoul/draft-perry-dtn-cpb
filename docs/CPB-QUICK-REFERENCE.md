@@ -1,18 +1,11 @@
-# Contact Probability Block (CPB) — Quick Reference Guide
+# Contact Probability Block (CPB) — Quick Reference
 
-**Purpose:** a quick catch-up so anyone reading this repo (or reviewing the
-draft later) can understand the *concept* without first reading the full
-Internet-Draft at length.
-
-Fifteen-minute visual intro to **draft-perry-dtn-cpb-00**
+Short visual intro to **draft-perry-dtn-cpb-00**
 (*Probabilistic Contact Metadata for DTN Bundle Routing*): problem, wire idea,
-fields, lifecycle, experiment headline, and security defaults. Normative text
-stays in the Internet-Draft
-([`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml)); this guide is
-non-normative.
+fields, lifecycle, experiment headline, and security defaults.
 
-**Audience:** people who know BPv7 basics and need why / what / how before (or
-instead of) a full draft pass.
+See [`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml). Pre-submission
+review copy (not on the IETF Internet-Drafts repository).
 
 ---
 
@@ -44,8 +37,8 @@ and MaxProp hop-lists stay in each protocol’s control plane (draft §5).
 
 ![Bundle anatomy](images/02-bundle-anatomy.png)
 
-- **Experimental** status: open questions (noise, adversaries, multi-domain
-  trust, production interop) are listed in the draft and not claimed solved.
+- Open questions (noise, adversaries, multi-domain trust, production interop)
+  are listed in the draft and not claimed solved.
 - Examples use block type **200 (0xC8)**; IANA assigns the permanent code.
   Implementations **must not** hardcode `0xC8`.
 
@@ -61,15 +54,15 @@ The block-type-specific data is a **CBOR map**:
 |-----|---------|
 | 0 | Default probability |
 | 1 | Per-path `[next-hop, probability]` list (senders **SHOULD NOT** exceed 8 on constrained links) |
-| 2 | Timestamp (seconds since DTN epoch origin; see draft for units) |
+| 2 | Timestamp (DTN epoch) |
 | 3 | Source PCE identifier (optional) |
 | 4 | Validity duration (TTL) |
 | 5 | Metric type (0 PRoPHET · 1 CGR · 2 MaxProp · 3 RAPID · 4 generic) |
 | 6 | Confidence / variance of the estimate |
 | 7 | Format version (1 = this specification) |
 
-**Important rule:** do **not** mix metric types in arithmetic (for example,
-do not average a PRoPHET delivery predictability with a CGR confidence).
+**Important rule:** do **not** mix metric types in arithmetic (e.g. do not
+average a PRoPHET DP with a CGR confidence).
 
 ---
 
@@ -77,11 +70,11 @@ do not average a PRoPHET delivery predictability with a CGR confidence).
 
 ![Lifecycle](images/07-cpb-lifecycle.png)
 
-1. **Create or receive** a bundle that may carry one or more CPBs.
-2. **Read** default / per-path probabilities (after trust/BIB policy).
-3. **Decide** next hop using the local routing policy.
+1. **Create or receive** a bundle that may carry one or more CPBs.  
+2. **Read** default / per-path probabilities (after trust/BIB policy).  
+3. **Decide** next hop using your routing policy.  
 4. **Optionally update** with fresher local estimates (append or
-   strip-and-replace — see draft §8).
+   strip-and-replace — see security section of the draft).  
 5. **Forward**; nodes that do not understand CPB pass the block through.
 
 ---
@@ -121,16 +114,12 @@ The simulator `impl/config1_sim.py` uses **Configuration 1**:
 
 On Configuration 1, **cpb** improves **delivery** and usually **mean latency**;
 **p95 is often worse** (longer-period high-confidence paths). Path confidence
-is higher under **cpb**. Use small R when the traffic class values delivery
-under few contact attempts; large R when absolute completion rate matters
-more and extra windows are acceptable.
+is higher under **cpb**.
 
-**Two experiment parts (draft §12.1):** (1) wire format and ION data-plane
+Two experiment parts (draft §12.1): (1) wire format and ION data-plane
 survival of the extension block; (2) routing value of confidences of the
 class CPB carries (simulator; bridge tests check that encode/decode
 preserves the cost ranking).
-
-Reproduce:
 
 ```sh
 cd impl
@@ -142,36 +131,20 @@ python3 config1_sim.py --battery paper --strategy both
 
 ---
 
-## 6. Security in one slide (draft §8)
+## 6. Security (draft §8)
 
 Threats include false probabilities (sinkhole / blackhole), stale CPBs,
 semi-trusted relays biasing routes, and inter-domain trust gaps.
 
-Defaults to remember:
-
 - Prefer **BPSec BIB** integrity on CPBs used for routing.
-- **Do not** encrypt CPB with BCB if intermediates must *read* it to route.
+- **Do not** encrypt CPB with BCB if intermediates must read it to route.
 - Unauthorized or unverifiable CPBs: prefer **strict** (ignore for routing,
   still forward) over laundering signatures.
 - Multi-CPB precedence applies **after** trust verification.
 
 ---
 
-## 7. How to read the full draft
-
-| Sections | Content |
-|----------|---------|
-| §1–2 | Problem + why extension blocks |
-| §3–4 | Wire format + operational semantics |
-| §5–7 | Protocol fit, backwards compatibility, operations |
-| §8–9 | Security + IANA |
-| §10–11 | Overhead + implementation status |
-| §12 | Experiment (Config 1 + ION data-plane notes) |
-| §13 | Reference implementation |
-
----
-
-## 8. Recap (question → answer)
+## 7. Recap
 
 **Why is probability not allowed in the destination EID?**  
 BPv7 EIDs must stay immutable. Stuffing `?prob=…` into the URI invites
@@ -195,11 +168,7 @@ uses earliest arrival only and ignores confidence.
 **Delivery** and **mean latency** improve; **p95 latency does not** (slightly
 worse on this topology). Path confidence is higher under cpb.
 
-**What remains open for Standards Track / ops?**  
+**What is still open?**  
 Noisy or adversarial estimates, multi-domain trust, partial deployment
 quality, production-stack interop, and in-band consumption by live CGR (or
-similar) — listed in draft §12.11; not claimed solved by Experimental -00.
-
----
-
-*Non-normative. For normative language, use the Internet-Draft.*
+similar) — draft §12.11.

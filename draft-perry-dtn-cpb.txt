@@ -40,7 +40,7 @@ Abstract
    confidence).  On that topology the confidence-weighted consumer
    improves mean delivery ratio and mean latency while selecting higher
    path confidence; p95 latency is not improved on this topology and is
-   reported honestly.  The contribution of this specification is the
+   reported as measured.  The contribution of this specification is the
    standardized BPv7 extension block for carrying such metadata, not a
    claim that production stacks already consume CPB in-band.
    Operational deployment questions — robustness to noisy or adversarial
@@ -48,15 +48,6 @@ Abstract
    interoperability across independent BPv7 implementations — are
    enumerated as open issues and are not claimed as resolved by this
    document.
-
-
-
-
-
-Perry                    Expires 30 January 2027                [Page 1]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 Status of This Memo
 
@@ -88,116 +79,98 @@ Copyright Notice
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
-     1.1.  Problem Statement (IPNSIG SSI Architecture,
-           Section 4.2)  . . . . . . . . . . . . . . . . . . . . . .   5
-     1.2.  Motivation  . . . . . . . . . . . . . . . . . . . . . . .   6
-     1.3.  Requirements Language . . . . . . . . . . . . . . . . . .   6
-     1.4.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   6
-     1.5.  Notation Conventions  . . . . . . . . . . . . . . . . . .   7
-   2.  Architectural Considerations  . . . . . . . . . . . . . . . .   7
-     2.1.  Why NOT URI Query Parameters  . . . . . . . . . . . . . .   7
-       2.1.1.  Endpoint Identifier Immutability  . . . . . . . . . .   8
-       2.1.2.  Router Modification Problem . . . . . . . . . . . . .   8
-     2.2.  Solution: Bundle Extension Blocks . . . . . . . . . . . .   9
-   3.  Contact Probability Block . . . . . . . . . . . . . . . . . .   9
-     3.1.  Overview  . . . . . . . . . . . . . . . . . . . . . . . .   9
-     3.2.  Block Structure . . . . . . . . . . . . . . . . . . . . .   9
-       3.2.1.  Block Processing Flags  . . . . . . . . . . . . . . .  13
-       3.2.2.  Cyclic Redundancy Check (CRC) Handling  . . . . . . .  14
-       3.2.3.  Hop Count Block Co-Presence . . . . . . . . . . . . .  14
-
-
-
-Perry                    Expires 30 January 2027                [Page 2]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-     3.3.  Block Type Code . . . . . . . . . . . . . . . . . . . . .  14
-       3.3.1.  IANA Registration . . . . . . . . . . . . . . . . . .  14
-       3.3.2.  Backwards Compatibility . . . . . . . . . . . . . . .  15
-     3.4.  CBOR Encoding of Probability Values . . . . . . . . . . .  15
-       3.4.1.  Invalid Float Handling  . . . . . . . . . . . . . . .  16
-       3.4.2.  Encoding Details  . . . . . . . . . . . . . . . . . .  16
-       3.4.3.  Hex Encoding Table  . . . . . . . . . . . . . . . . .  17
-     3.5.  Metric-Type Semantics and Cross-Metric Comparison . . . .  17
-     3.6.  Multiple CPBs in One Bundle . . . . . . . . . . . . . . .  19
-       3.6.1.  Per-Path Matching Rules . . . . . . . . . . . . . . .  20
-   4.  Operational Semantics . . . . . . . . . . . . . . . . . . . .  21
-     4.1.  Creation  . . . . . . . . . . . . . . . . . . . . . . . .  21
-     4.2.  Processing by Intermediate Routers  . . . . . . . . . . .  21
-     4.3.  Usage in Routing Algorithms . . . . . . . . . . . . . . .  22
-     4.4.  Stability Considerations and Feedback Dynamics  . . . . .  22
-   5.  Relationship to Existing DTN Routing Protocols  . . . . . . .  23
-     5.1.  PRoPHET (RFC 6693)  . . . . . . . . . . . . . . . . . . .  24
-     5.2.  MaxProp . . . . . . . . . . . . . . . . . . . . . . . . .  24
-     5.3.  RAPID . . . . . . . . . . . . . . . . . . . . . . . . . .  24
-     5.4.  Spray-and-Wait Family . . . . . . . . . . . . . . . . . .  25
-     5.5.  Epidemic and Summary-Vector Protocols . . . . . . . . . .  25
-     5.6.  Contact Graph Routing (CGR) . . . . . . . . . . . . . . .  25
-     5.7.  Social and Hybrid Metrics . . . . . . . . . . . . . . . .  26
-     5.8.  DTNMA (RFC 9675)  . . . . . . . . . . . . . . . . . . . .  26
-     5.9.  Summary: CPB as Cross-Cutting Metadata  . . . . . . . . .  26
-   6.  Backwards Compatibility . . . . . . . . . . . . . . . . . . .  26
-   7.  Operational Considerations  . . . . . . . . . . . . . . . . .  27
-     7.1.  When and Where to Emit CPBs . . . . . . . . . . . . . . .  27
-     7.2.  Bundle Store and Memory Sizing  . . . . . . . . . . . . .  27
-     7.3.  Computational and Storage Overhead on Constrained
-           Nodes . . . . . . . . . . . . . . . . . . . . . . . . . .  27
-     7.4.  Logging, Monitoring, and OAM  . . . . . . . . . . . . . .  28
-     7.5.  Partial Deployment  . . . . . . . . . . . . . . . . . . .  28
-     7.6.  Congestion and Storage Pressure . . . . . . . . . . . . .  28
-     7.7.  Clock Considerations  . . . . . . . . . . . . . . . . . .  28
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  29
-     8.1.  Threat Model  . . . . . . . . . . . . . . . . . . . . . .  29
-     8.2.  Trust Model . . . . . . . . . . . . . . . . . . . . . . .  29
-       8.2.1.  Who is Authorized to Append CPBs  . . . . . . . . . .  29
-       8.2.2.  Cryptographic Adjudication of Conflicting CPBs  . . .  30
-       8.2.3.  Downstream Handling of Upstream BIBs  . . . . . . . .  30
-       8.2.4.  Route Poisoning by Semi-Trusted Relays  . . . . . . .  30
-       8.2.5.  Inter-Domain Trust  . . . . . . . . . . . . . . . . .  31
-       8.2.6.  Replay Resistance . . . . . . . . . . . . . . . . . .  31
-     8.3.  Integrity Protection  . . . . . . . . . . . . . . . . . .  32
-       8.3.1.  Source CPB with Append-Only Intermediates . . . . . .  32
-       8.3.2.  Strip-and-Replace Model . . . . . . . . . . . . . . .  32
-       8.3.3.  Prohibition on BCB Encryption . . . . . . . . . . . .  32
-
-
-
-Perry                    Expires 30 January 2027                [Page 3]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-     8.4.  Mitigations . . . . . . . . . . . . . . . . . . . . . . .  32
-     8.5.  Privacy Considerations  . . . . . . . . . . . . . . . . .  33
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  33
-   10. Overhead Analysis . . . . . . . . . . . . . . . . . . . . . .  34
-     10.1.  Computational and Storage Overhead . . . . . . . . . . .  34
-   11. Implementation Status . . . . . . . . . . . . . . . . . . . .  35
-   12. Experiment Description  . . . . . . . . . . . . . . . . . . .  37
-     12.1.  Scope and Hypothesis . . . . . . . . . . . . . . . . . .  37
-     12.2.  Test Configuration 1: Multi-Asset Mars Relay . . . . . .  38
-     12.3.  Routing Policies Tested  . . . . . . . . . . . . . . . .  39
-     12.4.  Methodology  . . . . . . . . . . . . . . . . . . . . . .  39
-     12.5.  Results  . . . . . . . . . . . . . . . . . . . . . . . .  40
-     12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed) . . .  41
-     12.7.  Goals (per RFC 2026 Section 4.2.1) . . . . . . . . . . .  44
-     12.8.  Success Criteria (Met) . . . . . . . . . . . . . . . . .  44
-     12.9.  Failure Criteria (Not Triggered) . . . . . . . . . . . .  45
-     12.10. Deferred Configurations  . . . . . . . . . . . . . . . .  45
-     12.11. Open Experimental Questions  . . . . . . . . . . . . . .  46
-   13. Reference Implementation  . . . . . . . . . . . . . . . . . .  48
-     13.1.  Repository . . . . . . . . . . . . . . . . . . . . . . .  49
-     13.2.  Reproducing the Experiment Results . . . . . . . . . . .  49
-     13.3.  Relationship to Updates of BPv7  . . . . . . . . . . . .  50
-   14. Normative References  . . . . . . . . . . . . . . . . . . . .  50
-   15. Informative References  . . . . . . . . . . . . . . . . . . .  51
-   Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  52
-   Appendix B.  Change Log . . . . . . . . . . . . . . . . . . . . .  53
-     B.1.  draft-perry-dtn-cpb-00 (July 2026)  . . . . . . . . . . .  53
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  55
+   1.  Introduction
+     1.1.  Problem Statement (IPNSIG SSI Architecture, Section 4.2)
+     1.2.  Motivation
+     1.3.  Requirements Language
+     1.4.  Terminology
+     1.5.  Notation Conventions
+   2.  Architectural Considerations
+     2.1.  Why NOT URI Query Parameters
+       2.1.1.  Endpoint Identifier Immutability
+       2.1.2.  Router Modification Problem
+     2.2.  Solution: Bundle Extension Blocks
+   3.  Contact Probability Block
+     3.1.  Overview
+     3.2.  Block Structure
+       3.2.1.  Block Processing Flags
+       3.2.2.  Cyclic Redundancy Check (CRC) Handling
+       3.2.3.  Hop Count Block Co-Presence
+     3.3.  Block Type Code
+       3.3.1.  IANA Registration
+       3.3.2.  Backwards Compatibility
+     3.4.  CBOR Encoding of Probability Values
+       3.4.1.  Invalid Float Handling
+       3.4.2.  Encoding Details
+       3.4.3.  Hex Encoding Table
+     3.5.  Metric-Type Semantics and Cross-Metric Comparison
+     3.6.  Multiple CPBs in One Bundle
+       3.6.1.  Per-Path Matching Rules
+   4.  Operational Semantics
+     4.1.  Creation
+     4.2.  Processing by Intermediate Routers
+     4.3.  Usage in Routing Algorithms
+     4.4.  Stability Considerations and Feedback Dynamics
+   5.  Relationship to Existing DTN Routing Protocols
+     5.1.  PRoPHET (RFC 6693)
+     5.2.  MaxProp
+     5.3.  RAPID
+     5.4.  Spray-and-Wait Family
+     5.5.  Epidemic and Summary-Vector Protocols
+     5.6.  Contact Graph Routing (CGR)
+     5.7.  Social and Hybrid Metrics
+     5.8.  DTNMA (RFC 9675)
+     5.9.  Summary: CPB as Cross-Cutting Metadata
+   6.  Backwards Compatibility
+   7.  Operational Considerations
+     7.1.  When and Where to Emit CPBs
+     7.2.  Bundle Store and Memory Sizing
+     7.3.  Computational and Storage Overhead on Constrained Nodes
+     7.4.  Logging, Monitoring, and OAM
+     7.5.  Partial Deployment
+     7.6.  Congestion and Storage Pressure
+     7.7.  Clock Considerations
+   8.  Security Considerations
+     8.1.  Threat Model
+     8.2.  Trust Model
+       8.2.1.  Who is Authorized to Append CPBs
+       8.2.2.  Cryptographic Adjudication of Conflicting CPBs
+       8.2.3.  Downstream Handling of Upstream BIBs
+       8.2.4.  Route Poisoning by Semi-Trusted Relays
+       8.2.5.  Inter-Domain Trust
+       8.2.6.  Replay Resistance
+     8.3.  Integrity Protection
+       8.3.1.  Source CPB with Append-Only Intermediates
+       8.3.2.  Strip-and-Replace Model
+       8.3.3.  Prohibition on BCB Encryption
+     8.4.  Mitigations
+     8.5.  Privacy Considerations
+   9.  IANA Considerations
+   10. Overhead Analysis
+     10.1.  Computational and Storage Overhead
+   11. Implementation Status
+   12. Experiment Description
+     12.1.  Scope and Hypothesis
+     12.2.  Test Configuration 1: Multi-Asset Mars Relay
+     12.3.  Routing Policies Tested
+     12.4.  Methodology
+     12.5.  Results
+     12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed)
+     12.7.  Goals (per RFC 2026 Section 4.2.1)
+     12.8.  Success Criteria (Met)
+     12.9.  Failure Criteria (Not Triggered)
+     12.10. Deferred Configurations
+     12.11. Open Experimental Questions
+   13. Reference Implementation
+     13.1.  Repository
+     13.2.  Reproducing the Experiment Results
+     13.3.  Relationship to Updates of BPv7
+   14. Normative References
+   15. Informative References
+   Appendix A.  Mars Mission Scenario
+   Appendix B.  Change Log
+     B.1.  draft-perry-dtn-cpb-00 (July 2026)
+   Author's Address
 
 1.  Introduction
 
@@ -212,19 +185,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    Probability Block, or CPB) for carrying probabilistic contact
    metadata, enabling efficient routing decisions in DTNs for
    applications like space exploration communications.
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027                [Page 4]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 1.1.  Problem Statement (IPNSIG SSI Architecture, Section 4.2)
 
@@ -274,14 +234,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    catalogued in IPNSIG Section 4.2 and its Appendix A: PRoPHET
    [RFC6693], Spray and Wait [Spyropoulos05], Schedule-Aware Bundle
    Routing (SABR) [SABR], Contact Graph Routing (CGR) [CGR], and
-
-
-
-Perry                    Expires 30 January 2027                [Page 5]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Opportunistic CGR with Uncertain Contact Plans (CGR-UCoP) [Fraire18].
    CPB is a cross-protocol metadata layer, not a replacement for any of
    these algorithms; each can consume or produce CPB data.
@@ -330,14 +282,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       next-hop neighbor or outgoing interface.
 
    Default Probability  An overall or baseline probability estimate when
-
-
-
-Perry                    Expires 30 January 2027                [Page 6]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       per-path probabilities are unavailable.
 
    Metric Type  An identifier distinguishing the semantic meaning of the
@@ -384,15 +328,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    That construction is architecturally flawed: it violates fundamental
    DTN principles for the following reasons:
-
-
-
-
-
-Perry                    Expires 30 January 2027                [Page 7]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 2.1.1.  Endpoint Identifier Immutability
 
@@ -443,13 +378,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    4.  Any modification violates the immutability principle and breaks
        downstream systems
 
-
-
-Perry                    Expires 30 January 2027                [Page 8]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    This architectural violation is unacceptable in the DTN model.
 
 2.2.  Solution: Bundle Extension Blocks
@@ -493,18 +421,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    The CPB has the standard bundle extension block structure defined in
    [RFC9171].  The canonical block structure is a CBOR array per RFC
    9171 Section 4.3.2:
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027                [Page 9]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -553,15 +469,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    block structure, using the CDDL socket and generic rules from RFC
    9171 Section 4.3.2:
 
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 10]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    <CODE BEGINS>
    ; Integration with RFC 9171 canonical block structure.
    ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
@@ -609,14 +516,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    <CODE ENDS>
 
                  Figure 4: CPB Data Structure (type: cddl)
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 11]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    *Note on bstr .cbor embedding:* The CDDL .cbor control operator
    ([RFC8610] Section 3.8.4) indicates that the byte string contains
@@ -667,13 +566,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       omitted, implementations SHOULD apply deployment-specific age
       thresholds (Section 4.1).
 
-
-
-Perry                    Expires 30 January 2027               [Page 12]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Field 5: Metric Type  Identifies the semantic meaning of the
       probability value.  When absent, implementations SHOULD treat the
       value as generic (type 4).
@@ -722,14 +614,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    *Path-entry handling under fragmentation:* When replicating a CPB
    into a fragment, the fragmenting node MAY prune path-entry elements
    (field 1) that are known to be unreachable in the fragment's
-
-
-
-Perry                    Expires 30 January 2027               [Page 13]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    remaining path, but MUST NOT alter the probability values of retained
    entries.  The default-probability field (0) and metric-type field (5)
    MUST NOT be modified during fragmentation.
@@ -774,17 +658,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    *  The example hex dump uses code 200 (0xC8) for illustration
 
    *  Production deployments SHOULD use the IANA-assigned code
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 14]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 3.3.2.  Backwards Compatibility
 
@@ -834,14 +707,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    *Bandwidth Considerations and Array Limits:* A CPB with per-path
    probabilities to multiple relays adds overhead (~4-5 bytes per
    entry).  To mitigate DoS risks from oversized arrays on low-bandwidth
-
-
-
-Perry                    Expires 30 January 2027               [Page 15]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    or constrained links, senders SHOULD NOT produce per-path arrays
    larger than 8 entries.  Receivers in constrained deployments SHOULD
    enforce a local limit (default 8) and treat excess entries as
@@ -884,19 +749,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
 
          Figure 5: CBOR Encoding: Major Type 7, Additional Info 25
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 16]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 3.4.3.  Hex Encoding Table
 
@@ -945,15 +797,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       not a repeat of P_(producer, dest) (see Section 5.1).
 
    metric-type 1 (cgr-confidence)  Per-contact or per-next-hop success
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 17]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       probability against a known contact schedule (or contact-plan
       edge).  Reflects forward-looking confidence that a planned contact
       occurs as scheduled (link availability, weather, pointing).
@@ -1001,14 +844,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    *  A router applying PRoPHET-style transitivity rules MUST use only
       metric-type 0 (prophet-dp) values, and similarly ignore others.
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 18]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    *  A router consuming metric-type 4 (generic) SHOULD treat the value
       as advisory only and MUST NOT use it as the sole input to a
@@ -1058,14 +893,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    4.  Default behavior: use the last encountered CPB (highest bundle
        block number)
 
-
-
-
-Perry                    Expires 30 January 2027               [Page 19]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Implementations MUST NOT fail or misroute when encountering multiple
    CPBs.
 
@@ -1113,14 +940,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    bundle's URI scheme.  For IPN bundles, node numbers are encoded as
    CBOR unsigned integers (per [RFC9758]'s updated ipn URI scheme); for
    other schemes, encode the full EID as CBOR text string.
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 20]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    *Scheme Mismatch Handling:* When the next-hop scheme does not match
    the CPB's path-entry scheme, implementations fall back to the default
@@ -1170,14 +989,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    2.  *Decide:* Use the probability as an input to routing decisions.
 
-
-
-
-Perry                    Expires 30 January 2027               [Page 21]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    3.  *Update (optional):* If the router has fresher probability data,
        it SHOULD append a new CPB block to the bundle (preserves any
        end-to-end integrity signatures protecting the original block).
@@ -1224,16 +1035,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       propagate, which in DTN timeframes can take hours.
 
    Route oscillation  If a router switches preferences whenever CPB
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 22]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       values cross a threshold, small probability fluctuations near the
       threshold cause traffic to oscillate between routes.  Each switch
       may itself generate new CPB observations that further perturb the
@@ -1283,13 +1084,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    protocol families catalogued in IPNSIG Section 4.2 and its Appendix A
    ("Routing and Forwarding State of the Art").
 
-
-
-Perry                    Expires 30 January 2027               [Page 23]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 5.1.  PRoPHET (RFC 6693)
 
    PRoPHET [RFC6693] is an epidemic protocol with strict pruning.  Each
@@ -1337,14 +1131,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    storage constraints) and replicates in decreasing marginal-utility
    order.  Peers may exchange delay samples or related metadata to
    refine utilities.
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 24]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    *What CPB carries:* metric-type 3 only after the producer normalizes
    utility into [0.0, 1.0].  CPB does not carry raw delay distributions,
@@ -1395,13 +1181,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    confidences of the CPB class under stochastic contact failures; CGR-
    UCoP is prior art for simulation, not the definition of the block.
 
-
-
-Perry                    Expires 30 January 2027               [Page 25]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 5.7.  Social and Hybrid Metrics
 
    Protocols such as BubbleRap, SimBet, and related social DTN routers
@@ -1449,14 +1228,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    *  The CPB is optional; bundles without it use standard routing
       behavior
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 26]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 7.  Operational Considerations
 
@@ -1506,14 +1277,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    by the hysteresis and rate-limiting techniques described in
    Section 4.1.
 
-
-
-
-Perry                    Expires 30 January 2027               [Page 27]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Implementations SHOULD publish concrete profiling numbers (CPU cycles
    per CPB, memory delta, etc.) alongside interoperability reports, per
    the guidance in [RFC7942].
@@ -1558,17 +1321,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    Section 4.1 must use deployment-specific drift and max_age values.
    Interplanetary links commonly use larger tolerances (e.g., +/- 600 s
    drift, 86400 s max age) than terrestrial ones.
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 28]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 8.  Security Considerations
 
@@ -1619,13 +1371,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    unauthorized sources SHOULD be discarded, with the event logged per
    [RFC9675] Section 4.3.
 
-
-
-Perry                    Expires 30 January 2027               [Page 29]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 8.2.2.  Cryptographic Adjudication of Conflicting CPBs
 
    When a bundle carries multiple CPBs from different sources with
@@ -1675,13 +1420,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       tolerance (default: factor of 2) should be discounted or
       discarded.
 
-
-
-Perry                    Expires 30 January 2027               [Page 30]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    *  Source reputation: trust policies MAY maintain per-source
       reputation scores derived from historical accuracy, and weight
       CPBs by source reputation when consuming them.  CPB itself does
@@ -1730,14 +1468,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    stronger protection, BIB coverage must include the timestamp.  An
    attacker who can rewrite the timestamp without invalidating the BIB
    defeats the mechanism.  Implementations MUST ensure that the BIB
-
-
-
-Perry                    Expires 30 January 2027               [Page 31]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    security target list covers the entire CPB block.
 
 8.3.  Integrity Protection
@@ -1779,21 +1509,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    *  Conservative thresholds for critical payloads
 
-
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 32]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 8.5.  Privacy Considerations
 
    CPB metadata may reveal information about network topology and
@@ -1834,21 +1549,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    Values 5-255 are unassigned.  Future assignments in this range
    require a specification and expert review.
-
-
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 33]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 10.  Overhead Analysis
 
@@ -1896,16 +1596,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       milliseconds per CPB.
 
    BIB verification cost  If the CPB is BPSec-protected, each
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 34]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       consumption requires a signature verification.  Public key
       verification (ECDSA, Ed25519, HMAC) costs vary by algorithm and
       hardware support.  In the worst case (resource-constrained node,
@@ -1953,15 +1643,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    Probability Block at the time of writing, in accordance with
    [RFC7942].
 
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 35]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    Reference Python Implementation
       *  *Organization:* Independent (N.  Perry)
 
@@ -1970,10 +1651,9 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
       *  *License:* MIT License
 
-      *  *Modules:* cpb.py (encoder/decoder, ~280 lines), test_cpb.py
-         (conformance suite for wire encode/decode), config1_sim.py
-         (discrete-event simulator producing the Section 12
-         Configuration 1 results).
+      *  *Modules:* cpb.py (encoder/decoder), test_cpb.py (conformance
+         suite for wire encode/decode), config1_sim.py (discrete-event
+         simulator producing the Section 12 Configuration 1 results).
 
       *  *Coverage:* Wire-format encode and decode of CPB block-type-
          specific data (CBOR map fields, float16 encoding, invalid-float
@@ -2008,16 +1688,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       and basic validation.
 
    PWG ION Data-Plane Validation  Limited real end-to-end data-plane
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 36]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       results on NASA ION v4.1.0 (PWG Tailscale mesh) are reported in
       Section 12.6: creation and injection of bundles carrying
       experimental extension block type 200, UDPCL carriage, bplist
@@ -2065,15 +1735,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
        confidences encode and decode as CPB maps without changing the
        confidence-weighted cost ranking.
 
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 37]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    The core hypothesis for part (2) is that such confidence metadata,
    when available to routing, can improve delivery and latency under
    stochastic contact failures with multiple competing routes.  In-band
@@ -2116,19 +1777,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
     +-------+----------------+----------------+-----------+-----------+
 
             Table 3: Per-(Rover, Orbiter) Success Probabilities
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 38]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 12.3.  Routing Policies Tested
 
@@ -2178,14 +1826,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    *  Confidence-weighted CPB consumer ("cpb"): cost = latency /
       confidence.
 
-
-
-
-Perry                    Expires 30 January 2027               [Page 39]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 12.5.  Results
 
    Results below are for Configuration 1 as implemented by
@@ -2227,96 +1867,61 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    does not address noisy or adversarially supplied confidence values;
    those questions are left for future work.
 
-
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 40]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed)
 
    In addition to the discrete-event simulation, a limited real data-
-   plane validation was executed on a live three-node NASA ION v4.1.0
-   testbed on the IPNSIG PWG Tailscale mesh (samo.grasic@ account) plus
-   dedicated emulated targets.  The nodes were soulkiller (268485122 at
-   100.91.23.41), orin (268485121 at 100.92.115.65), and horus
-   (268485123 at 100.65.168.37), with emulated Moon (268484801), Mars
-   (268484820), and gateway (268485000) reached via plans to the public
-   gateway IP 100.96.108.37.  All reals used UDPCL on port 4556 with
-   long-duration bidirectional contacts, cfdp + bputa for CPB injection
-   (cfdp entities configured for the emulated EIDs), ionsec default key,
-   and DTNEx for dynamic CBOR contact/probability exchange on
-   .12160/.12161.  UFW was enabled on all three hosts (default deny
-   incoming) with explicit allows for UDP 4556 (core UDPCL), 4557, and
-   12160 (DTNEx/CBOR) from the 100.0.0.0/8 and 100.64.0.0/10 Tailscale
-   ranges plus on the tailscale0 interface (executed after explicit
-   operator instruction to make any needed firewall exemptions).
+   plane validation was executed on a three-node NASA ION v4.1.0 testbed
+   on the IPNSIG PWG Tailscale mesh, plus dedicated emulated targets.
+   The real nodes were ipn node numbers 268485122, 268485121, and
+   268485123.  Emulated Moon (268484801), Mars (268484820), and gateway
+   (268485000) endpoints were reached via contact plans to a public
+   gateway on the mesh.  All real nodes used UDPCL on port 4556 with
+   long-duration bidirectional contacts, CFDP and bputa for CPB
+   injection (CFDP entities configured for the emulated EIDs), ionsec
+   default key, and DTNEx for dynamic CBOR contact and probability
+   exchange on service numbers .12160/.12161.  Host firewalls allowed
+   UDP 4556 (UDPCL), 4557, and 12160 (DTNEx) from the Tailscale address
+   ranges used by the mesh.
 
-   Two phases were executed using the reference packet.py + cpb.py
-   (minimal CPB map with F_DEFAULT_PROB + F_PATH_ENTRIES using IEEE
-   binary16 float per draft Section 3.4 canonical CBOR encoding; the
-   deployed cpb.py did not insert an F_VERSION key).
+   Two phases were executed using the reference packet.py and cpb.py
+   tools (minimal CPB map with default probability and path entries
+   encoded as IEEE binary16 floats per Section 3.4; the deployed encoder
+   for these runs did not insert a format-version key).
 
-   Phase 1 (72 messages): Each of the three real nodes sent the eight
-   quirky one-liner payloads with-CPB (using the eight adversarial
-   probabilities 0.65..0.99) to each of the three dedicated "my nodes"
-   (gateway 268485000, Moon 268484801, Mars 268484820).  Bundles were
-   created with source = sending real EID and injected via bputa to the
-   destination cfdp entity after cfdpadmin update (enabling bputa,
-   discard=0, segsize=1400, requirecrc=0). cfdpclock + bputa were
-   confirmed running on the injector before each batch.
+   Phase 1 (72 messages): Each of the three real nodes sent eight fixed
+   short text payloads with a CPB (using eight fixed test probabilities
+   in 0.65..0.99) to each of three dedicated test EIDs (gateway
+   268485000, Moon 268484801, Mars 268484820).  Bundles were created
+   with source equal to the sending real EID and injected via bputa to
+   the destination CFDP entity after cfdpadmin configuration (bputa
+   enabled, discard=0, segsize=1400, requirecrc=0). cfdpclock and bputa
+   were confirmed running on the injector before each batch.
 
-   Phase 2 (32 messages, test nodes to each other ONLY): The eight
-   quirky payloads were sent bidirectional (Moon→Mars and Mars→Moon),
-   both with-CPB and plain (no CPB block).  Bundles were created with
-   source = originating emulated EID and destination = the other
-   emulated EID, then bputa-injected from soulkiller to the destination
-   test entity's cfdp number (to 268484820 for all Moon→Mars bundles; to
-   268484801 for all Mars→Moon bundles).  This batch was strictly
-   between the two test nodes; no real nodes, gateway 000, or published
-   nodes (008/800/657) were involved.
+   Phase 2 (32 messages, emulated test nodes only): The same eight
+   payloads were sent bidirectionally (Moon→Mars and Mars→Moon), both
+   with a CPB and plain (no CPB block).  Bundles were created with
+   source equal to the originating emulated EID and destination equal to
+   the other emulated EID, then injected via bputa from node 268485122
+   to the destination CFDP entity (268484820 for Moon→Mars; 268484801
+   for Mars→Moon).  This batch was limited to the two emulated test
+   nodes.
 
    All bundles (104 total) were produced by the reference encoder,
    successfully injected, and appeared in bplist for the target EIDs
-   (frequently "Queued for forwarding to .0" or destination .12160 on
-   the reals).  The Phase 2 with-CPB examples use a minimal CPB map
-   (default probability + one path entry); a representative file is 121
+   (often queued for forwarding).  Phase 2 with-CPB examples use a
+   minimal CPB map (default probability plus one path entry); a
+   representative file is 121 B (see dissection below).  The separate
+   full-field overhead measurement of 51 B (76 B plain → 127 B with CPB)
+   is from the 2-node campaign in impl/real-cpb-ion-test/ and is
+   reported under Section 10; it is not the size of these minimal-map
+   bundles.  Artifacts are preserved under impl/real-pwg-deployment/
+   timeline1/.
 
-
-
-Perry                    Expires 30 January 2027               [Page 41]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-   B (see dissection below).  The separate full-field overhead
-   measurement of 51 B (76 B plain → 127 B with CPB) is from the 2-node
-   campaign in impl/real-cpb-ion-test/ and is reported under Section 10;
-   it is not the size of these minimal-map timeline1 bundles.  The 32
-   test-to-each-other .bundle files (plus representative 72-batch and
-   per-sender captures) plus snapshot copies are preserved under impl/
-   real-pwg-deployment/timeline1/ (cpb_test_to_each_other/,
-   cpb_with_verification/, receive_logs/, etc.), with full command
-   history and status in impl/real-pwg-deployment/timeline1/
-   LIVE_TRANSMISSION_STATUS.txt (also rsynced to orin backup and
-   tarballed).
-
-   Wire-format and intact-CPB evidence: Wireshark 4.6.4 (with tshark)
-   was installed on soulkiller; the presence of "Bundle Protocol", "DTN
-   Bundle Protocol Version 7 (BPv7)", and "BPv7 Block Type" dissectors
-   was confirmed via tshark -G protocols.  A detailed manual CBOR + hex
-   dissection (with pcap conversion) was performed on the concrete
-   example moon_to_mars_with_cpb_01_save.bundle (121 B, first quirky
-   line with prob ~0.65).  The full wire bytes are:
+   Wire-format evidence: Wireshark 4.6.4 (with tshark) on node 268485122
+   confirmed BPv7 and BPv7 Block Type dissectors.  A manual CBOR and hex
+   dissection was performed on moon_to_mars_with_cpb_01_save.bundle (121
+   B; first fixed payload with probability approximately 0.65).  The
+   full wire bytes are:
 
    88070000498201821a1000c0c101498201821a1000c0d401498201821a1000c0
    c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
@@ -2342,85 +1947,52 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    (F_DEFAULT_PROB and single F_PATH_ENTRIES entry; no F_VERSION key in
    the runtime encoder used for these runs).
 
-   Payload block (type 1): the 27-byte string "save a horse, ride a
-   cowboy".
+   Payload block (type 1): a fixed 27-byte ASCII test string used for
+   this campaign.
 
+   The CPB block and its single direct path entry matched the encoder
+   output bit-for-bit; no appended path entries or probability mutations
+   were present.  The same structure (varying only the probability value
+   and target node in the path entry) appears in all 16 with-CPB bundles
+   from the Phase 2 batch.
 
-
-
-
-Perry                    Expires 30 January 2027               [Page 42]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-   The CPB block and its single direct path entry were bit-for-bit
-   faithful to the encoder output; no appended path entries or
-   probability mutations were present.  The same structure (varying only
-   the probability value and target node in the path entry) appears in
-   all 16 with-CPB bundles from the Phase-2 batch.
-
-   Receive-side collection: bpsink + receiver.py (bprecv + CPB scanner)
-   + recv_cpb.py were run on the emulated EIDs/services (.1 and .12160)
-   across the three reals for a 30 s drain window immediately after the
-   32 test-to-each-other injections. 12 log files were captured and
-   snapshotted (under timeline1/receive_logs/).  Zero quirky payload
-   strings were observed in the logs, and no receive-side CPB decodes
-   were triggered in that window.  This is consistent with the CFDP-
-   wrapped bputa injection model and the emulated targets (plan + cfdp
-   entity only; bundles frequently remained in bplist forwarding queues
-   rather than local app delivery to a .1 endpoint).
+   Receive-side collection: bpsink, a bprecv-based receiver, and
+   recv_cpb.py were run on the emulated EID services (.1 and .12160)
+   across the three real nodes for a 30 s window after the Phase 2
+   injections.  Captured logs under timeline1/receive_logs/ showed no
+   local application delivery of the test payloads and no receive-side
+   CPB decodes in that window.  That outcome is consistent with CFDP-
+   wrapped bputa injection and with emulated targets that are plan and
+   CFDP-entity constructs only (bundles often remained in bplist
+   forwarding queues rather than delivering to a .1 endpoint).
 
    Decode verification (post-injection): recv_cpb.py and the receiver
-   scanner were run against the source .bundle files and the from_*
-   captures.  Every with-CPB bundle decoded successfully to its original
-   map (single direct path entry + the assigned assigned test confidence
-   for that quirky line).  No path updates or probability changes were
-   observed.
+   scanner were run against the source .bundle files and captures.
+   Every with-CPB bundle decoded to its original map (single direct path
+   entry and the assigned test confidence).  No path updates or
+   probability changes were observed on those files.
 
-   Full artifacts and reproduction details (the exact 32 bidirectional
-   test-to-each-other bundles with+plain, representative 72-batch
-   artifacts, pcap conversion scripts, the detailed bundle breakdown,
-   all receiver/bpsink/recv_cpb logs, bplist snapshots before/after, the
-   three host*.rc + start-*.sh, the generated ION-PWG-DTN-FAQ.pdf,
-   LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each other
-   ONLY - completed" and "CPB decode verification" paragraphs, and
-   tarballs) live in impl/real-pwg-deployment/timeline1/. Related 2-node
-   full-field bundle samples and notes are under impl/real-cpb-ion-
-   test/.
+   Artifacts (Phase 1 and Phase 2 bundles, receiver logs, bplist
+   snapshots, host configuration files, and run notes) are under impl/
+   real-pwg-deployment/timeline1/. Related two-node full-field samples
+   are under impl/real-cpb-ion-test/.
 
    *Limitations of this validation (distinct from the simulation).* The
-   emulated targets (268484801/820) are plan + cfdp-entity constructs
-   only; no full ION daemons run on those EIDs.  Consequently, many
-   bundles remained in bplist "Queued for forwarding to .0" (or
-   destination .12160) state rather than being delivered as app data to
-   a .1 endpoint that bpsink or a native receiver would print.  The
-   Phase 2 (32-message) batch was injected locally on soulkiller via
-   bputa to the cfdp entity for the destination test node (a short
-   "span" within the plan/CFDP layer on one host). bpsink and receiver
-   runs during the 30 s collection window surfaced zero quirky payloads
-   and did not trigger receive-side CPB decodes.  Full in-band
-   consumption of the CPB values by ION CGR (or DTNEx) for actual
-   forwarding decisions was not exercised.  Injection of pre-formed
-
-
-
-Perry                    Expires 30 January 2027               [Page 43]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-   bundles required bputa (CFDP "put file"); standard bpsource does not
-   provide an equivalent path for embedding an experimental extension
-   block.  Stable operation required the usual SDR/shmmax/key/cfdp setup
-   plus the UFW exemptions noted above.  No BPSec was applied in these
-   runs.  The validation therefore demonstrates creation, bputa/CFDP
-   injection, UDPCL carriage over a real multi-node Tailscale mesh with
-   DTNEx, bplist visibility, and wire-format survival of the unknown ext
-   block 200 carrying the CPB CBOR map (float16 probabilities + path
-   entries) exactly as encoded, but does not constitute a full multi-hop
-   routing-policy experiment with in-band CPB consumption on real
-   hardware.
+   emulated targets (268484801 and 268484820) are plan and CFDP-entity
+   constructs only; full ION daemons do not run on those EIDs.  Many
+   bundles therefore remained queued for forwarding rather than being
+   delivered as application data.  Phase 2 injection used bputa on node
+   268485122 toward the destination CFDP entity (a short span within the
+   plan/CFDP layer on one host).  Full in-band consumption of CPB values
+   by ION CGR or DTNEx for forwarding decisions was not exercised.
+   Injection of pre-formed bundles required bputa; standard bpsource
+   does not provide an equivalent path for embedding an experimental
+   extension block.  No BPSec was applied in these runs.  The validation
+   demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
+   multi-node mesh with DTNEx, bplist visibility, and wire-format
+   survival of experimental extension block type 200 carrying the CPB
+   CBOR map as encoded.  It does not constitute a multi-hop routing-
+   policy experiment with in-band CPB consumption on production stacks.
 
 12.7.  Goals (per RFC 2026 Section 4.2.1)
 
@@ -2455,16 +2027,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
 
    3.  CPB byte overhead below 5% for 1 KB+ payloads. *Met
        analytically.*
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 44]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    4.  No fundamental architectural conflicts with BPv7. *Met
        technically:* CPB is a standard extension block, EID immutability
@@ -2507,34 +2069,14 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    demonstrate multi-hop accumulation of distinct CPB blocks along a
    path.
 
-
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 45]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
 12.11.  Open Experimental Questions
 
-   The experiment in this document establishes Experimental-track
-   baseline plausibility: (1) the wire format is implementable and
-   survivable on a real BPv7 data plane, and (2) confidence-weighted
-   routing fed by accurate confidences of the CPB class outperforms
-   confidence-blind routing on the same contact-failure realizations.  A
-   complete validation of CPB as an operational standardized mechanism
-   requires answering a series of follow-on questions that this document
-   does not close.  These are enumerated here so that reviewers,
-   implementers, and follow-on researchers share a common list of what
-   remains for Standards Track; none of the items below is required to
-   complete this Experimental -00.
+   Results so far support two limited conclusions: (1) the wire format
+   is implementable and can survive on a real BPv7 data plane, and (2)
+   confidence-weighted routing fed by accurate confidences of the CPB
+   class outperforms confidence-blind routing on the same contact-
+   failure realizations in Configuration 1.  The items below remain
+   open; this document does not close them.
 
    Robustness to noisy probability estimation  The simulator uses
       ground-truth per-contact probabilities.  Real deployments must
@@ -2567,17 +2109,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       and discard-all strategies under realistic traffic.
 
    Partial deployment behavior  CPB is designed for incremental
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 46]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
       deployment: nodes that don't understand CPB pass it through
       unchanged.  But the routing _quality_ in a mixed CPB-aware / CPB-
       unaware network is not characterized.  Sensitivity to the fraction
@@ -2605,55 +2136,25 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       (ION, HDTN, uPCN) have subtly different fragmentation pathways and
       CPB replication behavior across implementations is unproven.
 
-   Interoperability with production BP stacks  This is the single
-      largest standards-process gap.  RFC publication at Experimental
-      status is acceptable with simulator-only validation, but
-      progression to Standards Track will require demonstrated
-      interoperability between at least two independent implementations
-      operating over real BPv7 stacks (canonically: NASA ION and an
-      independently-developed alternative such as HDTN, µPCN, or a fresh
-      implementation against this specification).  The reference Python
-      implementation (Section 13) does not count as an independent
-      implementation for this purpose, since it was developed alongside
-      the specification by the same author.  Expanded partial data-plane
-      evidence now exists on the NASA ION v4.1.0 PWG three-node +
-      emulated-target testbed (soulkiller 268485122, orin 268485121,
-      horus 268485123, plus emulated Moon 268484801, Mars 268484820, and
-      gateway 268485000).  The reference-encoded CPB (ext block 200 +
-      BTSD with canonical CBOR float16 map) was created for the eight
-      fixed test confidence values plus the exact quirky one-liners,
-      injected via bputa (after cfdpadmin entity setup for the emulated
-      EIDs), carried over live UDPCL on the Tailscale mesh with DTNEx
-      active, and remained intact on the wire (demonstrated via manual
-      CBOR/hex parse and Wireshark 4.6.4 with BPv7/Bundle/BPv7 Block
-
-
-
-Perry                    Expires 30 January 2027               [Page 47]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-      Type dissectors; see the detailed breakdown of
-      moon_to_mars_with_cpb_01_save.bundle in the updated Section 12.6).
-      72 messages (3 reals × 8 quirky × 3 dedicated targets with-CPB)
-      plus 32 messages (bidirectional between the two emulated test
-      nodes, with-CPB + plain) were executed.  UFW exemptions for the
-      DTN ports (4556/4557/12160) were added on all three hosts from the
-      Tailscale ranges (per explicit operator instruction).  All source
-      .bundle files, bplist snapshots, receiver logs, and timeline1
-      snapshot artifacts are preserved.  Full consumption of CPB values
-      by ION CGR (or DTNEx) for forwarding decisions, multi-hop
-      operation with in-band updates, and BPSec-protected bundles remain
-      open.
+   Interoperability with production BP stacks  Interoperation between at
+      least two independent implementations on real BPv7 stacks (for
+      example NASA ION and an independently developed alternative such
+      as HDTN, µPCN, or a fresh implementation) has not been
+      demonstrated.  The reference Python implementation (Section 13)
+      was developed with this specification by the same author and is
+      not a second independent stack.  Partial data-plane evidence on a
+      NASA ION v4.1.0 three-node PWG mesh plus emulated targets is
+      described in Section 12.6: extension blocks were injected via
+      bputa, carried over UDPCL with DTNEx active, and verified intact
+      on the wire.  Full consumption of CPB values by ION CGR or DTNEx
+      for forwarding decisions, multi-hop in-band updates, and BPSec-
+      protected bundles remain open.
 
    Control-theoretic stability analysis  Section 4.4 identifies feedback
       dynamics qualitatively and recommends mitigations, but does not
-      provide a formal stability proof.  A control-theoretic analysis
-      (e.g., describing the routing system as a discrete-time dynamical
-      system with CPB-driven feedback and analyzing stability of fixed
-      points) would substantially strengthen the standards case for CPB-
-      driven routing in dense networks.
+      provide a formal stability proof.  Analyzing the routing system as
+      a discrete-time dynamical system with CPB-driven feedback remains
+      future work for dense networks.
 
    Metric-type cross-validation  Section 3.5 prohibits cross-metric
       arithmetic but does not validate the prohibition empirically.
@@ -2661,12 +2162,8 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       in practice produces worse outcomes than a router strictly
       partitioning by metric-type is an open empirical question.
 
-   Resolution of these questions is not a prerequisite for Experimental-
-   track publication, but each will need to be addressed before the CPB
-   mechanism can be reasonably considered for Standards Track.  The
-   author encourages the DTN research community to take up any subset of
-   these as follow-on work; the reference implementation and simulator
-   (Section 13) provide a starting point for such studies.
+   The reference implementation and simulator (Section 13) may assist
+   follow-on measurement of any of the items above.
 
 13.  Reference Implementation
 
@@ -2683,13 +2180,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    *  *config1_sim.py* - the discrete-event simulator that produced the
       Configuration 1 results in Section 12 (paper battery).
 
-
-
-Perry                    Expires 30 January 2027               [Page 48]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    *  *test_config1_policies.py* - unit tests for the confidence-
       weighted cost formula.
 
@@ -2697,8 +2187,8 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
       confidences encode/decode as metric-type 1 CPB maps without
       changing confidence-weighted route cost ranking.
 
-   *  *test_draft_honesty.py* - structural checks that draft/docs claims
-      stay aligned with shipped code.
+   *  *test_draft_consistency.py* - structural checks that draft and
+      documentation claims stay aligned with shipped code.
 
 13.1.  Repository
 
@@ -2717,7 +2207,7 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    python3 impl/test_cpb.py
    python3 impl/test_config1_policies.py
    python3 impl/test_sim_cpb_bridge.py
-   python3 impl/test_draft_honesty.py
+   python3 impl/test_draft_consistency.py
    python3 impl/config1_sim.py --battery paper --strategy both
    <CODE ENDS>
 
@@ -2738,13 +2228,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
    Tailscale link, and IPN activation state; the bundle creation, cfdp
    rc changes, bputa invocation, and decode steps are self-contained and
    runnable on any ION installation that supports bputa.
-
-
-
-Perry                    Expires 30 January 2027               [Page 49]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
 13.3.  Relationship to Updates of BPv7
 
@@ -2790,17 +2273,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
               Representation (CBOR)", STD 94, RFC 8949,
               DOI 10.17487/RFC8949, December 2020,
               <https://www.rfc-editor.org/info/rfc8949>.
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 50]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
 
    [RFC8610]  Birkholz, H., Vigano, C., and C. Bormann, "Concise Data
               Definition Language (CDDL): A Notational Convention to
@@ -2851,13 +2323,6 @@ Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
               RFC 7942, DOI 10.17487/RFC7942, July 2016,
               <https://www.rfc-editor.org/info/rfc7942>.
 
-
-
-Perry                    Expires 30 January 2027               [Page 51]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    [Fraire18] Fraire, J., Madoery, P., Burleigh, S., Feldmann, M.,
               Finochietto, J., Charif, A., Zergainoh, N., and R.
               Velazco, "Assessing Contact Graph Routing Performance and
@@ -2906,14 +2371,6 @@ Appendix A.  Mars Mission Scenario
    4.  *Orbiter processes:* Router at orbiter checks 0.95 > 0.7 ->
        forward immediately
 
-
-
-
-Perry                    Expires 30 January 2027               [Page 52]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
    5.  *Result:* Both bundles are delivered with minimal latency.
 
    *Decay example:* If the first bundle (P=0.6) is delayed 10 hours and
@@ -2929,102 +2386,36 @@ Appendix B.  Change Log
 
 B.1.  draft-perry-dtn-cpb-00 (July 2026)
 
-   *  Initial submission: complete CPB specification
+   *  Initial Experimental -00: Contact Probability Block wire format,
+      metric-type registry, operational and security considerations, and
+      IANA requests.
 
-   *  CBOR float16 encoding with deterministic wire format
+   *  CBOR float16 encoding with deterministic encoding rules; format
+      version field (key 7); per-path array size guidance as SHOULD with
+      local enforcement on constrained links.
 
-   *  BPSec integrity model (append-only and strip-and-replace)
+   *  BPSec integrity models (append-only and strip-and-replace); BCB
+      encryption of CPB prohibited for routing use.
 
-   *  IANA registrations: Bundle Block Type + CPB Metric Types sub-
-      registry
+   *  Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR, and
+      DTNMA; IPNSIG Section 4.2 problem framing.
 
-   *  Protocol integration analysis: PRoPHET, MaxProp, RAPID, Spray-and-
-      Wait, CGR, DTNMA
+   *  Configuration 1 simulation (baseline earliest-arrival CGR vs one
+      confidence-weighted consumer) with CRN contact trials; delivery
+      and mean latency improvements reported; p95 not improved on that
+      topology.
 
-   *  Mars mission scenario (Appendix A)
+   *  Limited ION data-plane validation of extension-block carriage (not
+      in-band CGR consumption of CPB).
 
-   *  Experimental validation protocol consolidated into Section 12 (was
-      a separate companion document in earlier revisions)
+   *  Reference implementation and reproduction commands (Section 13).
 
-   *  Section 1.1 added: IPNSIG Section 4.2 problem-statement anchor
+   *  Aligns with RFC 9171 errata relevant to CRC handling and
+      fragmentation; cites [RFC9713] and [RFC9758] as updates related to
+      BPv7 administration and the ipn scheme.
 
-   *  Section 11 rewritten: honest implementation status (reference
-      Python implementation + simulator-based validation; The ONE and
-      ION installations documented but no fabricated results)
-
-   *  Incorporates review feedback from Brian Sipos on CDDL, BTSD
-      embedding, fragmentation pruning, identical-timestamp tie-breaker,
-      per-path array limit (relaxed to SHOULD with local enforcement),
-      scheme-mismatch SHOULD-log, future-dated MUST-discard, and IANA
-      considerations
-
-   *  References [RFC9713] and [RFC9758] as post-publication updates to
-      [RFC9171]
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 53]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
-
-   *  Incorporates verified errata against RFC 9171: EID 7881
-      (Section 6.1.1, CBOR simple value encoding of status indicators),
-      EID 8043 (Section 4.3.1, CRC value bytes zeroed before CBOR
-      encoding), and EID 8376 (Section 5.8, fragmentation and MTU
-      handling addressed by CPB pruning).
-
-   *  Section 13 added: reference implementation + GitHub repository
-
-   *  Added CPB format version field (key 7, default 1) for future
-      evolution; updated CDDL to enforce the 8-entry path limit as a
-      MUST; added top-level "Operational Considerations" section
-      (sizing, production guidance, logging/OAM, partial deployment,
-      congestion, clocks); expanded IANA sub-registry description;
-      clarified handling of unrecognized metric types and Source PCE
-      Identifier field semantics.
-
-   *  Post-combine cold review polish: bumped document date to 8 July
-      2026; clarified per-path array (field 1) language to emphasize
-      SHOULD limit with informative CDDL bound of 8 and local
-      enforcement on constrained links; synced timeline1/ snapshot
-      cpb.py and updated its README note; removed stale review/
-      placeholder files; rebuilt draft outputs.
-
-   *  2026-07-22 cold-review honesty pass: Abstract and CGR section use
-      stochastic (not adversarial) sim conditions; Implementation Status
-      narrowed to wire encode/decode coverage plus separate PWG ION
-      data-plane entry; offline lab path names replaced with repo-
-      relative timeline1 and real-cpb-ion-test paths; full-field 51 B
-      overhead attributed only to the 2-node campaign; document date 22
-      July 2026; evaluation remains baseline vs one confidence-weighted
-      CPB consumer.
-
-   *  2026-07-22 purpose-completion pass: split experiment into wire-
-      format vs routing-value-of-metadata parts; honest deferred-
-      configurations list; sim↔CPB bridge tests; open questions framed
-      as Standards Track follow-ons, not -00 gaps.
-
-   *  2026-07-22 probabilistic-routing alignment: expand metric-type and
-      Section 5 mapping against PRoPHET (RFC 6693 aging / RIB /
-      strategies), MaxProp, RAPID, Spray-and-Wait (L out of band),
-      epidemic summary vectors, CGR contact-plan split, and social/
-      hybrid metrics; clarify what CPB carries vs control plane state.
-
-   *  2026-07-23 thesis-grade consistency pass: RFC 9171 CRC/array
-      alignment; eid-reference tstr; CPB epoch seconds (not ms DTN
-      Time); confidence-weighted cost latency/confidence with CRN
-      contacts; honest Config1 results (delivery and mean latency up,
-      p95 not); claim hygiene throughout.
-
-
-
-Perry                    Expires 30 January 2027               [Page 54]
-
-Internet-Draft     DTN Probabilistic Routing Metadata          July 2026
-
+   *  CDDL, BTSD embedding, fragmentation pruning, timestamp tie-
+      breaker, and IANA text.
 
 Author's Address
 
@@ -3033,48 +2424,3 @@ Author's Address
    Council Bluffs, Iowa
    United States of America
    Email: nick@perrybrandsllc.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Perry                    Expires 30 January 2027               [Page 55]

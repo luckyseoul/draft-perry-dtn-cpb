@@ -80,7 +80,7 @@
         confidence). On that topology the confidence-weighted consumer improves
         mean delivery ratio and mean latency while selecting higher path
         confidence; p95 latency is not improved on this topology and is
-        reported honestly. The contribution of this specification is the
+        reported as measured. The contribution of this specification is the
         standardized BPv7 extension block for carrying such metadata, not a
         claim that production stacks already consume CPB in-band. Operational
         deployment questions &#8212; robustness to noisy or adversarial
@@ -1991,7 +1991,7 @@ A3                   ; map with 3 entries
                 <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
                 https://github.com/luckyseoul/draft-perry-dtn-cpb</eref></li>
             <li><strong>License:</strong> MIT License</li>
-            <li><strong>Modules:</strong> cpb.py (encoder/decoder, ~280 lines),
+            <li><strong>Modules:</strong> cpb.py (encoder/decoder),
                 test_cpb.py (conformance suite for wire encode/decode),
                 config1_sim.py (discrete-event simulator producing the
                 <xref target="experiment"/> Configuration 1 results).</li>
@@ -2267,77 +2267,65 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         <name>Real-Stack Data-Plane Validation (ION PWG Testbed)</name>
         <t>
           In addition to the discrete-event simulation, a limited real
-          data-plane validation was executed on a live three-node NASA ION
-          v4.1.0 testbed on the IPNSIG PWG Tailscale mesh (samo.grasic@ account)
-          plus dedicated emulated targets. The nodes were soulkiller
-          (268485122 at 100.91.23.41), orin (268485121 at 100.92.115.65), and
-          horus (268485123 at 100.65.168.37), with emulated Moon (268484801),
-          Mars (268484820), and gateway (268485000) reached via plans to the
-          public gateway IP 100.96.108.37. All reals used UDPCL on port 4556
-          with long-duration bidirectional contacts, cfdp + bputa for CPB
-          injection (cfdp entities configured for the emulated EIDs), ionsec
-          default key, and DTNEx for dynamic CBOR contact/probability exchange
-          on .12160/.12161. UFW was enabled on all three hosts (default deny
-          incoming) with explicit allows for UDP 4556 (core UDPCL), 4557, and
-          12160 (DTNEx/CBOR) from the 100.0.0.0/8 and 100.64.0.0/10 Tailscale
-          ranges plus on the tailscale0 interface (executed after explicit
-          operator instruction to make any needed firewall exemptions).
+          data-plane validation was executed on a three-node NASA ION
+          v4.1.0 testbed on the IPNSIG PWG Tailscale mesh, plus dedicated
+          emulated targets. The real nodes were ipn node numbers 268485122,
+          268485121, and 268485123. Emulated Moon (268484801), Mars
+          (268484820), and gateway (268485000) endpoints were reached via
+          contact plans to a public gateway on the mesh. All real nodes used
+          UDPCL on port 4556 with long-duration bidirectional contacts,
+          CFDP and bputa for CPB injection (CFDP entities configured for the
+          emulated EIDs), ionsec default key, and DTNEx for dynamic CBOR
+          contact and probability exchange on service numbers .12160/.12161.
+          Host firewalls allowed UDP 4556 (UDPCL), 4557, and 12160 (DTNEx)
+          from the Tailscale address ranges used by the mesh.
         </t>
         <t>
-          Two phases were executed using the reference packet.py + cpb.py
-          (minimal CPB map with F_DEFAULT_PROB + F_PATH_ENTRIES using IEEE
-          binary16 float per draft Section 3.4 canonical CBOR encoding; the
-          deployed cpb.py did not insert an F_VERSION key).
+          Two phases were executed using the reference packet.py and cpb.py
+          tools (minimal CPB map with default probability and path entries
+          encoded as IEEE binary16 floats per
+          <xref target="cbor-encoding"/>; the deployed encoder for these runs
+          did not insert a format-version key).
         </t>
         <t>
-          Phase 1 (72 messages): Each of the three real nodes sent the eight
-          quirky one-liner payloads with-CPB (using the eight adversarial
-          probabilities 0.65..0.99) to each of the three dedicated "my nodes"
+          Phase 1 (72 messages): Each of the three real nodes sent eight
+          fixed short text payloads with a CPB (using eight fixed test
+          probabilities in 0.65..0.99) to each of three dedicated test EIDs
           (gateway 268485000, Moon 268484801, Mars 268484820). Bundles were
-          created with source = sending real EID and injected via bputa to the
-          destination cfdp entity after cfdpadmin update (enabling bputa,
-          discard=0, segsize=1400, requirecrc=0). cfdpclock + bputa were
-          confirmed running on the injector before each batch.
+          created with source equal to the sending real EID and injected via
+          bputa to the destination CFDP entity after cfdpadmin configuration
+          (bputa enabled, discard=0, segsize=1400, requirecrc=0). cfdpclock
+          and bputa were confirmed running on the injector before each batch.
         </t>
         <t>
-          Phase 2 (32 messages, test nodes to each other ONLY): The eight
-          quirky payloads were sent bidirectional (Moon&#x2192;Mars and
-          Mars&#x2192;Moon), both with-CPB and plain (no CPB block). Bundles
-          were created with source = originating emulated EID and destination =
-          the other emulated EID, then bputa-injected from soulkiller to the
-          destination test entity's cfdp number (to 268484820 for all
-          Moon&#x2192;Mars bundles; to 268484801 for all Mars&#x2192;Moon
-          bundles). This batch was strictly between the two test nodes; no
-          real nodes, gateway 000, or published nodes (008/800/657) were
-          involved.
+          Phase 2 (32 messages, emulated test nodes only): The same eight
+          payloads were sent bidirectionally (Moon&#x2192;Mars and
+          Mars&#x2192;Moon), both with a CPB and plain (no CPB block). Bundles
+          were created with source equal to the originating emulated EID and
+          destination equal to the other emulated EID, then injected via
+          bputa from node 268485122 to the destination CFDP entity
+          (268484820 for Moon&#x2192;Mars; 268484801 for Mars&#x2192;Moon).
+          This batch was limited to the two emulated test nodes.
         </t>
         <t>
           All bundles (104 total) were produced by the reference encoder,
           successfully injected, and appeared in bplist for the target EIDs
-          (frequently "Queued for forwarding to .0" or destination .12160 on
-          the reals). The Phase 2 with-CPB examples use a minimal CPB map
-          (default probability + one path entry); a representative file is
-          121 B (see dissection below). The separate full-field overhead
-          measurement of 51 B (76 B plain &#x2192; 127 B with CPB) is from
-          the 2-node campaign in <tt>impl/real-cpb-ion-test/</tt> and is
-          reported under <xref target="overhead-analysis"/>; it is not the
-          size of these minimal-map timeline1 bundles. The 32
-          test-to-each-other .bundle files (plus representative 72-batch and
-          per-sender captures) plus snapshot copies are preserved under
-          impl/real-pwg-deployment/timeline1/ (cpb_test_to_each_other/,
-          cpb_with_verification/, receive_logs/, etc.), with full command
-          history and status in
-          impl/real-pwg-deployment/timeline1/LIVE_TRANSMISSION_STATUS.txt
-          (also rsynced to orin backup and tarballed).
+          (often queued for forwarding). Phase 2 with-CPB examples use a
+          minimal CPB map (default probability plus one path entry); a
+          representative file is 121 B (see dissection below). The separate
+          full-field overhead measurement of 51 B (76 B plain &#x2192; 127 B
+          with CPB) is from the 2-node campaign in
+          <tt>impl/real-cpb-ion-test/</tt> and is reported under
+          <xref target="overhead-analysis"/>; it is not the size of these
+          minimal-map bundles. Artifacts are preserved under
+          <tt>impl/real-pwg-deployment/timeline1/</tt>.
         </t>
         <t>
-          Wire-format and intact-CPB evidence: Wireshark 4.6.4 (with tshark)
-          was installed on soulkiller; the presence of "Bundle Protocol",
-          "DTN Bundle Protocol Version 7 (BPv7)", and "BPv7 Block Type"
-          dissectors was confirmed via tshark -G protocols. A detailed manual
-          CBOR + hex dissection (with pcap conversion) was performed on the
-          concrete example moon_to_mars_with_cpb_01_save.bundle (121 B, first
-          quirky line with prob ~0.65). The full wire bytes are:
+          Wire-format evidence: Wireshark 4.6.4 (with tshark) on node
+          268485122 confirmed BPv7 and BPv7 Block Type dissectors. A manual
+          CBOR and hex dissection was performed on
+          moon_to_mars_with_cpb_01_save.bundle (121 B; first fixed payload
+          with probability approximately 0.65). The full wire bytes are:
         </t>
         <artwork type="ascii-art"><![CDATA[
 88070000498201821a1000c0c101498201821a1000c0d401498201821a1000c0
@@ -2369,73 +2357,59 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           in the runtime encoder used for these runs).
         </t>
         <t>
-          Payload block (type 1): the 27-byte string "save a horse, ride a
-          cowboy".
+          Payload block (type 1): a fixed 27-byte ASCII test string used for
+          this campaign.
         </t>
         <t>
-          The CPB block and its single direct path entry were bit-for-bit
-          faithful to the encoder output; no appended path entries or
-          probability mutations were present. The same structure (varying only
-          the probability value and target node in the path entry) appears in
-          all 16 with-CPB bundles from the Phase-2 batch.
+          The CPB block and its single direct path entry matched the encoder
+          output bit-for-bit; no appended path entries or probability mutations
+          were present. The same structure (varying only the probability value
+          and target node in the path entry) appears in all 16 with-CPB
+          bundles from the Phase 2 batch.
         </t>
         <t>
-          Receive-side collection: bpsink + receiver.py (bprecv + CPB scanner)
-          + recv_cpb.py were run on the emulated EIDs/services (.1 and .12160)
-          across the three reals for a 30 s drain window immediately after the
-          32 test-to-each-other injections. 12 log files were captured and
-          snapshotted (under timeline1/receive_logs/). Zero quirky payload
-          strings were observed in the logs, and no receive-side CPB decodes
-          were triggered in that window. This is consistent with the CFDP-wrapped
-          bputa injection model and the emulated targets (plan + cfdp entity
-          only; bundles frequently remained in bplist forwarding queues rather
-          than local app delivery to a .1 endpoint).
+          Receive-side collection: bpsink, a bprecv-based receiver, and
+          recv_cpb.py were run on the emulated EID services (.1 and .12160)
+          across the three real nodes for a 30 s window after the Phase 2
+          injections. Captured logs under timeline1/receive_logs/ showed no
+          local application delivery of the test payloads and no receive-side
+          CPB decodes in that window. That outcome is consistent with
+          CFDP-wrapped bputa injection and with emulated targets that are
+          plan and CFDP-entity constructs only (bundles often remained in
+          bplist forwarding queues rather than delivering to a .1 endpoint).
         </t>
         <t>
           Decode verification (post-injection): recv_cpb.py and the receiver
-          scanner were run against the source .bundle files and the from_*
-          captures. Every with-CPB bundle decoded successfully to its original
-          map (single direct path entry + the assigned assigned test confidence
-          for that quirky line). No path updates or probability changes were
-          observed.
+          scanner were run against the source .bundle files and captures.
+          Every with-CPB bundle decoded to its original map (single direct
+          path entry and the assigned test confidence). No path updates or
+          probability changes were observed on those files.
         </t>
         <t>
-          Full artifacts and reproduction details (the exact 32 bidirectional
-          test-to-each-other bundles with+plain, representative 72-batch
-          artifacts, pcap conversion scripts, the detailed bundle breakdown,
-          all receiver/bpsink/recv_cpb logs, bplist snapshots before/after,
-          the three host*.rc + start-*.sh, the generated ION-PWG-DTN-FAQ.pdf,
-          LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each
-          other ONLY - completed" and "CPB decode verification" paragraphs,
-          and tarballs) live in
-          impl/real-pwg-deployment/timeline1/. Related 2-node full-field
-          bundle samples and notes are under impl/real-cpb-ion-test/.
+          Artifacts (Phase 1 and Phase 2 bundles, receiver logs, bplist
+          snapshots, host configuration files, and run notes) are under
+          <tt>impl/real-pwg-deployment/timeline1/</tt>. Related two-node
+          full-field samples are under <tt>impl/real-cpb-ion-test/</tt>.
         </t>
         <t>
           <strong>Limitations of this validation (distinct from the
-          simulation).</strong> The emulated targets (268484801/820) are plan +
-          cfdp-entity constructs only; no full ION daemons run on those EIDs.
-          Consequently, many bundles remained in bplist "Queued for forwarding
-          to .0" (or destination .12160) state rather than being delivered as
-          app data to a .1 endpoint that bpsink or a native receiver would
-          print. The Phase 2 (32-message) batch was injected locally on
-          soulkiller via bputa to the cfdp entity for the destination test
-          node (a short "span" within the plan/CFDP layer on one host). bpsink
-          and receiver runs during the 30 s collection window surfaced zero
-          quirky payloads and did not trigger receive-side CPB decodes. Full
-          in-band consumption of the CPB values by ION CGR (or DTNEx) for
-          actual forwarding decisions was not exercised. Injection of
-          pre-formed bundles required bputa (CFDP "put file"); standard
-          bpsource does not provide an equivalent path for embedding an
-          experimental extension block. Stable operation required the usual
-          SDR/shmmax/key/cfdp setup plus the UFW exemptions noted above.
-          No BPSec was applied in these runs. The validation therefore
+          simulation).</strong> The emulated targets (268484801 and 268484820)
+          are plan and CFDP-entity constructs only; full ION daemons do not
+          run on those EIDs. Many bundles therefore remained queued for
+          forwarding rather than being delivered as application data.
+          Phase 2 injection used bputa on node 268485122 toward the
+          destination CFDP entity (a short span within the plan/CFDP layer on
+          one host). Full in-band consumption of CPB values by ION CGR or
+          DTNEx for forwarding decisions was not exercised. Injection of
+          pre-formed bundles required bputa; standard bpsource does not
+          provide an equivalent path for embedding an experimental extension
+          block. No BPSec was applied in these runs. The validation
           demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
-          real multi-node Tailscale mesh with DTNEx, bplist visibility, and
-          wire-format survival of the unknown ext block 200 carrying the CPB
-          CBOR map (float16 probabilities + path entries) exactly as encoded,
-          but does not constitute a full multi-hop routing-policy experiment
-          with in-band CPB consumption on real hardware.
+          multi-node mesh with DTNEx, bplist visibility, and wire-format
+          survival of experimental extension block type 200 carrying the CPB
+          CBOR map as encoded. It does not constitute a multi-hop
+          routing-policy experiment with in-band CPB consumption on production
+          stacks.
         </t>
       </section>
 
@@ -2527,17 +2501,12 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
       <section anchor="open-questions">
         <name>Open Experimental Questions</name>
         <t>
-          The experiment in this document establishes Experimental-track
-          baseline plausibility: (1) the wire format is implementable and
-          survivable on a real BPv7 data plane, and (2) confidence-weighted
-          routing fed by accurate confidences of the CPB class outperforms
-          confidence-blind routing on the same contact-failure realizations.
-          A complete validation of CPB as an operational standardized
-          mechanism requires answering a series of follow-on questions that
-          this document does not close. These are enumerated here so that
-          reviewers, implementers, and follow-on researchers share a common
-          list of what remains for Standards Track; none of the items below
-          is required to complete this Experimental -00.
+          Results so far support two limited conclusions: (1) the wire format
+          is implementable and can survive on a real BPv7 data plane, and
+          (2) confidence-weighted routing fed by accurate confidences of the
+          CPB class outperforms confidence-blind routing on the same
+          contact-failure realizations in Configuration 1. The items below
+          remain open; this document does not close them.
         </t>
         <dl>
           <dt>Robustness to noisy probability estimation</dt>
@@ -2617,49 +2586,28 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           </dd>
           <dt>Interoperability with production BP stacks</dt>
           <dd>
-            This is the single largest standards-process gap. RFC publication
-            at Experimental status is acceptable with simulator-only
-            validation, but progression to Standards Track will require
-            demonstrated interoperability between at least two independent
-            implementations operating over real BPv7 stacks (canonically:
-            NASA ION and an independently-developed alternative such as
-            HDTN, &#181;PCN, or a fresh implementation against this
-            specification). The reference Python implementation
-            (<xref target="reference-implementation"/>) does not count as
-            an independent implementation for this purpose, since it was
-            developed alongside the specification by the same author.
-            Expanded partial data-plane evidence now exists on the NASA ION
-            v4.1.0 PWG three-node + emulated-target testbed (soulkiller 268485122,
-            orin 268485121, horus 268485123, plus emulated Moon 268484801, Mars
-            268484820, and gateway 268485000). The reference-encoded CPB (ext
-            block 200 + BTSD with canonical CBOR float16 map) was created for
-            the eight fixed test confidence values plus the exact quirky one-liners,
-            injected via bputa (after cfdpadmin entity setup for the emulated
-            EIDs), carried over live UDPCL on the Tailscale mesh with DTNEx
-            active, and remained intact on the wire (demonstrated via manual
-            CBOR/hex parse and Wireshark 4.6.4 with BPv7/Bundle/BPv7 Block Type
-            dissectors; see the detailed breakdown of
-            moon_to_mars_with_cpb_01_save.bundle in the updated
-            <xref target="exp-real-validation"/>). 72 messages (3 reals &#xD7; 8
-            quirky &#xD7; 3 dedicated targets with-CPB) plus 32 messages
-            (bidirectional between the two emulated test nodes, with-CPB + plain)
-            were executed. UFW exemptions for the DTN ports (4556/4557/12160)
-            were added on all three hosts from the Tailscale ranges (per explicit
-            operator instruction). All source .bundle files, bplist snapshots,
-            receiver logs, and timeline1 snapshot artifacts are preserved.
-            Full consumption of CPB values by ION CGR (or DTNEx) for forwarding
-            decisions, multi-hop operation with in-band updates, and
-            BPSec-protected bundles remain open.
+            Interoperation between at least two independent implementations
+            on real BPv7 stacks (for example NASA ION and an independently
+            developed alternative such as HDTN, &#181;PCN, or a fresh
+            implementation) has not been demonstrated. The reference Python
+            implementation (<xref target="reference-implementation"/>) was
+            developed with this specification by the same author and is not
+            a second independent stack. Partial data-plane evidence on a
+            NASA ION v4.1.0 three-node PWG mesh plus emulated targets is
+            described in <xref target="exp-real-validation"/>: extension
+            blocks were injected via bputa, carried over UDPCL with DTNEx
+            active, and verified intact on the wire. Full consumption of
+            CPB values by ION CGR or DTNEx for forwarding decisions,
+            multi-hop in-band updates, and BPSec-protected bundles remain
+            open.
           </dd>
           <dt>Control-theoretic stability analysis</dt>
           <dd>
             <xref target="stability-considerations"/> identifies feedback
             dynamics qualitatively and recommends mitigations, but does not
-            provide a formal stability proof. A control-theoretic analysis
-            (e.g., describing the routing system as a discrete-time
-            dynamical system with CPB-driven feedback and analyzing
-            stability of fixed points) would substantially strengthen the
-            standards case for CPB-driven routing in dense networks.
+            provide a formal stability proof. Analyzing the routing system
+            as a discrete-time dynamical system with CPB-driven feedback
+            remains future work for dense networks.
           </dd>
           <dt>Metric-type cross-validation</dt>
           <dd>
@@ -2671,14 +2619,9 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           </dd>
         </dl>
         <t>
-          Resolution of these questions is not a prerequisite for
-          Experimental-track publication, but each will need to be addressed
-          before the CPB mechanism can be reasonably considered for Standards
-          Track. The author encourages the DTN research community to take up
-          any subset of these as follow-on work; the reference
-          implementation and simulator
-          (<xref target="reference-implementation"/>) provide a starting
-          point for such studies.
+          The reference implementation and simulator
+          (<xref target="reference-implementation"/>) may assist follow-on
+          measurement of any of the items above.
         </t>
       </section>
     </section>
@@ -2707,8 +2650,8 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <li><strong>test_sim_cpb_bridge.py</strong> - bridge tests showing
             Configuration 1 confidences encode/decode as metric-type 1 CPB
             maps without changing confidence-weighted route cost ranking.</li>
-        <li><strong>test_draft_honesty.py</strong> - structural checks that
-            draft/docs claims stay aligned with shipped code.</li>
+        <li><strong>test_draft_consistency.py</strong> - structural checks that
+            draft and documentation claims stay aligned with shipped code.</li>
       </ul>
 
       <section anchor="repo">
@@ -2733,7 +2676,7 @@ pip install cbor2
 python3 impl/test_cpb.py
 python3 impl/test_config1_policies.py
 python3 impl/test_sim_cpb_bridge.py
-python3 impl/test_draft_honesty.py
+python3 impl/test_draft_consistency.py
 python3 impl/config1_sim.py --battery paper --strategy both
 ]]></sourcecode>
         </figure>
@@ -3074,72 +3017,30 @@ python3 impl/config1_sim.py --battery paper --strategy both
       <section anchor="changelog-00">
         <name>draft-perry-dtn-cpb-00 (July 2026)</name>
         <ul>
-          <li>Initial submission: complete CPB specification</li>
-          <li>CBOR float16 encoding with deterministic wire format</li>
-          <li>BPSec integrity model (append-only and strip-and-replace)</li>
-          <li>IANA registrations: Bundle Block Type + CPB Metric Types
-              sub-registry</li>
-          <li>Protocol integration analysis: PRoPHET, MaxProp, RAPID,
-              Spray-and-Wait, CGR, DTNMA</li>
-          <li>Mars mission scenario (<xref target="app-mars-scenario"/>)</li>
-          <li>Experimental validation protocol consolidated into
-              <xref target="experiment"/> (was a separate companion document
-              in earlier revisions)</li>
-          <li><xref target="problem-statement"/> added: IPNSIG Section 4.2
-              problem-statement anchor</li>
-          <li><xref target="implementation-status"/> rewritten: honest
-              implementation status (reference Python implementation +
-              simulator-based validation; The ONE and ION installations
-              documented but no fabricated results)</li>
-          <li>Incorporates review feedback from Brian Sipos on CDDL, BTSD
-              embedding, fragmentation pruning, identical-timestamp
-              tie-breaker, per-path array limit (relaxed to SHOULD with local enforcement), scheme-mismatch SHOULD-log,
-              future-dated MUST-discard, and IANA considerations</li>
-          <li>References <xref target="RFC9713"/> and <xref target="RFC9758"/>
-              as post-publication updates to <xref target="RFC9171"/></li>
-          <li>Incorporates verified errata against RFC 9171: EID 7881
-              (Section 6.1.1, CBOR simple value encoding of status indicators),
-              EID 8043 (Section 4.3.1, CRC value bytes zeroed before CBOR
-              encoding), and EID 8376 (Section 5.8, fragmentation and MTU
-              handling addressed by CPB pruning).</li>
-          <li><xref target="reference-implementation"/> added: reference
-              implementation + GitHub repository</li>
-          <li>Added CPB format version field (key 7, default 1) for future
-              evolution; updated CDDL to enforce the 8-entry path limit as a
-              MUST; added top-level "Operational Considerations" section
-              (sizing, production guidance, logging/OAM, partial deployment,
-              congestion, clocks); expanded IANA sub-registry description;
-              clarified handling of unrecognized metric types and Source PCE
-              Identifier field semantics.</li>
-          <li>Post-combine cold review polish: bumped document date to 8 July
-              2026; clarified per-path array (field 1) language to emphasize
-              SHOULD limit with informative CDDL bound of 8 and local
-              enforcement on constrained links; synced timeline1/ snapshot
-              cpb.py and updated its README note; removed stale review/
-              placeholder files; rebuilt draft outputs.</li>
-          <li>2026-07-22 cold-review honesty pass: Abstract and CGR section
-              use stochastic (not adversarial) sim conditions; Implementation
-              Status narrowed to wire encode/decode coverage plus separate
-              PWG ION data-plane entry; offline lab path names replaced with
-              repo-relative timeline1 and real-cpb-ion-test paths; full-field
-              51 B overhead attributed only to the 2-node campaign; document
-              date 22 July 2026; evaluation remains baseline vs one
-              confidence-weighted CPB consumer.</li>
-          <li>2026-07-22 purpose-completion pass: split experiment into
-              wire-format vs routing-value-of-metadata parts; honest
-              deferred-configurations list; sim↔CPB bridge tests; open
-              questions framed as Standards Track follow-ons, not -00 gaps.</li>
-          <li>2026-07-22 probabilistic-routing alignment: expand metric-type
-              and Section 5 mapping against PRoPHET (RFC 6693 aging /
-              RIB / strategies), MaxProp, RAPID, Spray-and-Wait (L out of
-              band), epidemic summary vectors, CGR contact-plan split, and
-              social/hybrid metrics; clarify what CPB carries vs control
-              plane state.</li>
-          <li>2026-07-23 thesis-grade consistency pass: RFC 9171 CRC/array
-              alignment; eid-reference tstr; CPB epoch seconds (not ms DTN
-              Time); confidence-weighted cost latency/confidence with CRN
-              contacts; honest Config1 results (delivery and mean latency
-              up, p95 not); claim hygiene throughout.</li>
+          <li>Initial Experimental -00: Contact Probability Block wire
+              format, metric-type registry, operational and security
+              considerations, and IANA requests.</li>
+          <li>CBOR float16 encoding with deterministic encoding rules;
+              format version field (key 7); per-path array size guidance
+              as SHOULD with local enforcement on constrained links.</li>
+          <li>BPSec integrity models (append-only and strip-and-replace);
+              BCB encryption of CPB prohibited for routing use.</li>
+          <li>Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
+              and DTNMA; IPNSIG Section 4.2 problem framing.</li>
+          <li>Configuration 1 simulation (baseline earliest-arrival CGR vs
+              one confidence-weighted consumer) with CRN contact trials;
+              delivery and mean latency improvements reported; p95 not
+              improved on that topology.</li>
+          <li>Limited ION data-plane validation of extension-block carriage
+              (not in-band CGR consumption of CPB).</li>
+          <li>Reference implementation and reproduction commands
+              (<xref target="reference-implementation"/>).</li>
+          <li>Aligns with RFC 9171 errata relevant to CRC handling and
+              fragmentation; cites <xref target="RFC9713"/> and
+              <xref target="RFC9758"/> as updates related to BPv7
+              administration and the ipn scheme.</li>
+          <li>CDDL, BTSD embedding, fragmentation pruning, timestamp
+              tie-breaker, and IANA text.</li>
         </ul>
       </section>
     </section>

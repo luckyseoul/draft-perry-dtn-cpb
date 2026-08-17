@@ -1,4 +1,4 @@
-"""Structural honesty checks for draft/docs claims vs shipped code.
+"""Structural consistency checks for draft/docs claims vs shipped code.
 
 These assert the public narrative matches what is actually in the tree
 (no dead artifact paths, no phantom second routing arm, no Abstract
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     test_no_false_identical_realizations_claim()
     test_no_stale_paper_numbers()
     test_published_cost_is_latency_over_confidence()
-    print("All draft honesty tests passed.")
+    print("All draft consistency tests passed.")
