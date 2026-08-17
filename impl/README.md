@@ -42,7 +42,7 @@ python3 config1_sim.py --battery standard --strategy cpb --csv results.csv
 python3 config1_sim.py --quick --strategy both --max-bundles 8000
 ```
 
-Expected `test_cpb.py` output: 23+ `PASS` lines, zero failures.
+Expected `test_cpb.py` output: 22 `PASS` lines, zero failures.
 
 Routing policy labels (must match draft §12):
 
@@ -61,7 +61,7 @@ for both arms. Paper battery (10 seeds):
 
 Tighter R → larger CPB delivery edge (high-value / short-budget traffic).
 Larger R → higher absolute delivery, smaller gap. p95 is not a free win.
-Parallel: `--workers 86` (ProcessPool; GPU unused — pure Python DES).
+Parallel sweep: `--workers` (defaults to nproc-2).
 
 ## Coverage
 

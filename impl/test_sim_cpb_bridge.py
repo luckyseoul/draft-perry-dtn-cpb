@@ -6,7 +6,7 @@ ground-truth confidences without encoding extension blocks. These tests
 prove that those same confidences:
 
 1. Encode and decode as metric-type 1 (cgr-confidence) CPB maps / BTSD, and
-2. Preserve the rate-aware cost ranking used by the CPB policy after
+2. Preserve the latency/confidence cost ranking used by the CPB policy after
    float16 round-trip (binary16 snap is expected and routing-grade).
 
 This is the missing link between the wire format and the routing-value

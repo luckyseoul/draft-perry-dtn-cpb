@@ -1944,7 +1944,7 @@ ipn:100.1?prob=0.75
 <figure id="figure-2">
           <div class="lang-hex sourcecode" id="section-3.2-5.1">
 <pre>&lt;CODE BEGINS&gt;
-18 C8                ; type=200 (exp per RFC9171 &amp;#167;9.1)
+18 C8                ; type=200 (RFC 9171 experimental range)
 02                   ; num=2
 11                   ; flags=0x11 (replicate; discard-if-unproc)
 00                   ; crc-type=0 (no CRC; CRC field omitted)
@@ -1978,6 +1978,8 @@ ipn:100.1?prob=0.75
 ; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 8.3.3).
 ; Plain bstr alt = RFC 9171 embedded-cbor (opaque BTSD).
 
+; 200 = experimental-range example used in this document
+; (RFC 9171 192-255). Replace after IANA assignment.
 $extension-block /=
     extension-block-use&lt;200, (bstr .cbor cpb-data / bstr)&gt;
 
@@ -2141,7 +2143,7 @@ metric-type = &amp;(
           </h4>
 <p id="section-3.2.1-1">
             The CPB <span class="bcp14">MUST</span> set the block processing control flags
-            (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section 4.4.1) as follows:<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
+            (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section 4.2.4) as follows:<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3.2.1-2.1">
               <strong>Bit 0 (0x01): Replicate in all fragments:</strong>
@@ -2150,13 +2152,21 @@ metric-type = &amp;(
                 fragment carries a copy of the CPB.<a href="#section-3.2.1-2.1" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.2.1-2.2">
-              <strong>Bit 4 (0x10): Discard if can't process:</strong>
+              <strong>Bit 4 (0x10): Discard block if it can't be
+                processed:</strong>
                 Implementers <span class="bcp14">MUST</span> set this bit because the CPB
                 is advisory routing metadata, not critical to bundle
                 delivery.<a href="#section-3.2.1-2.2" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.2.1-2.3">
-              <strong>Bits 1-3, 5-7:</strong> Leave as 0 (reserved).<a href="#section-3.2.1-2.3" class="pilcrow">¶</a>
+              <strong>Bit 1 (status report if unprocessable) and bit 2
+                (delete bundle if unprocessable):</strong> <span class="bcp14">MUST</span>
+                be 0. CPB is advisory; an unreadable CPB <span class="bcp14">MUST NOT</span>
+                generate a status report or delete the bundle.<a href="#section-3.2.1-2.3" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-3.2.1-2.4">
+              <strong>Bits 3 and 5-7:</strong> <span class="bcp14">MUST</span> be 0
+                (unassigned in <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>).<a href="#section-3.2.1-2.4" class="pilcrow">¶</a>
 </li>
           </ul>
 <p id="section-3.2.1-3">
@@ -2178,7 +2188,7 @@ metric-type = &amp;(
 <a href="#section-3.2.2" class="section-number selfRef">3.2.2. </a><a href="#name-cyclic-redundancy-check-crc" class="section-name selfRef">Cyclic Redundancy Check (CRC) Handling</a>
           </h4>
 <p id="section-3.2.2-1">
-            The block-data CRC field (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section 4.4.1)
+            The block-data CRC field (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section 4.3.2)
             is optional:<a href="#section-3.2.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3.2.2-2.1">
@@ -2210,7 +2220,7 @@ metric-type = &amp;(
 <p id="section-3.2.3-1">
             Bundles carrying a CPB <span class="bcp14">SHOULD</span> also carry a Hop
             Count block (block type 10, <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section
-            4.4.2). The Hop Count block provides a loop termination guarantee
+            4.4.3). The Hop Count block provides a loop termination guarantee
             independent of probability-based routing decisions.<a href="#section-3.2.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2235,8 +2245,9 @@ metric-type = &amp;(
             code from the "Bundle Block Types" registry (created by
             <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>). Until IANA assignment:<a href="#section-3.3.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-3.3.1-2.1">Implementations <span class="bcp14">MAY</span> use values in the 192-254
-                range for experimental/private use<a href="#section-3.3.1-2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-3.3.1-2.1">Implementations <span class="bcp14">MAY</span> use values in the 192-255
+                range for experimental/private use (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>
+                Section 4.3.2)<a href="#section-3.3.1-2.1" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.3.1-2.2">The example hex dump uses code 200 (0xC8) for illustration<a href="#section-3.3.1-2.2" class="pilcrow">¶</a>
 </li>
@@ -2252,19 +2263,18 @@ metric-type = &amp;(
 <a href="#section-3.3.2" class="section-number selfRef">3.3.2. </a><a href="#name-backwards-compatibility" class="section-name selfRef">Backwards Compatibility</a>
           </h4>
 <p id="section-3.3.2-1">
-            Routers that don't recognize the CPB block type code will:<a href="#section-3.3.2-1" class="pilcrow">¶</a></p>
+            Routers that do not recognize the CPB block type code process
+            the canonical block as specified in <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>
+            Section 4.2.4:<a href="#section-3.3.2-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-3.3.2-2">
-            <li id="section-3.3.2-2.1">Check the block processing control flags (byte 2 in the
-                extension block)<a href="#section-3.3.2-2.1" class="pilcrow">¶</a>
+            <li id="section-3.3.2-2.1">Read the block processing control flags (the third element
+                of the canonical block array, not a fixed octet offset).<a href="#section-3.3.2-2.1" class="pilcrow">¶</a>
 </li>
-            <li id="section-3.3.2-2.2">If flags indicate "discard if can't process", drop the block
-                silently<a href="#section-3.3.2-2.2" class="pilcrow">¶</a>
+            <li id="section-3.3.2-2.2">If bit 4 (0x10) is set, as this specification requires,
+                discard the unrecognized CPB and continue the bundle.<a href="#section-3.3.2-2.2" class="pilcrow">¶</a>
 </li>
-            <li id="section-3.3.2-2.3">If flags indicate "remove if can't process", strip it before
-                forwarding<a href="#section-3.3.2-2.3" class="pilcrow">¶</a>
-</li>
-            <li id="section-3.3.2-2.4">Continue routing the bundle using remaining blocks
-                (backwards compatible)<a href="#section-3.3.2-2.4" class="pilcrow">¶</a>
+            <li id="section-3.3.2-2.3">There is no BPv7 flag meaning "remove if can't process"
+                (that language is from BPv6). Do not invent one.<a href="#section-3.3.2-2.3" class="pilcrow">¶</a>
 </li>
           </ol>
 </section>
@@ -2323,8 +2333,9 @@ metric-type = &amp;(
           constrained deployments <span class="bcp14">SHOULD</span> enforce a local limit
           (default 8) and treat excess entries as malformed for that link,
           logging the event per <span>[<a href="#RFC9675" class="cite xref">RFC9675</a>]</span> Section 4.3.
-          This guidance is normative for resource protection; the CDDL
-          schema provides a default bound of 8.<a href="#section-3.4-5" class="pilcrow">¶</a></p>
+          This guidance is normative for resource protection. The CDDL
+          for field 1 is <code>[* path-entry]</code> (unbounded); the limit
+          of 8 is prose, not a CDDL constraint.<a href="#section-3.4-5" class="pilcrow">¶</a></p>
 <div id="invalid-float-handling">
 <section id="section-3.4.1">
           <h4 id="name-invalid-float-handling">
@@ -3611,39 +3622,89 @@ A3                   ; map with 3 entries
 <a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
 <p id="section-9-1">
-        This document requests IANA to assign a new codepoint from the
-        "Bundle Block Types" registry as defined in <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>,
-        Section 9.1, under the Specification Required registration policy
-        (<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>).<a href="#section-9-1" class="pilcrow">¶</a></p>
-<p id="section-9-2">
-        Hex dumps and ION testbed artifacts in this document use block
-        type 200 (0xC8). That value is in the RFC 9171 experimental and
-        private-use range (192-254) and is for illustration and
-        laboratory use only. IANA assigns the permanent code point;
-        this document does not request a specific numeric value.
-        Implementations <span class="bcp14">MUST NOT</span> hardcode 0xC8 and
-        <span class="bcp14">SHOULD</span> parameterize the block-type code so that
-        the IANA-assigned value can be substituted after assignment.<a href="#section-9-2" class="pilcrow">¶</a></p>
+        This document requests IANA to assign a code point from the
+        Bundle Block Types registry (<span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section 9.1)
+        under the Specification Required policy
+        (<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>). This document does not request a
+        specific numeric value.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<span id="name-bundle-block-types-registra"></span><div id="tab-iana-block-type">
+<table class="center" id="table-2">
+        <caption>
+<a href="#table-2" class="selfRef">Table 2</a>:
+<a href="#name-bundle-block-types-registra" class="selfRef">Bundle Block Types registration request</a>
+        </caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Value</th>
+            <th class="text-left" rowspan="1" colspan="1">Description</th>
+            <th class="text-left" rowspan="1" colspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">TBD</td>
+            <td class="text-left" rowspan="1" colspan="1">Contact Probability Block</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+        </tbody>
+      </table>
+</div>
 <p id="section-9-3">
-        This document additionally requests IANA to create a "CPB Metric
-        Types" sub-registry of the Bundle Block Types registry.  The
-        registration policy for the sub-registry is Specification Required.
-        Initial registrations are:<a href="#section-9-3" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-9-4.1">0: PRoPHET Delivery Predictability<a href="#section-9-4.1" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-9-4.2">1: CGR Contact Confidence<a href="#section-9-4.2" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-9-4.3">2: MaxProp Path Cost (inverted)<a href="#section-9-4.3" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-9-4.4">3: RAPID Utility Metric<a href="#section-9-4.4" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-9-4.5">4: Generic Probability<a href="#section-9-4.5" class="pilcrow">¶</a>
-</li>
-      </ul>
-<p id="section-9-5">
-        Values 5-255 are unassigned.  Future assignments in this range
-        require a specification and expert review.<a href="#section-9-5" class="pilcrow">¶</a></p>
+        Hex dumps, CDDL examples, and ION artifacts in this document use
+        block type 200 (0xC8). That value is in the RFC 9171 experimental
+        and private-use range (192-255) and is for illustration and
+        laboratory interoperation with those examples only. After IANA
+        assignment, implementations <span class="bcp14">SHOULD</span> parameterize the
+        block-type code so the assigned value can replace 200.<a href="#section-9-3" class="pilcrow">¶</a></p>
+<p id="section-9-4">
+        This document also requests IANA to create a new "CPB Metric
+        Types" registry in the Bundle Protocol registries group (not a
+        sub-registry of Bundle Block Types). The registration policy is
+        Specification Required. The value space is unsigned integers;
+        this document assigns 0-4. Values 5-255 are unassigned for
+        compact encodings; values above 255 are available if needed.<a href="#section-9-4" class="pilcrow">¶</a></p>
+<span id="name-initial-cpb-metric-types-re"></span><div id="tab-iana-metric-types">
+<table class="center" id="table-3">
+        <caption>
+<a href="#table-3" class="selfRef">Table 3</a>:
+<a href="#name-initial-cpb-metric-types-re" class="selfRef">Initial CPB Metric Types registrations</a>
+        </caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">Value</th>
+            <th class="text-left" rowspan="1" colspan="1">Description</th>
+            <th class="text-left" rowspan="1" colspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">0</td>
+            <td class="text-left" rowspan="1" colspan="1">PRoPHET Delivery Predictability</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">1</td>
+            <td class="text-left" rowspan="1" colspan="1">CGR Contact Confidence</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">2</td>
+            <td class="text-left" rowspan="1" colspan="1">MaxProp Path Cost (inverted)</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">3</td>
+            <td class="text-left" rowspan="1" colspan="1">RAPID Utility Metric</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">4</td>
+            <td class="text-left" rowspan="1" colspan="1">Generic Probability</td>
+            <td class="text-left" rowspan="1" colspan="1">This document</td>
+          </tr>
+        </tbody>
+      </table>
+</div>
 </section>
 </div>
 <div id="overhead-analysis">
@@ -3652,9 +3713,9 @@ A3                   ; map with 3 entries
 <a href="#section-10" class="section-number selfRef">10. </a><a href="#name-overhead-analysis" class="section-name selfRef">Overhead Analysis</a>
       </h2>
 <span id="name-cpb-byte-overhead-vs-payloa"></span><div id="tab-overhead">
-<table class="center" id="table-2">
+<table class="center" id="table-4">
         <caption>
-<a href="#table-2" class="selfRef">Table 2</a>:
+<a href="#table-4" class="selfRef">Table 4</a>:
 <a href="#name-cpb-byte-overhead-vs-payloa" class="selfRef">CPB Byte Overhead vs Payload Size</a>
         </caption>
 <thead>
@@ -3866,7 +3927,8 @@ A3                   ; map with 3 entries
           decode on-wire CPB extension blocks.
           <a href="#experiment" class="auto internal xref">Section 12</a> reports the authoritative 10-seed
           paper-battery results for those two policies, reproduced by
-          <code>python3 config1_sim.py --battery paper --strategy both</code>.
+          <code>python3 impl/config1_sim.py --battery paper --strategy both</code>
+          from the repository root.
           The simulator is fully deterministic per seed on Python 3.10+
           (contact CRN does not require cbor2; the encoder does). CGR-UCoP <span>[<a href="#Fraire18" class="cite xref">Fraire18</a>]</span> was used only
           as prior art for simulation parameters and basic validation.<a href="#section-11-4.4" class="pilcrow">¶</a>
@@ -3995,9 +4057,9 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           </figcaption></figure>
 </div>
 <span id="name-per-rover-orbiter-success-p"></span><div id="tab-confidence">
-<table class="center" id="table-3">
+<table class="center" id="table-5">
           <caption>
-<a href="#table-3" class="selfRef">Table 3</a>:
+<a href="#table-5" class="selfRef">Table 5</a>:
 <a href="#name-per-rover-orbiter-success-p" class="selfRef">Per-(Rover, Orbiter) Success Probabilities</a>
           </caption>
 <thead>
@@ -4236,16 +4298,24 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
 </pre><a href="#section-12.6-7" class="pilcrow">¶</a>
 </div>
 <p id="section-12.6-8">
-          Primary block (first CBOR array, 40 bytes): version 7, flags 0,
-          CRC type 0, source ipn:268484801.1, destination ipn:268484820.1,
-          report-to same as source, creation timestamp [1780731656, 0],
-          lifetime 3600. This matches the primary constructed by
-          packet.py:create_bundle_with_cpb.<a href="#section-12.6-8" class="pilcrow">¶</a></p>
+          The dump is the laboratory assembler in
+          <code>packet.py</code>, not a claim of RFC 9171-canonical encoding.
+          Observed deviations: EIDs are bstr-wrapped CBOR arrays (not
+          bare EID arrays); the scheme code is 1 (IANA "dtn", not
+          "ipn"); primary dest/source order follows that assembler
+          rather than RFC 9171 dest-then-source; the creation timestamp
+          uses Unix seconds rather than DTN time; Hop Count is
+          encoded as <code>[10, 0, [0, 32]]</code> (hop limit 0 is not a
+          legal RFC 9171 hop limit of 1-255). Previous Node and payload
+          arrays are similarly assembler-shaped. The CPB BTSD map
+          itself is valid CBOR
+          (<code>{0: float16 ~0.65, 1: [[268484820, ~0.65]]}</code>).<a href="#section-12.6-8" class="pilcrow">¶</a></p>
 <p id="section-12.6-9">
-          Previous Node block (type 6): [6, 0, source EID].<a href="#section-12.6-9" class="pilcrow">¶</a></p>
+          Primary block (first CBOR array): version 7, flags 0, CRC
+          type 0, assembler EID fields as above, creation timestamp
+          [1780731656, 0], lifetime 3600. This matches
+          packet.py:create_bundle_with_cpb, not a production BPA.<a href="#section-12.6-9" class="pilcrow">¶</a></p>
 <p id="section-12.6-10">
-          Hop Count block (type 10): [10, 0, [0, 32]].<a href="#section-12.6-10" class="pilcrow">¶</a></p>
-<p id="section-12.6-11">
           Extension block 200 (the CPB, bytes starting at offset 0x40):
           [200, 0, 0x11 (REPLICATE|DISCARD), 0, BTSD]. The BTSD bstr is
           50a200f939330181821a1000c0d4f93933, which decodes to the canonical
@@ -4253,17 +4323,17 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           1: [[268484820, 0.64990234375]]}. This is byte-exact to the output
           of cpb.encode_btsd() for the dict passed from create_bundle_with_cpb
           (F_DEFAULT_PROB and single F_PATH_ENTRIES entry; no F_VERSION key
-          in the runtime encoder used for these runs).<a href="#section-12.6-11" class="pilcrow">¶</a></p>
-<p id="section-12.6-12">
+          in the runtime encoder used for these runs).<a href="#section-12.6-10" class="pilcrow">¶</a></p>
+<p id="section-12.6-11">
           Payload block (type 1): a fixed 27-byte ASCII test string used for
-          this campaign.<a href="#section-12.6-12" class="pilcrow">¶</a></p>
-<p id="section-12.6-13">
+          this campaign.<a href="#section-12.6-11" class="pilcrow">¶</a></p>
+<p id="section-12.6-12">
           The CPB block and its single direct path entry matched the encoder
           output bit-for-bit; no appended path entries or probability mutations
           were present. The same structure (varying only the probability value
           and target node in the path entry) appears in all 16 with-CPB
-          bundles from the Phase 2 batch.<a href="#section-12.6-13" class="pilcrow">¶</a></p>
-<p id="section-12.6-14">
+          bundles from the Phase 2 batch.<a href="#section-12.6-12" class="pilcrow">¶</a></p>
+<p id="section-12.6-13">
           Receive-side collection: bpsink, a bprecv-based receiver, and
           recv_cpb.py were run on the emulated EID services (.1 and .12160)
           across the three real nodes for a 30 s window after the Phase 2
@@ -4272,19 +4342,19 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           CPB decodes in that window. That outcome is consistent with
           CFDP-wrapped bputa injection and with emulated targets that are
           plan and CFDP-entity constructs only (bundles often remained in
-          bplist forwarding queues rather than delivering to a .1 endpoint).<a href="#section-12.6-14" class="pilcrow">¶</a></p>
-<p id="section-12.6-15">
+          bplist forwarding queues rather than delivering to a .1 endpoint).<a href="#section-12.6-13" class="pilcrow">¶</a></p>
+<p id="section-12.6-14">
           Decode verification (post-injection): recv_cpb.py and the receiver
           scanner were run against the source .bundle files and captures.
           Every with-CPB bundle decoded to its original map (single direct
           path entry and the assigned test confidence). No path updates or
-          probability changes were observed on those files.<a href="#section-12.6-15" class="pilcrow">¶</a></p>
-<p id="section-12.6-16">
+          probability changes were observed on those files.<a href="#section-12.6-14" class="pilcrow">¶</a></p>
+<p id="section-12.6-15">
           Artifacts (Phase 1 and Phase 2 bundles, receiver logs, bplist
           snapshots, host configuration files, and run notes) are under
           <code>impl/real-pwg-deployment/timeline1/</code>. Related two-node
-          full-field samples are under <code>impl/real-cpb-ion-test/</code>.<a href="#section-12.6-16" class="pilcrow">¶</a></p>
-<p id="section-12.6-17">
+          full-field samples are under <code>impl/real-cpb-ion-test/</code>.<a href="#section-12.6-15" class="pilcrow">¶</a></p>
+<p id="section-12.6-16">
           <strong>Limitations of this validation (distinct from the
           simulation).</strong> The testbed is a sandboxed overlay, not
           flight or range hardware. Real nodes sit on a Tailscale mesh
@@ -4307,7 +4377,7 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           wire-format survival of experimental extension block type 200
           carrying the CPB CBOR map as encoded. It does not constitute
           a multi-hop, multi-CLA, or production-stack routing-policy
-          experiment with in-band CPB consumption.<a href="#section-12.6-17" class="pilcrow">¶</a></p>
+          experiment with in-band CPB consumption.<a href="#section-12.6-16" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-goals">
@@ -4819,30 +4889,29 @@ python3 impl/config1_sim.py --battery paper --strategy both
           <strong>Initial contact:</strong> Rover creates a critical status
             bundle with a CPB indicating default probability 0.6 (dusty
             conditions), metric-type 1 (cgr-confidence), validity_duration
-            3600s<a href="#appendix-A-2.1" class="pilcrow">¶</a>
+            3600s.<a href="#appendix-A-2.1" class="pilcrow">¶</a>
 </li>
         <li id="appendix-A-2.2">
-          <strong>Rover-to-orbiter:</strong> Router at rover checks 0.6
-            &lt; 0.7 -&gt; wait for better conditions<a href="#appendix-A-2.2" class="pilcrow">¶</a>
+          <strong>Rover-to-orbiter:</strong> A confidence-weighted
+            consumer using cost = latency / confidence prefers a later,
+            higher-confidence contact when that cost is lower than the
+            dusty path.<a href="#appendix-A-2.2" class="pilcrow">¶</a>
 </li>
         <li id="appendix-A-2.3">
-          <strong>Later contact:</strong> Dust clears, CPB is refreshed
-            with probability 0.95, new timestamp<a href="#appendix-A-2.3" class="pilcrow">¶</a>
+          <strong>Later contact:</strong> Dust clears; the rover
+            appends or replaces the CPB with probability 0.95 and a new
+            timestamp.<a href="#appendix-A-2.3" class="pilcrow">¶</a>
 </li>
         <li id="appendix-A-2.4">
-          <strong>Orbiter processes:</strong> Router at orbiter checks
-            0.95 &gt; 0.7 -&gt; forward immediately<a href="#appendix-A-2.4" class="pilcrow">¶</a>
-</li>
-        <li id="appendix-A-2.5">
-          <strong>Result:</strong> Both bundles are delivered with minimal
-            latency.<a href="#appendix-A-2.5" class="pilcrow">¶</a>
+          <strong>Downstream:</strong> Relays consume the fresh CPB
+            (after trust/BIB policy) for ranking only.<a href="#appendix-A-2.4" class="pilcrow">¶</a>
 </li>
       </ol>
 <p id="appendix-A-3">
-        <strong>Decay example:</strong> If the first bundle (P=0.6) is
-        delayed 10 hours and the validity_duration was 3600s, receiving
-        routers recognize the CPB as expired and apply decay: P_aged =
-        0.6 * 0.98^10 = 0.49.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
+        If the first CPB (P=0.6, validity 3600 s) is delayed 10 hours,
+        field 4 has expired. Per <a href="#op-creation" class="auto internal xref">Section 4.1</a>, receivers
+        <span class="bcp14">SHOULD</span> ignore that CPB for routing. This document
+        does not define a residual decay formula after expiry.<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="acknowledgements">

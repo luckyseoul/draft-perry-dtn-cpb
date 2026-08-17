@@ -3,6 +3,12 @@
 from __future__ import annotations
 
 import math
+import sys
+from pathlib import Path
+
+_HERE = Path(__file__).resolve().parent
+if str(_HERE) not in sys.path:
+    sys.path.insert(0, str(_HERE))
 
 from config1_sim import (
     MAX_HOP_RETRIES,
@@ -95,4 +101,6 @@ if __name__ == "__main__":
     test_rates_not_rank_aligned_with_confidence()
     test_next_window_advances_after_close()
     test_crn_identical_across_strategies()
+    test_crn_not_strategy_keyed()
+    test_cpb_cost_form_unchanged_under_retry_budget()
     print("All config1 policy tests passed.")
