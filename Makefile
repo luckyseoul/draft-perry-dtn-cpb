@@ -61,9 +61,9 @@ test:
 # Include PDF in the standard build outputs (txt + html + pdf)
 latest:: txt html pdf
 
-# Use xml2rfc --pdf (requires weasyprint in the template venv) instead of
-# the template's enscript+ps2pdf path. Explicit target takes precedence
-# over the %.pdf: %.txt pattern rule from lib/main.mk.
-draft-perry-dtn-cpb.pdf: draft-perry-dtn-cpb.xml
+# xml2rfc --pdf (weasyprint). Needs Noto Serif + Roboto Mono (xml2rfc-fonts).
+# Combined CSS = stock xml2rfc.css + scripts/xml2rfc-pdf.css (no hyphenation).
+draft-perry-dtn-cpb.pdf: draft-perry-dtn-cpb.xml scripts/xml2rfc-pdf.css
 	@echo "==> Building $@ (pdf via xml2rfc)"
-	@$(xml2rfc) --pdf $< -o $@
+	@python3 -c "import xml2rfc, pathlib; b=pathlib.Path(xml2rfc.__file__).parent/'data'/'xml2rfc.css'; e=pathlib.Path('scripts/xml2rfc-pdf.css'); pathlib.Path('.xml2rfc-pdf-combined.css').write_text(b.read_text(encoding='utf-8')+'\n'+e.read_text(encoding='utf-8'), encoding='utf-8')"
+	@$(xml2rfc) --pdf --css .xml2rfc-pdf-combined.css $< -o $@
