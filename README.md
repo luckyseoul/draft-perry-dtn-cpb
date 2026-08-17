@@ -60,7 +60,7 @@ python3 config1_sim.py --battery paper --strategy both
 Alternative:
 
 ```sh
-pip install -r requirements.txt
+pip install -r impl/requirements.txt
 python3 test_cpb.py
 python3 config1_sim.py --quick
 ```
