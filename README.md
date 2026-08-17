@@ -84,7 +84,7 @@ Policy labels (draft §12):
 Mean latency usually improves under **CPB**; **p95 often does not**. Use
 tighter R when delivery of certain traffic matters more than waiting for
 extra windows. Parallel paper sweep:  
-`python3 impl/config1_sim.py --battery paper --strategy both --sweep-hop-retries 2,3,4`
+`python3 impl/config1_sim.py --battery paper --strategy both --sweep-hop-retries 2,3,4 --workers 86`
 
 ## License
 

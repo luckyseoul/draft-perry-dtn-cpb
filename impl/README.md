@@ -61,7 +61,8 @@ for both arms. Paper battery (10 seeds):
 
 Tighter R → larger CPB delivery edge (high-value / short-budget traffic).
 Larger R → higher absolute delivery, smaller gap. p95 is not a free win.
-Parallel sweep: `--workers` (defaults to nproc-2).
+Parallel paper sweep on this host:
+`python3 config1_sim.py --battery paper --strategy both --sweep-hop-retries 2,3,4 --workers 86`
 
 ## Coverage
 
