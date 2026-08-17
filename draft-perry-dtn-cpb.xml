@@ -1380,6 +1380,40 @@ A3                   ; map with 3 entries
         </t>
       </section>
 
+      <section anchor="rel-sand-tvr">
+        <name>Neighborhood Advertisement and Scheduled Topology</name>
+        <t>
+          Secure Advertisement and Neighborhood Discovery (SAND)
+          <xref target="I-D.ietf-dtn-bp-sand"/> is a DTN Working Group
+          control-plane protocol. Nodes advertise local topology and
+          short-horizon SABR-style metrics (data rate, one-way delay,
+          bit-error ratio, and validity schedules) to topological
+          neighbors. Those advertisements are not carried as metadata on
+          application bundles.
+        </t>
+        <t>
+          CPB is complementary, not a substitute for SAND. Contact
+          intervals, rates, OWLT, and residual volume remain in the
+          contact plan or in SAND/SABR inputs. CPB carries optional
+          in-bundle quality or confidence samples (metric-type tagged)
+          along the data path when those estimates should travel with
+          the bundle. A node <bcp14>MAY</bcp14> consume SAND metrics
+          and CPB values together; it <bcp14>MUST NOT</bcp14> treat a
+          SAND rate or delay advertisement as a CPB metric-type value,
+          or vice versa.
+        </t>
+        <t>
+          Long-lived contact schedules and bandwidth as managed objects
+          are modeled in Time-Variant Routing work, including the
+          scheduled-attributes YANG model
+          <xref target="I-D.ietf-tvr-schedule-yang"/> and related
+          contact-plan YANG. Inter-domain reachability with optional
+          time windows is the subject of the DTN Peering Protocol
+          <xref target="I-D.taylor-dtn-dpp"/>. None of those documents
+          define the CPB extension block.
+        </t>
+      </section>
+
       <section anchor="rel-summary">
         <name>Summary: CPB as Cross-Cutting Metadata</name>
         <t>
@@ -1826,13 +1860,14 @@ A3                   ; map with 3 entries
         (<xref target="RFC8126"/>).
       </t>
       <t>
-        <strong>Suggested Value:</strong> The RFC authors suggest code point
-        0x1A (26 decimal) as a suitable unassigned value. The final value
-        will be assigned by IANA upon publication; the value 0xC8 used
-        throughout examples in this document is a non-normative placeholder.
+        Hex dumps and ION testbed artifacts in this document use block
+        type 200 (0xC8). That value is in the RFC 9171 experimental and
+        private-use range (192-254) and is for illustration and
+        laboratory use only. IANA assigns the permanent code point;
+        this document does not request a specific numeric value.
         Implementations <bcp14>MUST NOT</bcp14> hardcode 0xC8 and
-        <bcp14>SHOULD</bcp14> parameterize the block-type code so that the
-        IANA-assigned value can be substituted post-publication.
+        <bcp14>SHOULD</bcp14> parameterize the block-type code so that
+        the IANA-assigned value can be substituted after assignment.
       </t>
       <t>
         This document additionally requests IANA to create a "CPB Metric
@@ -2439,13 +2474,19 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
       </section>
 
       <section anchor="exp-success">
-        <name>Success Criteria (Met)</name>
+        <name>Success Criteria: Outcome</name>
+        <t>
+          Delivery ratio is the primary routing-value criterion.
+          Configuration 1 baseline delivery is already 0.9965 (near
+          ceiling). Results below are for that topology and cost only.
+        </t>
         <ol>
           <li>Statistically significant improvement (p &lt; 0.05) on the
               primary metric. <strong>Met</strong> for delivery: paired
               (cpb &#8722; baseline) mean gain +0.00191 with t &#8776; 7.0
-              (10 seeds). Mean latency also improved (t &#8776; &#8722;9.7);
-              p95 did not.</li>
+              (10 seeds). Mean latency also improved (t &#8776; &#8722;9.7).
+              <strong>Not met</strong> for p95 latency (worse under cpb;
+              see <xref target="exp-results"/>).</li>
           <li>Sample size sufficient for the claims made. <strong>Met:</strong>
               10 independent seeds on Configuration 1, with each policy
               exercised under shared CRN contact trials per seed
@@ -2453,12 +2494,10 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           <li>CPB byte overhead below 5% for 1 KB+ payloads. <strong>Met
               analytically.</strong></li>
           <li>No fundamental architectural conflicts with BPv7. <strong>Met
-              technically:</strong> CPB is a standard extension block, EID
-              immutability is preserved, BPSec integration is straightforward.
-              Operational conflicts (trust framework, multi-domain CPB
-              interaction, control-theoretic stability) are addressed at
-              specification level but not closed by experimental
-              demonstration.</li>
+              for the extension-block design:</strong> CPB is a standard
+              extension block and EID immutability is preserved.
+              Operational questions (trust, multi-domain use, stability)
+              are specified but not experimentally closed.</li>
         </ol>
       </section>
 
@@ -2693,7 +2732,7 @@ python3 impl/config1_sim.py --battery paper --strategy both
           after cfdpadmin rc update, and observed delivery) are reproduced
           from the exact bundles and instructions in
           impl/real-cpb-ion-test/ (see real_cpb_ion_results.md,
-          bundles/*.bundle and *.b64, the updated .rc files in config/,
+          captured bundle files and base64 copies, the updated .rc files in config/,
           packet.py for bundle assembly, and recv_cpb.py for post-receipt
           CPB decoding on a captured bundle file). Full end-to-end
           transmission requires the specific ION testbed hardware,
@@ -2972,6 +3011,38 @@ python3 impl/config1_sim.py --battery paper --strategy both
             <author initials="S." surname="Burleigh" fullname="S. Burleigh"/>
             <date year="2010"/>
           </front>
+        </reference>
+
+        <reference anchor="I-D.ietf-dtn-bp-sand" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand">
+          <front>
+            <title>Bundle Protocol (BP) Secure Advertisement and Neighborhood Discovery (SAND)</title>
+            <author initials="B." surname="Sipos" fullname="B. Sipos"/>
+            <author initials="J." surname="Deaton" fullname="J. Deaton"/>
+            <date year="2026" month="July"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bp-sand-03"/>
+        </reference>
+
+        <reference anchor="I-D.ietf-tvr-schedule-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang">
+          <front>
+            <title>A YANG Data Model for Scheduled Attributes</title>
+            <author initials="Y." surname="Qu" fullname="Y. Qu"/>
+            <author initials="A." surname="Lindem" fullname="A. Lindem"/>
+            <author initials="E." surname="Kinzie" fullname="E. Kinzie"/>
+            <author initials="D." surname="Fedyk" fullname="D. Fedyk"/>
+            <author initials="M." surname="Blanchet" fullname="M. Blanchet"/>
+            <date year="2026" month="June"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-tvr-schedule-yang-12"/>
+        </reference>
+
+        <reference anchor="I-D.taylor-dtn-dpp" target="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp">
+          <front>
+            <title>DTN Peering Protocol</title>
+            <author initials="R." surname="Taylor" fullname="R. Taylor"/>
+            <date year="2026" month="July"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-taylor-dtn-dpp-01"/>
         </reference>
       </references>
 

@@ -1353,7 +1353,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
                 <p id="section-toc.1-1.5.2.8.1"><a href="#section-5.8" class="auto internal xref">5.8</a>.  <a href="#name-dtnma-rfc-9675" class="internal xref">DTNMA (RFC 9675)</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.9">
-                <p id="section-toc.1-1.5.2.9.1"><a href="#section-5.9" class="auto internal xref">5.9</a>.  <a href="#name-summary-cpb-as-cross-cuttin" class="internal xref">Summary: CPB as Cross-Cutting Metadata</a></p>
+                <p id="section-toc.1-1.5.2.9.1"><a href="#section-5.9" class="auto internal xref">5.9</a>.  <a href="#name-neighborhood-advertisement-" class="internal xref">Neighborhood Advertisement and Scheduled Topology</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.10">
+                <p id="section-toc.1-1.5.2.10.1"><a href="#section-5.10" class="auto internal xref">5.10</a>. <a href="#name-summary-cpb-as-cross-cuttin" class="internal xref">Summary: CPB as Cross-Cutting Metadata</a></p>
 </li>
             </ul>
 </li>
@@ -1476,7 +1479,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
                 <p id="section-toc.1-1.12.2.7.1"><a href="#section-12.7" class="auto internal xref">12.7</a>.  <a href="#name-goals-per-rfc-2026-section-" class="internal xref">Goals (per RFC 2026 Section 4.2.1)</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.8">
-                <p id="section-toc.1-1.12.2.8.1"><a href="#section-12.8" class="auto internal xref">12.8</a>.  <a href="#name-success-criteria-met" class="internal xref">Success Criteria (Met)</a></p>
+                <p id="section-toc.1-1.12.2.8.1"><a href="#section-12.8" class="auto internal xref">12.8</a>.  <a href="#name-success-criteria-outcome" class="internal xref">Success Criteria: Outcome</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.9">
                 <p id="section-toc.1-1.12.2.9.1"><a href="#section-12.9" class="auto internal xref">12.9</a>.  <a href="#name-failure-criteria-not-trigge" class="internal xref">Failure Criteria (Not Triggered)</a></p>
@@ -2953,7 +2956,7 @@ A3                   ; map with 3 entries
           delete-ACK flooding, and the dual use of likelihood for
           queue-drop priority (though a CPB-aware node
           <span class="bcp14">MAY</span> use metric-type 2 values as one input to
-          local drop ranking; see <a href="#rel-summary" class="auto internal xref">Section 5.9</a>).<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+          local drop ranking; see <a href="#rel-summary" class="auto internal xref">Section 5.10</a>).<a href="#section-5.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="rel-rapid">
@@ -3066,33 +3069,67 @@ A3                   ; map with 3 entries
           verification failures) for network health assessment.<a href="#section-5.8-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="rel-summary">
+<div id="rel-sand-tvr">
 <section id="section-5.9">
-        <h3 id="name-summary-cpb-as-cross-cuttin">
-<a href="#section-5.9" class="section-number selfRef">5.9. </a><a href="#name-summary-cpb-as-cross-cuttin" class="section-name selfRef">Summary: CPB as Cross-Cutting Metadata</a>
+        <h3 id="name-neighborhood-advertisement-">
+<a href="#section-5.9" class="section-number selfRef">5.9. </a><a href="#name-neighborhood-advertisement-" class="section-name selfRef">Neighborhood Advertisement and Scheduled Topology</a>
         </h3>
 <p id="section-5.9-1">
-          Across the families above, a recurring split appears:<a href="#section-5.9-1" class="pilcrow">¶</a></p>
+          Secure Advertisement and Neighborhood Discovery (SAND)
+          <span>[<a href="#I-D.ietf-dtn-bp-sand" class="cite xref">I-D.ietf-dtn-bp-sand</a>]</span> is a DTN Working Group
+          control-plane protocol. Nodes advertise local topology and
+          short-horizon SABR-style metrics (data rate, one-way delay,
+          bit-error ratio, and validity schedules) to topological
+          neighbors. Those advertisements are not carried as metadata on
+          application bundles.<a href="#section-5.9-1" class="pilcrow">¶</a></p>
+<p id="section-5.9-2">
+          CPB is complementary, not a substitute for SAND. Contact
+          intervals, rates, OWLT, and residual volume remain in the
+          contact plan or in SAND/SABR inputs. CPB carries optional
+          in-bundle quality or confidence samples (metric-type tagged)
+          along the data path when those estimates should travel with
+          the bundle. A node <span class="bcp14">MAY</span> consume SAND metrics
+          and CPB values together; it <span class="bcp14">MUST NOT</span> treat a
+          SAND rate or delay advertisement as a CPB metric-type value,
+          or vice versa.<a href="#section-5.9-2" class="pilcrow">¶</a></p>
+<p id="section-5.9-3">
+          Long-lived contact schedules and bandwidth as managed objects
+          are modeled in Time-Variant Routing work, including the
+          scheduled-attributes YANG model
+          <span>[<a href="#I-D.ietf-tvr-schedule-yang" class="cite xref">I-D.ietf-tvr-schedule-yang</a>]</span> and related
+          contact-plan YANG. Inter-domain reachability with optional
+          time windows is the subject of the DTN Peering Protocol
+          <span>[<a href="#I-D.taylor-dtn-dpp" class="cite xref">I-D.taylor-dtn-dpp</a>]</span>. None of those documents
+          define the CPB extension block.<a href="#section-5.9-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="rel-summary">
+<section id="section-5.10">
+        <h3 id="name-summary-cpb-as-cross-cuttin">
+<a href="#section-5.10" class="section-number selfRef">5.10. </a><a href="#name-summary-cpb-as-cross-cuttin" class="section-name selfRef">Summary: CPB as Cross-Cutting Metadata</a>
+        </h3>
+<p id="section-5.10-1">
+          Across the families above, a recurring split appears:<a href="#section-5.10-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-5.9-2.1">
+<li class="normal" id="section-5.10-2.1">
             <strong>In-bundle scalar quality (CPB):</strong> a
               [0.0, 1.0] score with an explicit metric-type, optional
-              per-next-hop list, timestamp, and validity.<a href="#section-5.9-2.1" class="pilcrow">¶</a>
+              per-next-hop list, timestamp, and validity.<a href="#section-5.10-2.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-5.9-2.2">
+          <li class="normal" id="section-5.10-2.2">
             <strong>Control-plane state (not CPB):</strong> encounter
               RIBs, contact plans, summary vectors, copy counts, hop-lists,
               delete-ACKs, Hello sessions, and strategy/queue policy
-              parameters.<a href="#section-5.9-2.2" class="pilcrow">¶</a>
+              parameters.<a href="#section-5.10-2.2" class="pilcrow">¶</a>
 </li>
         </ul>
-<p id="section-5.9-3">
+<p id="section-5.10-3">
           The Contact Probability Block is designed as that cross-protocol
           scalar layer rather than a replacement for any algorithm.
           Algorithms <span class="bcp14">MAY</span> consume CPB for forwarding rank,
           replication target choice, or buffer-drop priority, and
           <span class="bcp14">MAY</span> produce CPB for downstream nodes, without
-          requiring the peer to implement the producer's full protocol.<a href="#section-5.9-3" class="pilcrow">¶</a></p>
+          requiring the peer to implement the producer's full protocol.<a href="#section-5.10-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3579,13 +3616,14 @@ A3                   ; map with 3 entries
         Section 9.1, under the Specification Required registration policy
         (<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>).<a href="#section-9-1" class="pilcrow">¶</a></p>
 <p id="section-9-2">
-        <strong>Suggested Value:</strong> The RFC authors suggest code point
-        0x1A (26 decimal) as a suitable unassigned value. The final value
-        will be assigned by IANA upon publication; the value 0xC8 used
-        throughout examples in this document is a non-normative placeholder.
+        Hex dumps and ION testbed artifacts in this document use block
+        type 200 (0xC8). That value is in the RFC 9171 experimental and
+        private-use range (192-254) and is for illustration and
+        laboratory use only. IANA assigns the permanent code point;
+        this document does not request a specific numeric value.
         Implementations <span class="bcp14">MUST NOT</span> hardcode 0xC8 and
-        <span class="bcp14">SHOULD</span> parameterize the block-type code so that the
-        IANA-assigned value can be substituted post-publication.<a href="#section-9-2" class="pilcrow">¶</a></p>
+        <span class="bcp14">SHOULD</span> parameterize the block-type code so that
+        the IANA-assigned value can be substituted after assignment.<a href="#section-9-2" class="pilcrow">¶</a></p>
 <p id="section-9-3">
         This document additionally requests IANA to create a "CPB Metric
         Types" sub-registry of the Bundle Block Types registry.  The
@@ -4285,31 +4323,34 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
 </div>
 <div id="exp-success">
 <section id="section-12.8">
-        <h3 id="name-success-criteria-met">
-<a href="#section-12.8" class="section-number selfRef">12.8. </a><a href="#name-success-criteria-met" class="section-name selfRef">Success Criteria (Met)</a>
+        <h3 id="name-success-criteria-outcome">
+<a href="#section-12.8" class="section-number selfRef">12.8. </a><a href="#name-success-criteria-outcome" class="section-name selfRef">Success Criteria: Outcome</a>
         </h3>
-<ol start="1" type="1" class="normal type-1" id="section-12.8-1">
-          <li id="section-12.8-1.1">Statistically significant improvement (p &lt; 0.05) on the
+<p id="section-12.8-1">
+          Delivery ratio is the primary routing-value criterion.
+          Configuration 1 baseline delivery is already 0.9965 (near
+          ceiling). Results below are for that topology and cost only.<a href="#section-12.8-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-12.8-2">
+          <li id="section-12.8-2.1">Statistically significant improvement (p &lt; 0.05) on the
               primary metric. <strong>Met</strong> for delivery: paired
               (cpb − baseline) mean gain +0.00191 with t ≈ 7.0
-              (10 seeds). Mean latency also improved (t ≈ −9.7);
-              p95 did not.<a href="#section-12.8-1.1" class="pilcrow">¶</a>
+              (10 seeds). Mean latency also improved (t ≈ −9.7).
+              <strong>Not met</strong> for p95 latency (worse under cpb;
+              see <a href="#exp-results" class="auto internal xref">Section 12.5</a>).<a href="#section-12.8-2.1" class="pilcrow">¶</a>
 </li>
-          <li id="section-12.8-1.2">Sample size sufficient for the claims made. <strong>Met:</strong>
+          <li id="section-12.8-2.2">Sample size sufficient for the claims made. <strong>Met:</strong>
               10 independent seeds on Configuration 1, with each policy
               exercised under shared CRN contact trials per seed
-              (≈80k bundles per arm per seed).<a href="#section-12.8-1.2" class="pilcrow">¶</a>
+              (≈80k bundles per arm per seed).<a href="#section-12.8-2.2" class="pilcrow">¶</a>
 </li>
-          <li id="section-12.8-1.3">CPB byte overhead below 5% for 1 KB+ payloads. <strong>Met
-              analytically.</strong><a href="#section-12.8-1.3" class="pilcrow">¶</a>
+          <li id="section-12.8-2.3">CPB byte overhead below 5% for 1 KB+ payloads. <strong>Met
+              analytically.</strong><a href="#section-12.8-2.3" class="pilcrow">¶</a>
 </li>
-          <li id="section-12.8-1.4">No fundamental architectural conflicts with BPv7. <strong>Met
-              technically:</strong> CPB is a standard extension block, EID
-              immutability is preserved, BPSec integration is straightforward.
-              Operational conflicts (trust framework, multi-domain CPB
-              interaction, control-theoretic stability) are addressed at
-              specification level but not closed by experimental
-              demonstration.<a href="#section-12.8-1.4" class="pilcrow">¶</a>
+          <li id="section-12.8-2.4">No fundamental architectural conflicts with BPv7. <strong>Met
+              for the extension-block design:</strong> CPB is a standard
+              extension block and EID immutability is preserved.
+              Operational questions (trust, multi-domain use, stability)
+              are specified but not experimentally closed.<a href="#section-12.8-2.4" class="pilcrow">¶</a>
 </li>
         </ol>
 </section>
@@ -4590,7 +4631,7 @@ python3 impl/config1_sim.py --battery paper --strategy both
           after cfdpadmin rc update, and observed delivery) are reproduced
           from the exact bundles and instructions in
           impl/real-cpb-ion-test/ (see real_cpb_ion_results.md,
-          bundles/*.bundle and *.b64, the updated .rc files in config/,
+          captured bundle files and base64 copies, the updated .rc files in config/,
           packet.py for bundle assembly, and recv_cpb.py for post-receipt
           CPB decoding on a captured bundle file). Full end-to-end
           transmission requires the specific ION testbed hardware,
@@ -4720,8 +4761,20 @@ python3 impl/config1_sim.py --battery paper --strategy both
 <span class="refAuthor">CCSDS, CCSDS.</span>, <span class="refTitle">"Schedule-Aware Bundle Routing"</span>, <span class="refContent">CCSDS 734.3-B-1</span>, <time datetime="2019-07" class="refDate">July 2019</time>, <span>&lt;<a href="https://public.ccsds.org/Pubs/734x3b1.pdf">https://public.ccsds.org/Pubs/734x3b1.pdf</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CGR">[CGR]</dt>
-    <dd>
+      <dd>
 <span class="refAuthor">Burleigh, S.</span>, <span class="refTitle">"Contact Graph Routing in Delay Tolerant Networks"</span>, <time datetime="2010" class="refDate">2010</time>, <span>&lt;<a href="https://doi.org/10.1109/MAES.2010.5546306">https://doi.org/10.1109/MAES.2010.5546306</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-dtn-bp-sand">[I-D.ietf-dtn-bp-sand]</dt>
+      <dd>
+<span class="refAuthor">Sipos, B.</span> and <span class="refAuthor">J. Deaton</span>, <span class="refTitle">"Bundle Protocol (BP) Secure Advertisement and Neighborhood Discovery (SAND)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dtn-bp-sand-03</span>, <time datetime="2026-07" class="refDate">July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand">https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tvr-schedule-yang">[I-D.ietf-tvr-schedule-yang]</dt>
+      <dd>
+<span class="refAuthor">Qu, Y.</span>, <span class="refAuthor">Lindem, A.</span>, <span class="refAuthor">Kinzie, E.</span>, <span class="refAuthor">Fedyk, D.</span>, and <span class="refAuthor">M. Blanchet</span>, <span class="refTitle">"A YANG Data Model for Scheduled Attributes"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tvr-schedule-yang-12</span>, <time datetime="2026-06" class="refDate">June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang">https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.taylor-dtn-dpp">[I-D.taylor-dtn-dpp]</dt>
+    <dd>
+<span class="refAuthor">Taylor, R.</span>, <span class="refTitle">"DTN Peering Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-taylor-dtn-dpp-01</span>, <time datetime="2026-07" class="refDate">July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp">https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
