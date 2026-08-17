@@ -36,7 +36,7 @@
         confidence). On that topology the confidence-weighted consumer improves
         mean delivery ratio and mean latency while selecting higher path
         confidence; p95 latency is not improved on this topology and is
-        reported honestly. The contribution of this specification is the
+        reported as measured. The contribution of this specification is the
         standardized BPv7 extension block for carrying such metadata, not a
         claim that production stacks already consume CPB in-band. Operational
         deployment questions — robustness to noisy or adversarial
@@ -46,7 +46,7 @@
         document.
        
     " name="description">
-<meta content="xml2rfc 3.33.0" name="generator">
+<meta content="xml2rfc 3.34.0" name="generator">
 <meta content="DTN" name="keyword">
 <meta content="Bundle Protocol" name="keyword">
 <meta content="BPv7" name="keyword">
@@ -58,135 +58,339 @@
 <meta content="interplanetary" name="keyword">
 <meta content="draft-perry-dtn-cpb-00" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.33.0
+  xml2rfc 3.34.0
     Python 3.14.4
     ConfigArgParse 1.7.5
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
-    platformdirs 4.9.6
+    natsort 8.4.0
+    platformdirs 4.10.0
     pycountry 26.2.16
-    pypdf 6.12.2
     PyYAML 6.0.3
-    requests 2.32.5
-    wcwidth 0.7.0
+    requests 2.34.2
+    wcwidth 0.8.2
     weasyprint 69.0
 -->
 <link href="draft-perry-dtn-cpb.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
-<style type="text/css">/*
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 
-  NOTE: Changes at the bottom of this file overrides some earlier settings.
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
-  Once the style has stabilized and has been adopted as an official RFC style,
-  this can be consolidated so that style settings occur only in one place, but
-  for now the contents of this file consists first of the initial CSS work as
-  provided to the RFC Formatter (xml2rfc) work, followed by itemized and
-  commented changes found necessary during the development of the v3
-  formatters.
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
-*/
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+}
 
-/* fonts */
-@import url('https://static.ietf.org/fonts/noto-sans/import.css'); /* Sans-serif */
-@import url('https://static.ietf.org/fonts/noto-serif/import.css'); /* Serif (print) */
-@import url('https://static.ietf.org/fonts/roboto-mono/import.css'); /* Monospace */
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 :root {
-  --font-sans: 'Noto Sans', Arial, Helvetica, sans-serif;
-  --font-serif: 'Noto Serif', 'Times', 'Times New Roman', serif;
-  --font-mono: 'Roboto Mono', Courier, 'Courier New', monospace;
-}
-
-@viewport {
-  zoom: 1.0;
-}
-@-ms-viewport {
-  width: extend-to-zoom;
-  zoom: 1.0;
-}
-/* general and mobile first */
-html {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
 }
 body {
-  max-width: 90%;
-  margin: 1.5em auto;
-  color: #222;
-  background-color: #fff;
-  font-size: 14px;
-  font-family: var(--font-sans);
-  line-height: 1.6;
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
   scroll-behavior: smooth;
-  overflow-wrap: break-word;
 }
+
 .ears {
   display: none;
 }
 
 /* headings */
-#title, h1, h2, h3, h4, h5, h6 {
-  margin: 1em 0 0.5em;
-  font-weight: bold;
-  line-height: 1.3;
-}
-#title {
+section {
   clear: both;
-  border-bottom: 1px solid #ddd;
-  margin: 0 0 0.5em 0;
-  padding: 1em 0 0.5em;
 }
-.author {
-  padding-bottom: 4px;
+.section-number {
+  padding-right: 0.5em;
 }
-h1 {
-  font-size: 26px;
-  margin: 1em 0;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
 }
-h2 {
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
   font-size: 22px;
-  margin-top: -20px;  /* provide offset for in-page anchors */
-  padding-top: 33px;
+  line-height: 27px;
 }
-h3 {
-  font-size: 18px;
-  margin-top: -36px;  /* provide offset for in-page anchors */
-  padding-top: 42px;
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
 }
-h4 {
-  font-size: 16px;
-  margin-top: -36px;  /* provide offset for in-page anchors */
-  padding-top: 42px;
-}
-h5, h6 {
-  font-size: 14px;
-}
-#n-copyright-notice {
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 1em;
-  margin-bottom: 1em;
-}
+
 /* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
 p {
   padding: 0;
-  margin: 0 0 1em 0;
+  margin: 0.5em 0;
   text-align: left;
-}
-div, span {
-  position: relative;
 }
 div {
   margin: 0;
 }
 .alignRight.art-text {
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
   border-radius: 3px;
-  padding: 1em 1em 0;
-  margin-bottom: 1.5em;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
 }
 .alignRight.art-text pre {
   padding: 0;
+  width: auto;
 }
 .alignRight {
   margin: 1em 0;
@@ -205,484 +409,569 @@ div {
 svg {
   display: block;
 }
-@media print {
-  svg {
-    max-height: 850px;
-    max-width: 660px;
-  }
-}
-svg[font-family~="serif" i], svg [font-family~="serif" i] {
-  font-family: var(--font-serif);
-}
-svg[font-family~="sans-serif" i], svg [font-family~="sans-serif" i] {
-  font-family: var(--font-sans);
-}
+/* font-family isn't space-separated, but =~ will have to do */
 svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
   font-family: var(--font-mono);
 }
 .alignCenter.art-text {
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
   border-radius: 3px;
-  padding: 1em 1em 0;
-  margin-bottom: 1.5em;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
 }
 .alignCenter.art-text pre {
   padding: 0;
+  width: auto;
 }
 .alignCenter {
   margin: 1em 0;
 }
 .alignCenter > *:first-child {
-  display: table;
   border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
   margin: 0 auto;
 }
 
 /* lists */
 ol, ul {
   padding: 0;
-  margin: 0 0 1em 2em;
-}
-ol ol, ul ul, ol ul, ul ol {
-  margin-left: 1em;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
 }
 li {
   margin: 0 0 0.25em 0;
 }
-.ulCompact li {
-  margin: 0;
-}
 ul.empty, .ulEmpty {
   list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
 }
-ul.empty li, .ulEmpty li {
-  margin-top: 0.5em;
-}
-ul.ulBare, li.ulBare {
-  margin-left: 0em !important;
-}
-ul.compact, .ulCompact,
-ol.compact, .olCompact {
-  line-height: 100%;
+:is(ul, ol).compact, .ulCompact, .olCompact {
   margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
 }
 
 /* definition lists */
 dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+    }
+  }
+  &.olPercent > dt {
+    float: none;
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
 }
-dl > dt {
+dl:not(.dlNewline) > dt {
   float: left;
-  margin-right: 1em;
+  margin-right: 2ch;
+  min-width: 8ch;
 }
-/* 
-dl.nohang > dt {
-  float: none;
-}
-*/
 dl > dd {
   margin-bottom: .8em;
-  min-height: 1.3em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
 }
-dl.compact > dd, .dlCompact > dd {
-  margin-bottom: 0em;
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
 }
-dl > dd > dl {
-  margin-top: 0.5em;
-  margin-bottom: 0em;
+:is(dd, span).break {
+  display: none;
 }
 
 /* links */
-a {
+a, a[href].selfRef:hover {
   text-decoration: none;
 }
 a[href] {
-  color: #22e; /* Arlen: WCAG 2019 */
+  color: var(--link-color);
+}
+a[href].selfRef, .iref + a[href].internal {
+  color: var(--text-color);
 }
 a[href]:hover {
-  background-color: #f2f2f2;
+  text-decoration: underline;
 }
-figcaption a[href],
-a[href].selfRef {
-  color: #222;
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
 }
-/* XXX probably not this:
-a.selfRef:hover {
-  background-color: transparent;
-  cursor: default;
-} */
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
 
 /* Figures */
 tt, code, pre {
-  background-color: #f9f9f9;
-  font-family: var(--font-mono);
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
 }
 pre {
-  border: 1px solid #eee;
-  margin: 0;
-  padding: 1em;
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
 }
 img {
   max-width: 100%;
 }
 figure {
-  margin: 0;
+  margin: 0.5em 0;
+  padding: 0;
 }
 figure blockquote {
   margin: 0.8em 0.4em 0.4em;
 }
-figcaption {
+figcaption, caption {
   font-style: italic;
-  margin: 0 0 1em 0;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
 }
 @media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
   pre {
-    overflow-x: auto;
     max-width: 100%;
-    max-width: calc(100% - 22px);
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
   }
 }
 
 /* aside, blockquote */
 aside, blockquote {
   margin-left: 0;
-  padding: 1.2em 2em;
+  padding: 0 2em;
+  font-style: italic;
 }
 blockquote {
-  background-color: #f9f9f9;
-  color: #111; /* Arlen: WCAG 2019 */
-  border: 1px solid #ddd;
-  border-radius: 3px;
   margin: 1em 0;
-}
-blockquote > *:last-child {
-  margin-bottom: 0;
+  border-left: 2px var(--pilcrow-strong) solid;
 }
 cite {
   display: block;
   text-align: right;
   font-style: italic;
 }
-.xref {
-  overflow-wrap: normal;
-}
 
 /* tables */
 table {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
-  border: 1px solid #eee;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
 }
 th, td {
   text-align: left;
   vertical-align: top;
-  padding: 0.5em 0.75em;
+  padding: 5px 10px;
 }
 th {
-  text-align: left;
-  background-color: #e9e9e9;
+  background-color: var(--line-color);
 }
-tr:nth-child(2n+1) > td {
-  background-color: #f5f5f5;
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
 }
 table caption {
-  font-style: italic;
   margin: 0;
-  padding: 0;
-  text-align: left;
+  padding: 3px 0 3px 1em;
 }
 table p {
-  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
-     be allowed within tables more generally, it would be far better to select on a class. */
   margin: 0;
 }
 
 /* pilcrow */
 a.pilcrow {
-  color: #666; /* Arlen: AHDJ 2019 */
-  text-decoration: none;
-  visibility: hidden;
+  margin-left: 3px;
+  opacity: 0.2;
   user-select: none;
-  -ms-user-select: none;
-  -o-user-select:none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-@media screen {
-  aside:hover > a.pilcrow,
-  p:hover > a.pilcrow,
-  blockquote:hover > a.pilcrow,
-  div:hover > a.pilcrow,
-  li:hover > a.pilcrow,
-  pre:hover > a.pilcrow {
-    visibility: visible;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
   }
-  a.pilcrow:hover {
+}
+@media not print {
+  :hover > a.pilcrow, a.pilcrow:focus {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
     background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
   }
 }
 
 /* misc */
 hr {
   border: 0;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--line-color);
 }
 .bcp14 {
   font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
 }
-
 .role {
   font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
 }
 
 /* info block */
 #identifiers {
   margin: 0;
-  font-size: 0.9em;
-}
-#identifiers dt {
-  width: 3em;
-  clear: left;
-}
-#identifiers dd {
-  float: left;
-  margin-bottom: 0;
-}
-/* Fix PDF info block run off issue */
-@media print {
-  #identifiers dd {
-    max-width: 100%;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
   }
-}
-#identifiers .authors .author {
-  display: inline-block;
-  margin-right: 1.5em;
-}
-#identifiers .authors .org {
-  font-style: italic;
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
 }
 
 /* The prepared/rendered info at the very bottom of the page */
 .docInfo {
-  color: #666; /* Arlen: WCAG 2019 */
+  color: #999;
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2em;
-}
-.docInfo .prepared {
-  float: left;
 }
 .docInfo .prepared {
   float: right;
 }
 
 /* table of contents */
-#toc  {
+#toc {
   padding: 0.75em 0 2em 0;
   margin-bottom: 1em;
-}
-nav.toc ul {
-  margin: 0 0.5em 0 0;
-  padding: 0;
-  list-style: none;
-}
-nav.toc li {
-  line-height: 1.3em;
-  margin: 0.75em 0;
-  padding-left: 1.2em;
-  text-indent: -1.2em;
-}
-/* references */
-.references dt {
-  text-align: right;
-  font-weight: bold;
-  min-width: 7em;
-}
-.references dd {
-  margin-left: 8em;
-  overflow: auto;
-}
 
-.refInstance {
-  margin-bottom: 1.25em;
-}
-
-.refSubseries {
-  margin-bottom: 1.25em;
-}
-
-.references .ascii {
-  margin-bottom: 0.25em;
-}
-
-/* index */
-.index ul {
-  margin: 0 0 0 1em;
-  padding: 0;
-  list-style: none;
-}
-.index ul ul {
-  margin: 0;
-}
-.index li {
-  margin: 0;
-  text-indent: -2em;
-  padding-left: 2em;
-  padding-bottom: 5px;
-}
-.indexIndex {
-  margin: 0.5em 0 1em;
-}
-.index a {
-  font-weight: 700;
-}
-/* make the index two-column on all but the smallest screens */
-@media (min-width: 600px) {
-  .index ul {
-    -moz-column-count: 2;
-    -moz-column-gap: 20px;
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
   }
-  .index ul ul {
-    -moz-column-count: 1;
-    -moz-column-gap: 0;
+  & a.xref {
+    white-space: normal;
   }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
 }
 
 /* authors */
 address.vcard {
   font-style: normal;
-  margin: 1em 0;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
 }
 
-address.vcard .nameRole {
-  font-weight: 700;
-  margin-left: 0;
-}
-address.vcard .label {
-  font-family: var(--font-sans);
-  margin: 0.5em 0;
-}
-address.vcard .type {
-  display: none;
-}
-.alternative-contact {
-  margin: 1.5em 0 1em;
-}
 hr.addr {
   border-top: 1px dashed;
   margin: 0;
   color: #ddd;
   max-width: calc(100% - 16px);
 }
-
-/* temporary notes */
-.rfcEditorRemove::before {
-  position: absolute;
-  top: 0.2em;
-  right: 0.2em;
-  padding: 0.2em;
-  content: "The RFC Editor will remove this note";
-  color: #9e2a00; /* Arlen: WCAG 2019 */
-  background-color: #ffd; /* Arlen: WCAG 2019 */
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
 }
-.rfcEditorRemove {
-  position: relative;
-  padding-top: 1.8em;
-  background-color: #ffd; /* Arlen: WCAG 2019 */
-  border-radius: 3px;
+
+/* Comments */
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
 }
 .cref {
-  background-color: #ffd; /* Arlen: WCAG 2019 */
+  background-color: rgba(249, 232, 105, 0.3);
   padding: 2px 4px;
 }
 .crefSource {
   font-style: italic;
 }
-/* alternative layout for smaller screens */
-@media screen and (max-width: 1023px) {
-  body {
-    padding-top: 2em;
+
+@media screen {
+  #toc nav {
+    font-family: var(--font-title);
+    font-weight: 360;
+    & > ul { margin-bottom: 2em; }
+    & ul {
+      margin: 0 0 0 4px;
+      & :is(p, li) {
+        margin: 2px 0;
+      }
+    }
   }
-  #title {
-    padding: 1em 0;
+  #toc a.toplink {
+    float: right;
   }
-  h1 {
-    font-size: 24px;
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
   }
-  h2 {
-    font-size: 20px;
-    margin-top: -18px;  /* provide offset for in-page anchors */
-    padding-top: 38px;
-  }
-  #identifiers dd {
-    max-width: 60%;
-  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
   #toc {
     position: fixed;
     z-index: 2;
     top: 0;
     right: 0;
-    padding: 0;
+    padding: 1px 0 0 0;
     margin: 0;
-    background-color: inherit;
     border-bottom: 1px solid #ccc;
+    opacity: 0.6;
   }
   #toc h2 {
-    margin: -1px 0 0 0;
-    padding: 4px 0 4px 6px;
+    margin: 0;
+    padding: 2px 0 2px 6px;
     padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
     min-width: 190px;
-    font-size: 1.1em;
     text-align: right;
     background-color: #444;
     color: white;
     cursor: pointer;
-  }
-  #toc h2::before { /* css hamburger */
-    float: right;
-    position: relative;
-    width: 1em;
-    height: 1px;
-    left: -164px;
-    margin: 6px 0 0 0;
-    background: white none repeat scroll 0 0;
-    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-    content: "";
+    &::before { /* css hamburger */
+      float: right;
+      position: relative;
+      width: 1em;
+      height: 1px;
+      left: -164px;
+      margin: 8px 0 0 0;
+      background: white none repeat scroll 0 0;
+      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+      content: "";
+    }
   }
   #toc nav {
     display: none;
+    background-color: var(--background-color);
     padding: 0.5em 1em 1em;
     overflow: auto;
+    overscroll-behavior: contain;
     height: calc(100vh - 48px);
     border-left: 1px solid #ddd;
   }
+  #toc.active {
+    opacity: 1;
+    & nav { display: block; }
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:is(:link, :focus, :hover),
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin: 2px 0.5em 0;
+  }
 }
 
-/* alternative layout for wide screens */
-@media screen and (min-width: 1024px) {
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
   body {
-    max-width: 724px;
-    margin: 42px auto;
-    padding-left: 1.5em;
-    padding-right: 29em;
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
   }
   #toc {
     position: fixed;
-    top: 42px;
-    right: 42px;
-    width: 25%;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
     margin: 0;
-    padding: 0 1em;
+    padding: 0;
     z-index: 1;
   }
   #toc h2 {
-    border-top: none;
-    border-bottom: 1px solid #ddd;
-    font-size: 1em;
-    font-weight: normal;
     margin: 0;
     padding: 0.25em 1em 1em 0;
   }
@@ -690,12 +979,17 @@ hr.addr {
     display: block;
     height: calc(90vh - 84px);
     bottom: 0;
-    padding: 0.5em 0 0;
+    padding: 0.5em 0 2em;
     overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
+  }
+  #toc a.toplink {
+    margin: 8px 0.5em 0;
   }
 }
 
@@ -718,19 +1012,13 @@ hr.addr {
     border-top: none;
     padding-top: 0;
   }
-  figure, pre {
+  figure, pre, .vcard {
     page-break-inside: avoid;
-  }
-  figure {
-    overflow: scroll;
-  }
-  .breakable pre {
-    break-inside: auto;
   }
   h1, h2, h3, h4, h5, h6 {
     page-break-after: avoid;
   }
-  h2+*, h3+*, h4+*, h5+*, h6+* {
+  :is(h2, h3, h4, h5, h6)+*, dd {
     page-break-before: avoid;
   }
   pre {
@@ -745,34 +1033,6 @@ hr.addr {
     border-top: 1px solid #ddd;
   }
 }
-
-/* This is commented out here, as the string-set: doesn't
-   pass W3C validation currently */
-/*
-.ears thead .left {
-  string-set: ears-top-left content();
-}
-
-.ears thead .center {
-  string-set: ears-top-center content();
-}
-
-.ears thead .right {
-  string-set: ears-top-right content();
-}
-
-.ears tfoot .left {
-  string-set: ears-bottom-left content();
-}
-
-.ears tfoot .center {
-  string-set: ears-bottom-center content();
-}
-
-.ears tfoot .right {
-  string-set: ears-bottom-right content();
-}
-*/
 
 @page :first {
   padding-top: 0;
@@ -794,468 +1054,38 @@ hr.addr {
   size: A4;
   margin-bottom: 45mm;
   padding-top: 20px;
-  /* The following is commented out here, but set appropriately by in code, as
-     the content depends on the document */
-  /*
-  @top-left {
-    content: 'Internet-Draft';
-    vertical-align: bottom;
-    border-bottom: solid 1px #ccc;
-  }
-  @top-left {
-    content: string(ears-top-left);
-    vertical-align: bottom;
-    border-bottom: solid 1px #ccc;
-  }
-  @top-center {
-    content: string(ears-top-center);
-    vertical-align: bottom;
-    border-bottom: solid 1px #ccc;
-  }
-  @top-right {
-    content: string(ears-top-right);
-    vertical-align: bottom;
-    border-bottom: solid 1px #ccc;
-  }
-  @bottom-left {
-    content: string(ears-bottom-left);
-    vertical-align: top;
-    border-top: solid 1px #ccc;
-  }
-  @bottom-center {
-    content: string(ears-bottom-center);
-    vertical-align: top;
-    border-top: solid 1px #ccc;
-  }
-  @bottom-right {
-      content: '[Page ' counter(page) ']';
-      vertical-align: top;
-      border-top: solid 1px #ccc;
-  }
-  */
-
 }
 
-/* Changes introduced to fix issues found during implementation */
-/* Make sure links are clickable even if overlapped by following H* */
-a {
-  z-index: 2;
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
 }
-/* Separate body from document info even without intervening H1 */
-section {
-  clear: both;
-}
-
-
-/* Top align author divs, to avoid names without organization dropping level with org names */
-.author {
-  vertical-align: top;
-}
-
-/* Leave room in document info to show Internet-Draft on one line */
-#identifiers dt {
-  width: 8em;
 }
 
-/* Don't waste quite as much whitespace between label and value in doc info */
-#identifiers dd {
-  margin-left: 1em;
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
 }
-
-/* Give floating toc a background color (needed when it's a div inside section */
-#toc {
-  background-color: white;
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
 }
-
-/* Make the collapsed ToC header render white on gray also when it's a link */
-@media screen and (max-width: 1023px) {
-  #toc h2 a,
-  #toc h2 a:link,
-  #toc h2 a:focus,
-  #toc h2 a:hover,
-  #toc a.toplink,
-  #toc a.toplink:hover {
-    color: white;
-    background-color: #444;
-    text-decoration: none;
-  }
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
 }
-
-/* Give the bottom of the ToC some whitespace */
-@media screen and (min-width: 1024px) {
-  #toc {
-    padding: 0 0 1em 1em;
-  }
-}
-
-/* Style section numbers with more space between number and title */
-.section-number {
-  padding-right: 0.5em;
-}
-
-/* prevent monospace from becoming overly large */
-tt, code, pre {
-  font-size: 95%;
-}
-
-/* Fix the height/width aspect for ascii art*/
-.sourcecode pre,
-.art-text pre {
-  line-height: 1.12;
-}
-
-
-/* Add styling for a link in the ToC that points to the top of the document */
-a.toplink {
-  float: right;
-  margin-right: 0.5em;
-}
-
-/* Fix the dl styling to match the RFC 7992 attributes */
-dl > dt,
-dl.dlParallel > dt {
-  float: left;
-  margin-right: 1em;
-}
-dl.dlNewline > dt {
-  float: none;
-}
-
-/* Provide styling for table cell text alignment */
-table td.text-left,
-table th.text-left {
-  text-align: left;
-}
-table td.text-center,
-table th.text-center {
-  text-align: center;
-}
-table td.text-right,
-table th.text-right {
-  text-align: right;
-}
-
-/* Make the alternative author contact information look less like just another
-   author, and group it closer with the primary author contact information */
-.alternative-contact {
-  margin: 0.5em 0 0.25em 0;
-}
-address .non-ascii {
-  margin: 0 0 0 2em;
-}
-
-/* With it being possible to set tables with alignment
-  left, center, and right, { width: 100%; } does not make sense */
-table {
-  width: auto;
-}
-
-/* Avoid reference text that sits in a block with very wide left margin,
-   because of a long floating dt label.*/
-.references dd {
-  overflow: visible;
-}
-
-/* Control caption placement */
-caption {
-  caption-side: bottom;
-}
-
-/* Limit the width of the author address vcard, so names in right-to-left
-   script don't end up on the other side of the page. */
-
-address.vcard {
-  max-width: 30em;
-  margin-right: auto;
-}
-
-/* For address alignment dependent on LTR or RTL scripts */
-address div.left {
-  text-align: left;
-}
-address div.right {
-  text-align: right;
-}
-
-/* Provide table alignment support.  We can't use the alignX classes above
-   since they do unwanted things with caption and other styling. */
-table.right {
- margin-left: auto;
- margin-right: 0;
-}
-table.center {
- margin-left: auto;
- margin-right: auto;
-}
-table.left {
- margin-left: 0;
- margin-right: auto;
-}
-
-/* Give the table caption label the same styling as the figcaption */
-caption a[href] {
-  color: #222;
-}
-
-@media print {
-  .toplink {
-    display: none;
-  }
-
-  /* avoid overwriting the top border line with the ToC header */
-  #toc {
-    padding-top: 1px;
-  }
-
-  /* Avoid page breaks inside dl and author address entries */
-  .vcard {
-    page-break-inside: avoid;
-  }
-
-}
-/* Tweak the bcp14 keyword presentation */
-.bcp14 {
-  font-variant: small-caps;
-  font-weight: bold;
-  font-size: 0.9em;
-}
-/* Tweak the invisible space above H* in order not to overlay links in text above */
- h2 {
-  margin-top: -18px;  /* provide offset for in-page anchors */
-  padding-top: 31px;
- }
- h3 {
-  margin-top: -18px;  /* provide offset for in-page anchors */
-  padding-top: 24px;
- }
- h4 {
-  margin-top: -18px;  /* provide offset for in-page anchors */
-  padding-top: 24px;
- }
-/* Float artwork pilcrow to the right */
-@media screen {
-  .artwork a.pilcrow {
-    display: block;
-    line-height: 0.7;
-    margin-top: 0.15em;
-  }
-}
-/* Make pilcrows on dd visible */
-@media screen {
-  dd:hover > a.pilcrow {
-    visibility: visible;
-  }
-}
-/* Make the placement of figcaption match that of a table's caption
-   by removing the figure's added bottom margin */
-.alignLeft.art-text,
-.alignCenter.art-text,
-.alignRight.art-text {
-   margin-bottom: 0;
-}
-.alignLeft,
-.alignCenter,
-.alignRight {
-  margin: 1em 0 0 0;
-}
-/* In print, the pilcrow won't show on hover, so prevent it from taking up space,
-   possibly even requiring a new line */
-@media print {
-  a.pilcrow {
-    display: none;
-  }
-}
-/* Styling for the external metadata */
-div#external-metadata {
-  background-color: #eee;
-  padding: 0.5em;
-  margin-bottom: 0.5em;
-  display: none;
-}
-div#internal-metadata {
-  padding: 0.5em;                       /* to match the external-metadata padding */
-}
-/* Styling for title RFC Number */
-h1#rfcnum {
-  clear: both;
-  margin: 0 0 -1em;
-  padding: 1em 0 0 0;
-}
-/* Make .olPercent look the same as <ol><li> */
-dl.olPercent > dd {
-  margin-bottom: 0.25em;
-  min-height: initial;
-}
-/* Give aside some styling to set it apart */
-aside {
-  border-left: 1px solid #ddd;
-  margin: 1em 0 1em 2em;
-  padding: 0.2em 2em;
-}
-aside > dl,
-aside > ol,
-aside > ul,
-aside > table,
-aside > p {
-  margin-bottom: 0.5em;
-}
-/* Additional page break settings */
-@media print {
-  figcaption, table caption {
-    page-break-before: avoid;
-  }
-}
-/* Font size adjustments for print */
-@media print {
-  body  { font-size: 10pt;      line-height: normal; max-width: 96%; }
-  h1    { font-size: 1.72em;    padding-top: 1.5em; } /* 1*1.2*1.2*1.2 */
-  h2    { font-size: 1.44em;    padding-top: 1.5em; } /* 1*1.2*1.2 */
-  h3    { font-size: 1.2em;     padding-top: 1.5em; } /* 1*1.2 */
-  h4    { font-size: 1em;       padding-top: 1.5em; }
-  h5, h6 { font-size: 1em;      margin: initial; padding: 0.5em 0 0.3em; }
-}
-/* Sourcecode margin in print, when there's no pilcrow */
-@media print {
-  .artwork,
-  .artwork > pre,
-  .sourcecode {
-    margin-bottom: 1em;
-  }
-}
-/* Avoid narrow tables forcing too narrow table captions, which may render badly */
-table {
-  min-width: 20em;
-}
-/* ol type a */
-ol.type-a { list-style-type: lower-alpha; }
-ol.type-A { list-style-type: upper-alpha; }
-ol.type-i { list-style-type: lower-roman; }
-ol.type-I { list-style-type: upper-roman; }
-/* Apply the print table and row borders in general, on request from the RPC,
-and increase the contrast between border and odd row background slightly */
-table {
-  border: 1px solid #ddd;
-}
-td {
-  border-top: 1px solid #ddd;
-}
-tr {
-  break-inside: avoid;
-}
-tr:nth-child(2n+1) > td {
-  background-color: #f8f8f8;
-}
-/* Use style rules to govern display of the TOC. */
-@media screen and (max-width: 1023px) {
-  #toc nav { display: none; }
-  #toc.active nav { display: block; }
-}
-/* Add support for keepWithNext */
-.keepWithNext {
-  break-after: avoid-page;
-  break-after: avoid-page;
-}
-/* Add support for keepWithPrevious */
-.keepWithPrevious {
-  break-before: avoid-page;
-}
-/* Change the approach to avoiding breaks inside artwork etc. */
-figure, pre, table, .artwork, .sourcecode  {
-  break-before: auto;
-  break-after: auto;
-}
-/* Avoid breaks between <dt> and <dd> */
-dl {
-  break-before: auto;
-  break-inside: auto;
-}
-dt {
-  break-before: auto;
-  break-after: avoid-page;
-}
-dd {
-  break-before: avoid-page;
-  break-after: auto;
-  orphans: 3;
-  widows: 3
-}
-span.break, dd.break {
-  margin-bottom: 0;
-  min-height: 0;
-  break-before: auto;
-  break-inside: auto;
-  break-after: auto;
-}
-/* Undo break-before ToC */
-@media print {
-  #toc {
-    break-before: auto;
-  }
-}
-/* Text in compact lists should not get extra bottom margin space,
-   since that would makes the list not compact */
-ul.compact p, .ulCompact p,
-ol.compact p, .olCompact p {
- margin: 0;
-}
-/* But the list as a whole needs the extra space at the end */
-section ul.compact,
-section .ulCompact,
-section ol.compact,
-section .olCompact {
-  margin-bottom: 1em;                    /* same as p not within ul.compact etc. */
-}
-/* The tt and code background above interferes with for instance table cell
-   backgrounds.  Changed to something a bit more selective. */
-tt, code {
-  background-color: transparent;
-}
-p tt, p code, li tt, li code, dt tt, dt code {
-  background-color: #f8f8f8;
-}
-/* Tweak the pre margin -- 0px doesn't come out well */
-pre {
-   margin-top: 0.5px;
-}
-/* Tweak the compact list text */
-ul.compact, .ulCompact,
-ol.compact, .olCompact,
-dl.compact, .dlCompact {
-  line-height: normal;
-}
-/* Don't add top margin for nested lists */
-li > ul, li > ol, li > dl,
-dd > ul, dd > ol, dd > dl,
-dl > dd > dl {
-  margin-top: initial;
-}
-/* Elements that should not be rendered on the same line as a <dt> */
-/* This should match the element list in writer.text.TextWriter.render_dl() */
-dd > div.artwork:first-child,
-dd > aside:first-child,
-dd > blockquote:first-child,
-dd > figure:first-child,
-dd > ol:first-child,
-dd > div.sourcecode:first-child,
-dd > table:first-child,
-dd > ul:first-child {
-  clear: left;
-}
-/* fix for weird browser behaviour when <dd/> is empty */
-dt+dd:empty::before{
-  content: "\00a0";
-}
-/* Make paragraph spacing inside <li> smaller than in body text, to fit better within the list */
-li > p {
-  margin-bottom: 0.5em
-}
-/* Don't let p margin spill out from inside list items */
-li > p:last-of-type:only-child {
-  margin-bottom: 0;
+svg :is([fill="white"], [fill^="#fff"]) {
+  fill: var(--background-color);
 }
 </style>
-<link href="rfc-local.css" rel="stylesheet" type="text/css">
-<script type="application/javascript">async function addMetadata(){try{const e=document.styleSheets[0].cssRules;for(let t=0;t<e.length;t++)if(/#identifiers/.exec(e[t].selectorText)){const a=e[t].cssText.replace("#identifiers","#external-updates");document.styleSheets[0].insertRule(a,document.styleSheets[0].cssRules.length)}}catch(e){console.log(e)}const e=document.getElementById("external-metadata");if(e)try{var t,a="",o=function(e){const t=document.getElementsByTagName("meta");for(let a=0;a<t.length;a++)if(t[a].getAttribute("name")===e)return t[a].getAttribute("content");return""}("rfc.number");if(o){t="https://www.rfc-editor.org/rfc/rfc"+o+".json";try{const e=await fetch(t);a=await e.json()}catch(e){t=document.URL.indexOf("html")>=0?document.URL.replace(/html$/,"json"):document.URL+".json";const o=await fetch(t);a=await o.json()}}if(!a)return;e.style.display="block";const s="",d="https://datatracker.ietf.org/doc",n="https://datatracker.ietf.org/ipr/search",c="https://www.rfc-editor.org/info",l=a.doc_id.toLowerCase(),i=a.doc_id.slice(0,3).toLowerCase(),f=a.doc_id.slice(3).replace(/^0+/,""),u={status:"Status",obsoletes:"Obsoletes",obsoleted_by:"Obsoleted By",updates:"Updates",updated_by:"Updated By",see_also:"See Also",errata_url:"Errata"};let h="<dl style='overflow:hidden' id='external-updates'>";["status","obsoletes","obsoleted_by","updates","updated_by","see_also","errata_url"].forEach(e=>{if("status"==e){a[e]=a[e].toLowerCase();var t=a[e].split(" "),o=t.length,w="",p=1;for(let e=0;e<o;e++)p<o?w=w+r(t[e])+" ":w+=r(t[e]),p++;a[e]=w}else if("obsoletes"==e||"obsoleted_by"==e||"updates"==e||"updated_by"==e){var g,m="",b=1;g=a[e].length;for(let t=0;t<g;t++)a[e][t]&&(a[e][t]=String(a[e][t]).toLowerCase(),m=b<g?m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>, ":m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>",b++);a[e]=m}else if("see_also"==e){var y,L="",C=1;y=a[e].length;for(let t=0;t<y;t++)if(a[e][t]){a[e][t]=String(a[e][t]);var _=a[e][t].slice(0,3),v=a[e][t].slice(3).replace(/^0+/,"");L=C<y?"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>, ":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>, ":"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>",C++}a[e]=L}else if("errata_url"==e){var R="";R=a[e]?R+"<a href='"+a[e]+"'>Errata exist</a> | <a href='"+d+"/"+l+"'>Datatracker</a>| <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>":"<a href='"+d+"/"+l+"'>Datatracker</a> | <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>",a[e]=R}""!=a[e]?"Errata"==u[e]?h+=`<dt>More info:</dt><dd>${a[e]}</dd>`:h+=`<dt>${u[e]}:</dt><dd>${a[e]}</dd>`:"Errata"==u[e]&&(h+=`<dt>More info:</dt><dd>${a[e]}</dd>`)}),h+="</dl>",e.innerHTML=h}catch(e){console.log(e)}else console.log("Could not locate metadata <div> element");function r(e){return e.charAt(0).toUpperCase()+e.slice(1)}}window.removeEventListener("load",addMetadata),window.addEventListener("load",addMetadata);</script>
+
 </head>
 <body class="xml2rfc">
 <table class="ears">
@@ -1324,7 +1154,7 @@ li > p:last-of-type:only-child {
         confidence). On that topology the confidence-weighted consumer improves
         mean delivery ratio and mean latency while selecting higher path
         confidence; p95 latency is not improved on this topology and is
-        reported honestly. The contribution of this specification is the
+        reported as measured. The contribution of this specification is the
         standardized BPv7 extension block for carrying such metadata, not a
         claim that production stacks already consume CPB in-band. Operational
         deployment questions — robustness to noisy or adversarial
@@ -3950,7 +3780,7 @@ A3                   ; map with 3 entries
               <strong>License:</strong> MIT License<a href="#section-11-4.2.1.3" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-11-4.2.1.4">
-              <strong>Modules:</strong> cpb.py (encoder/decoder, ~280 lines),
+              <strong>Modules:</strong> cpb.py (encoder/decoder),
                 test_cpb.py (conformance suite for wire encode/decode),
                 config1_sim.py (discrete-event simulator producing the
                 <a href="#experiment" class="auto internal xref">Section 12</a> Configuration 1 results).<a href="#section-11-4.2.1.4" class="pilcrow">¶</a>
@@ -4285,72 +4115,60 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         </h3>
 <p id="section-12.6-1">
           In addition to the discrete-event simulation, a limited real
-          data-plane validation was executed on a live three-node NASA ION
-          v4.1.0 testbed on the IPNSIG PWG Tailscale mesh (samo.grasic@ account)
-          plus dedicated emulated targets. The nodes were soulkiller
-          (268485122 at 100.91.23.41), orin (268485121 at 100.92.115.65), and
-          horus (268485123 at 100.65.168.37), with emulated Moon (268484801),
-          Mars (268484820), and gateway (268485000) reached via plans to the
-          public gateway IP 100.96.108.37. All reals used UDPCL on port 4556
-          with long-duration bidirectional contacts, cfdp + bputa for CPB
-          injection (cfdp entities configured for the emulated EIDs), ionsec
-          default key, and DTNEx for dynamic CBOR contact/probability exchange
-          on .12160/.12161. UFW was enabled on all three hosts (default deny
-          incoming) with explicit allows for UDP 4556 (core UDPCL), 4557, and
-          12160 (DTNEx/CBOR) from the 100.0.0.0/8 and 100.64.0.0/10 Tailscale
-          ranges plus on the tailscale0 interface (executed after explicit
-          operator instruction to make any needed firewall exemptions).<a href="#section-12.6-1" class="pilcrow">¶</a></p>
+          data-plane validation was executed on a three-node NASA ION
+          v4.1.0 testbed on the IPNSIG PWG Tailscale mesh, plus dedicated
+          emulated targets. The real nodes were ipn node numbers 268485122,
+          268485121, and 268485123. Emulated Moon (268484801), Mars
+          (268484820), and gateway (268485000) endpoints were reached via
+          contact plans to a public gateway on the mesh. All real nodes used
+          UDPCL on port 4556 with long-duration bidirectional contacts,
+          CFDP and bputa for CPB injection (CFDP entities configured for the
+          emulated EIDs), ionsec default key, and DTNEx for dynamic CBOR
+          contact and probability exchange on service numbers .12160/.12161.
+          Host firewalls allowed UDP 4556 (UDPCL), 4557, and 12160 (DTNEx)
+          from the Tailscale address ranges used by the mesh.<a href="#section-12.6-1" class="pilcrow">¶</a></p>
 <p id="section-12.6-2">
-          Two phases were executed using the reference packet.py + cpb.py
-          (minimal CPB map with F_DEFAULT_PROB + F_PATH_ENTRIES using IEEE
-          binary16 float per draft Section 3.4 canonical CBOR encoding; the
-          deployed cpb.py did not insert an F_VERSION key).<a href="#section-12.6-2" class="pilcrow">¶</a></p>
+          Two phases were executed using the reference packet.py and cpb.py
+          tools (minimal CPB map with default probability and path entries
+          encoded as IEEE binary16 floats per
+          <a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>; the deployed encoder for these runs
+          did not insert a format-version key).<a href="#section-12.6-2" class="pilcrow">¶</a></p>
 <p id="section-12.6-3">
-          Phase 1 (72 messages): Each of the three real nodes sent the eight
-          quirky one-liner payloads with-CPB (using the eight adversarial
-          probabilities 0.65..0.99) to each of the three dedicated "my nodes"
+          Phase 1 (72 messages): Each of the three real nodes sent eight
+          fixed short text payloads with a CPB (using eight fixed test
+          probabilities in 0.65..0.99) to each of three dedicated test EIDs
           (gateway 268485000, Moon 268484801, Mars 268484820). Bundles were
-          created with source = sending real EID and injected via bputa to the
-          destination cfdp entity after cfdpadmin update (enabling bputa,
-          discard=0, segsize=1400, requirecrc=0). cfdpclock + bputa were
-          confirmed running on the injector before each batch.<a href="#section-12.6-3" class="pilcrow">¶</a></p>
+          created with source equal to the sending real EID and injected via
+          bputa to the destination CFDP entity after cfdpadmin configuration
+          (bputa enabled, discard=0, segsize=1400, requirecrc=0). cfdpclock
+          and bputa were confirmed running on the injector before each batch.<a href="#section-12.6-3" class="pilcrow">¶</a></p>
 <p id="section-12.6-4">
-          Phase 2 (32 messages, test nodes to each other ONLY): The eight
-          quirky payloads were sent bidirectional (Moon→Mars and
-          Mars→Moon), both with-CPB and plain (no CPB block). Bundles
-          were created with source = originating emulated EID and destination =
-          the other emulated EID, then bputa-injected from soulkiller to the
-          destination test entity's cfdp number (to 268484820 for all
-          Moon→Mars bundles; to 268484801 for all Mars→Moon
-          bundles). This batch was strictly between the two test nodes; no
-          real nodes, gateway 000, or published nodes (008/800/657) were
-          involved.<a href="#section-12.6-4" class="pilcrow">¶</a></p>
+          Phase 2 (32 messages, emulated test nodes only): The same eight
+          payloads were sent bidirectionally (Moon→Mars and
+          Mars→Moon), both with a CPB and plain (no CPB block). Bundles
+          were created with source equal to the originating emulated EID and
+          destination equal to the other emulated EID, then injected via
+          bputa from node 268485122 to the destination CFDP entity
+          (268484820 for Moon→Mars; 268484801 for Mars→Moon).
+          This batch was limited to the two emulated test nodes.<a href="#section-12.6-4" class="pilcrow">¶</a></p>
 <p id="section-12.6-5">
           All bundles (104 total) were produced by the reference encoder,
           successfully injected, and appeared in bplist for the target EIDs
-          (frequently "Queued for forwarding to .0" or destination .12160 on
-          the reals). The Phase 2 with-CPB examples use a minimal CPB map
-          (default probability + one path entry); a representative file is
-          121 B (see dissection below). The separate full-field overhead
-          measurement of 51 B (76 B plain → 127 B with CPB) is from
-          the 2-node campaign in <code>impl/real-cpb-ion-test/</code> and is
-          reported under <a href="#overhead-analysis" class="auto internal xref">Section 10</a>; it is not the
-          size of these minimal-map timeline1 bundles. The 32
-          test-to-each-other .bundle files (plus representative 72-batch and
-          per-sender captures) plus snapshot copies are preserved under
-          impl/real-pwg-deployment/timeline1/ (cpb_test_to_each_other/,
-          cpb_with_verification/, receive_logs/, etc.), with full command
-          history and status in
-          impl/real-pwg-deployment/timeline1/LIVE_TRANSMISSION_STATUS.txt
-          (also rsynced to orin backup and tarballed).<a href="#section-12.6-5" class="pilcrow">¶</a></p>
+          (often queued for forwarding). Phase 2 with-CPB examples use a
+          minimal CPB map (default probability plus one path entry); a
+          representative file is 121 B (see dissection below). The separate
+          full-field overhead measurement of 51 B (76 B plain → 127 B
+          with CPB) is from the 2-node campaign in
+          <code>impl/real-cpb-ion-test/</code> and is reported under
+          <a href="#overhead-analysis" class="auto internal xref">Section 10</a>; it is not the size of these
+          minimal-map bundles. Artifacts are preserved under
+          <code>impl/real-pwg-deployment/timeline1/</code>.<a href="#section-12.6-5" class="pilcrow">¶</a></p>
 <p id="section-12.6-6">
-          Wire-format and intact-CPB evidence: Wireshark 4.6.4 (with tshark)
-          was installed on soulkiller; the presence of "Bundle Protocol",
-          "DTN Bundle Protocol Version 7 (BPv7)", and "BPv7 Block Type"
-          dissectors was confirmed via tshark -G protocols. A detailed manual
-          CBOR + hex dissection (with pcap conversion) was performed on the
-          concrete example moon_to_mars_with_cpb_01_save.bundle (121 B, first
-          quirky line with prob ~0.65). The full wire bytes are:<a href="#section-12.6-6" class="pilcrow">¶</a></p>
+          Wire-format evidence: Wireshark 4.6.4 (with tshark) on node
+          268485122 confirmed BPv7 and BPv7 Block Type dissectors. A manual
+          CBOR and hex dissection was performed on
+          moon_to_mars_with_cpb_01_save.bundle (121 B; first fixed payload
+          with probability approximately 0.65). The full wire bytes are:<a href="#section-12.6-6" class="pilcrow">¶</a></p>
 <div class="alignLeft art-ascii-art art-text artwork" id="section-12.6-7">
 <pre>
 88070000498201821a1000c0c101498201821a1000c0d401498201821a1000c0
@@ -4379,68 +4197,54 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           (F_DEFAULT_PROB and single F_PATH_ENTRIES entry; no F_VERSION key
           in the runtime encoder used for these runs).<a href="#section-12.6-11" class="pilcrow">¶</a></p>
 <p id="section-12.6-12">
-          Payload block (type 1): the 27-byte string "save a horse, ride a
-          cowboy".<a href="#section-12.6-12" class="pilcrow">¶</a></p>
+          Payload block (type 1): a fixed 27-byte ASCII test string used for
+          this campaign.<a href="#section-12.6-12" class="pilcrow">¶</a></p>
 <p id="section-12.6-13">
-          The CPB block and its single direct path entry were bit-for-bit
-          faithful to the encoder output; no appended path entries or
-          probability mutations were present. The same structure (varying only
-          the probability value and target node in the path entry) appears in
-          all 16 with-CPB bundles from the Phase-2 batch.<a href="#section-12.6-13" class="pilcrow">¶</a></p>
+          The CPB block and its single direct path entry matched the encoder
+          output bit-for-bit; no appended path entries or probability mutations
+          were present. The same structure (varying only the probability value
+          and target node in the path entry) appears in all 16 with-CPB
+          bundles from the Phase 2 batch.<a href="#section-12.6-13" class="pilcrow">¶</a></p>
 <p id="section-12.6-14">
-          Receive-side collection: bpsink + receiver.py (bprecv + CPB scanner)
-          + recv_cpb.py were run on the emulated EIDs/services (.1 and .12160)
-          across the three reals for a 30 s drain window immediately after the
-          32 test-to-each-other injections. 12 log files were captured and
-          snapshotted (under timeline1/receive_logs/). Zero quirky payload
-          strings were observed in the logs, and no receive-side CPB decodes
-          were triggered in that window. This is consistent with the CFDP-wrapped
-          bputa injection model and the emulated targets (plan + cfdp entity
-          only; bundles frequently remained in bplist forwarding queues rather
-          than local app delivery to a .1 endpoint).<a href="#section-12.6-14" class="pilcrow">¶</a></p>
+          Receive-side collection: bpsink, a bprecv-based receiver, and
+          recv_cpb.py were run on the emulated EID services (.1 and .12160)
+          across the three real nodes for a 30 s window after the Phase 2
+          injections. Captured logs under timeline1/receive_logs/ showed no
+          local application delivery of the test payloads and no receive-side
+          CPB decodes in that window. That outcome is consistent with
+          CFDP-wrapped bputa injection and with emulated targets that are
+          plan and CFDP-entity constructs only (bundles often remained in
+          bplist forwarding queues rather than delivering to a .1 endpoint).<a href="#section-12.6-14" class="pilcrow">¶</a></p>
 <p id="section-12.6-15">
           Decode verification (post-injection): recv_cpb.py and the receiver
-          scanner were run against the source .bundle files and the from_*
-          captures. Every with-CPB bundle decoded successfully to its original
-          map (single direct path entry + the assigned assigned test confidence
-          for that quirky line). No path updates or probability changes were
-          observed.<a href="#section-12.6-15" class="pilcrow">¶</a></p>
+          scanner were run against the source .bundle files and captures.
+          Every with-CPB bundle decoded to its original map (single direct
+          path entry and the assigned test confidence). No path updates or
+          probability changes were observed on those files.<a href="#section-12.6-15" class="pilcrow">¶</a></p>
 <p id="section-12.6-16">
-          Full artifacts and reproduction details (the exact 32 bidirectional
-          test-to-each-other bundles with+plain, representative 72-batch
-          artifacts, pcap conversion scripts, the detailed bundle breakdown,
-          all receiver/bpsink/recv_cpb logs, bplist snapshots before/after,
-          the three host*.rc + start-*.sh, the generated ION-PWG-DTN-FAQ.pdf,
-          LIVE_TRANSMISSION_STATUS.txt with the "Test nodes ... to each
-          other ONLY - completed" and "CPB decode verification" paragraphs,
-          and tarballs) live in
-          impl/real-pwg-deployment/timeline1/. Related 2-node full-field
-          bundle samples and notes are under impl/real-cpb-ion-test/.<a href="#section-12.6-16" class="pilcrow">¶</a></p>
+          Artifacts (Phase 1 and Phase 2 bundles, receiver logs, bplist
+          snapshots, host configuration files, and run notes) are under
+          <code>impl/real-pwg-deployment/timeline1/</code>. Related two-node
+          full-field samples are under <code>impl/real-cpb-ion-test/</code>.<a href="#section-12.6-16" class="pilcrow">¶</a></p>
 <p id="section-12.6-17">
           <strong>Limitations of this validation (distinct from the
-          simulation).</strong> The emulated targets (268484801/820) are plan +
-          cfdp-entity constructs only; no full ION daemons run on those EIDs.
-          Consequently, many bundles remained in bplist "Queued for forwarding
-          to .0" (or destination .12160) state rather than being delivered as
-          app data to a .1 endpoint that bpsink or a native receiver would
-          print. The Phase 2 (32-message) batch was injected locally on
-          soulkiller via bputa to the cfdp entity for the destination test
-          node (a short "span" within the plan/CFDP layer on one host). bpsink
-          and receiver runs during the 30 s collection window surfaced zero
-          quirky payloads and did not trigger receive-side CPB decodes. Full
-          in-band consumption of the CPB values by ION CGR (or DTNEx) for
-          actual forwarding decisions was not exercised. Injection of
-          pre-formed bundles required bputa (CFDP "put file"); standard
-          bpsource does not provide an equivalent path for embedding an
-          experimental extension block. Stable operation required the usual
-          SDR/shmmax/key/cfdp setup plus the UFW exemptions noted above.
-          No BPSec was applied in these runs. The validation therefore
+          simulation).</strong> The emulated targets (268484801 and 268484820)
+          are plan and CFDP-entity constructs only; full ION daemons do not
+          run on those EIDs. Many bundles therefore remained queued for
+          forwarding rather than being delivered as application data.
+          Phase 2 injection used bputa on node 268485122 toward the
+          destination CFDP entity (a short span within the plan/CFDP layer on
+          one host). Full in-band consumption of CPB values by ION CGR or
+          DTNEx for forwarding decisions was not exercised. Injection of
+          pre-formed bundles required bputa; standard bpsource does not
+          provide an equivalent path for embedding an experimental extension
+          block. No BPSec was applied in these runs. The validation
           demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
-          real multi-node Tailscale mesh with DTNEx, bplist visibility, and
-          wire-format survival of the unknown ext block 200 carrying the CPB
-          CBOR map (float16 probabilities + path entries) exactly as encoded,
-          but does not constitute a full multi-hop routing-policy experiment
-          with in-band CPB consumption on real hardware.<a href="#section-12.6-17" class="pilcrow">¶</a></p>
+          multi-node mesh with DTNEx, bplist visibility, and wire-format
+          survival of experimental extension block type 200 carrying the CPB
+          CBOR map as encoded. It does not constitute a multi-hop
+          routing-policy experiment with in-band CPB consumption on production
+          stacks.<a href="#section-12.6-17" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-goals">
@@ -4560,17 +4364,12 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
 <a href="#section-12.11" class="section-number selfRef">12.11. </a><a href="#name-open-experimental-questions" class="section-name selfRef">Open Experimental Questions</a>
         </h3>
 <p id="section-12.11-1">
-          The experiment in this document establishes Experimental-track
-          baseline plausibility: (1) the wire format is implementable and
-          survivable on a real BPv7 data plane, and (2) confidence-weighted
-          routing fed by accurate confidences of the CPB class outperforms
-          confidence-blind routing on the same contact-failure realizations.
-          A complete validation of CPB as an operational standardized
-          mechanism requires answering a series of follow-on questions that
-          this document does not close. These are enumerated here so that
-          reviewers, implementers, and follow-on researchers share a common
-          list of what remains for Standards Track; none of the items below
-          is required to complete this Experimental -00.<a href="#section-12.11-1" class="pilcrow">¶</a></p>
+          Results so far support two limited conclusions: (1) the wire format
+          is implementable and can survive on a real BPv7 data plane, and
+          (2) confidence-weighted routing fed by accurate confidences of the
+          CPB class outperforms confidence-blind routing on the same
+          contact-failure realizations in Configuration 1. The items below
+          remain open; this document does not close them.<a href="#section-12.11-1" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-12.11-2">
           <dt id="section-12.11-2.1">Robustness to noisy probability estimation</dt>
           <dd style="margin-left: 1.5em" id="section-12.11-2.2">
@@ -4657,50 +4456,29 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           <dd class="break"></dd>
 <dt id="section-12.11-2.17">Interoperability with production BP stacks</dt>
           <dd style="margin-left: 1.5em" id="section-12.11-2.18">
-            This is the single largest standards-process gap. RFC publication
-            at Experimental status is acceptable with simulator-only
-            validation, but progression to Standards Track will require
-            demonstrated interoperability between at least two independent
-            implementations operating over real BPv7 stacks (canonically:
-            NASA ION and an independently-developed alternative such as
-            HDTN, µPCN, or a fresh implementation against this
-            specification). The reference Python implementation
-            (<a href="#reference-implementation" class="auto internal xref">Section 13</a>) does not count as
-            an independent implementation for this purpose, since it was
-            developed alongside the specification by the same author.
-            Expanded partial data-plane evidence now exists on the NASA ION
-            v4.1.0 PWG three-node + emulated-target testbed (soulkiller 268485122,
-            orin 268485121, horus 268485123, plus emulated Moon 268484801, Mars
-            268484820, and gateway 268485000). The reference-encoded CPB (ext
-            block 200 + BTSD with canonical CBOR float16 map) was created for
-            the eight fixed test confidence values plus the exact quirky one-liners,
-            injected via bputa (after cfdpadmin entity setup for the emulated
-            EIDs), carried over live UDPCL on the Tailscale mesh with DTNEx
-            active, and remained intact on the wire (demonstrated via manual
-            CBOR/hex parse and Wireshark 4.6.4 with BPv7/Bundle/BPv7 Block Type
-            dissectors; see the detailed breakdown of
-            moon_to_mars_with_cpb_01_save.bundle in the updated
-            <a href="#exp-real-validation" class="auto internal xref">Section 12.6</a>). 72 messages (3 reals × 8
-            quirky × 3 dedicated targets with-CPB) plus 32 messages
-            (bidirectional between the two emulated test nodes, with-CPB + plain)
-            were executed. UFW exemptions for the DTN ports (4556/4557/12160)
-            were added on all three hosts from the Tailscale ranges (per explicit
-            operator instruction). All source .bundle files, bplist snapshots,
-            receiver logs, and timeline1 snapshot artifacts are preserved.
-            Full consumption of CPB values by ION CGR (or DTNEx) for forwarding
-            decisions, multi-hop operation with in-band updates, and
-            BPSec-protected bundles remain open.<a href="#section-12.11-2.18" class="pilcrow">¶</a>
+            Interoperation between at least two independent implementations
+            on real BPv7 stacks (for example NASA ION and an independently
+            developed alternative such as HDTN, µPCN, or a fresh
+            implementation) has not been demonstrated. The reference Python
+            implementation (<a href="#reference-implementation" class="auto internal xref">Section 13</a>) was
+            developed with this specification by the same author and is not
+            a second independent stack. Partial data-plane evidence on a
+            NASA ION v4.1.0 three-node PWG mesh plus emulated targets is
+            described in <a href="#exp-real-validation" class="auto internal xref">Section 12.6</a>: extension
+            blocks were injected via bputa, carried over UDPCL with DTNEx
+            active, and verified intact on the wire. Full consumption of
+            CPB values by ION CGR or DTNEx for forwarding decisions,
+            multi-hop in-band updates, and BPSec-protected bundles remain
+            open.<a href="#section-12.11-2.18" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-12.11-2.19">Control-theoretic stability analysis</dt>
           <dd style="margin-left: 1.5em" id="section-12.11-2.20">
             <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> identifies feedback
             dynamics qualitatively and recommends mitigations, but does not
-            provide a formal stability proof. A control-theoretic analysis
-            (e.g., describing the routing system as a discrete-time
-            dynamical system with CPB-driven feedback and analyzing
-            stability of fixed points) would substantially strengthen the
-            standards case for CPB-driven routing in dense networks.<a href="#section-12.11-2.20" class="pilcrow">¶</a>
+            provide a formal stability proof. Analyzing the routing system
+            as a discrete-time dynamical system with CPB-driven feedback
+            remains future work for dense networks.<a href="#section-12.11-2.20" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-12.11-2.21">Metric-type cross-validation</dt>
@@ -4714,14 +4492,9 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <dd class="break"></dd>
 </dl>
 <p id="section-12.11-3">
-          Resolution of these questions is not a prerequisite for
-          Experimental-track publication, but each will need to be addressed
-          before the CPB mechanism can be reasonably considered for Standards
-          Track. The author encourages the DTN research community to take up
-          any subset of these as follow-on work; the reference
-          implementation and simulator
-          (<a href="#reference-implementation" class="auto internal xref">Section 13</a>) provide a starting
-          point for such studies.<a href="#section-12.11-3" class="pilcrow">¶</a></p>
+          The reference implementation and simulator
+          (<a href="#reference-implementation" class="auto internal xref">Section 13</a>) may assist follow-on
+          measurement of any of the items above.<a href="#section-12.11-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -4760,8 +4533,8 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
             maps without changing confidence-weighted route cost ranking.<a href="#section-13-2.5" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="section-13-2.6">
-          <strong>test_draft_honesty.py</strong> - structural checks that
-            draft/docs claims stay aligned with shipped code.<a href="#section-13-2.6" class="pilcrow">¶</a>
+          <strong>test_draft_consistency.py</strong> - structural checks that
+            draft and documentation claims stay aligned with shipped code.<a href="#section-13-2.6" class="pilcrow">¶</a>
 </li>
       </ul>
 <div id="repo">
@@ -4792,7 +4565,7 @@ pip install cbor2
 python3 impl/test_cpb.py
 python3 impl/test_config1_policies.py
 python3 impl/test_sim_cpb_bridge.py
-python3 impl/test_draft_honesty.py
+python3 impl/test_draft_consistency.py
 python3 impl/config1_sim.py --battery paper --strategy both
 
 &lt;CODE ENDS&gt;</pre>
@@ -5000,93 +4773,38 @@ python3 impl/config1_sim.py --battery paper --strategy both
 <a href="#appendix-B.1" class="section-number selfRef">B.1. </a><a href="#name-draft-perry-dtn-cpb-00-july" class="section-name selfRef">draft-perry-dtn-cpb-00 (July 2026)</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="appendix-B.1-1.1">Initial submission: complete CPB specification<a href="#appendix-B.1-1.1" class="pilcrow">¶</a>
+<li class="normal" id="appendix-B.1-1.1">Initial Experimental -00: Contact Probability Block wire
+              format, metric-type registry, operational and security
+              considerations, and IANA requests.<a href="#appendix-B.1-1.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.2">CBOR float16 encoding with deterministic wire format<a href="#appendix-B.1-1.2" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.2">CBOR float16 encoding with deterministic encoding rules;
+              format version field (key 7); per-path array size guidance
+              as SHOULD with local enforcement on constrained links.<a href="#appendix-B.1-1.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.3">BPSec integrity model (append-only and strip-and-replace)<a href="#appendix-B.1-1.3" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.3">BPSec integrity models (append-only and strip-and-replace);
+              BCB encryption of CPB prohibited for routing use.<a href="#appendix-B.1-1.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.4">IANA registrations: Bundle Block Type + CPB Metric Types
-              sub-registry<a href="#appendix-B.1-1.4" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.4">Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
+              and DTNMA; IPNSIG Section 4.2 problem framing.<a href="#appendix-B.1-1.4" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.5">Protocol integration analysis: PRoPHET, MaxProp, RAPID,
-              Spray-and-Wait, CGR, DTNMA<a href="#appendix-B.1-1.5" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.5">Configuration 1 simulation (baseline earliest-arrival CGR vs
+              one confidence-weighted consumer) with CRN contact trials;
+              delivery and mean latency improvements reported; p95 not
+              improved on that topology.<a href="#appendix-B.1-1.5" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.6">Mars mission scenario (<a href="#app-mars-scenario" class="auto internal xref">Appendix A</a>)<a href="#appendix-B.1-1.6" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.6">Limited ION data-plane validation of extension-block carriage
+              (not in-band CGR consumption of CPB).<a href="#appendix-B.1-1.6" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.7">Experimental validation protocol consolidated into
-              <a href="#experiment" class="auto internal xref">Section 12</a> (was a separate companion document
-              in earlier revisions)<a href="#appendix-B.1-1.7" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.7">Reference implementation and reproduction commands
+              (<a href="#reference-implementation" class="auto internal xref">Section 13</a>).<a href="#appendix-B.1-1.7" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.8">
-            <a href="#problem-statement" class="auto internal xref">Section 1.1</a> added: IPNSIG Section 4.2
-              problem-statement anchor<a href="#appendix-B.1-1.8" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.8">Aligns with RFC 9171 errata relevant to CRC handling and
+              fragmentation; cites <span>[<a href="#RFC9713" class="cite xref">RFC9713</a>]</span> and
+              <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> as updates related to BPv7
+              administration and the ipn scheme.<a href="#appendix-B.1-1.8" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="appendix-B.1-1.9">
-            <a href="#implementation-status" class="auto internal xref">Section 11</a> rewritten: honest
-              implementation status (reference Python implementation +
-              simulator-based validation; The ONE and ION installations
-              documented but no fabricated results)<a href="#appendix-B.1-1.9" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.10">Incorporates review feedback from Brian Sipos on CDDL, BTSD
-              embedding, fragmentation pruning, identical-timestamp
-              tie-breaker, per-path array limit (relaxed to SHOULD with local enforcement), scheme-mismatch SHOULD-log,
-              future-dated MUST-discard, and IANA considerations<a href="#appendix-B.1-1.10" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.11">References <span>[<a href="#RFC9713" class="cite xref">RFC9713</a>]</span> and <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span>
-              as post-publication updates to <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span><a href="#appendix-B.1-1.11" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.12">Incorporates verified errata against RFC 9171: EID 7881
-              (Section 6.1.1, CBOR simple value encoding of status indicators),
-              EID 8043 (Section 4.3.1, CRC value bytes zeroed before CBOR
-              encoding), and EID 8376 (Section 5.8, fragmentation and MTU
-              handling addressed by CPB pruning).<a href="#appendix-B.1-1.12" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.13">
-            <a href="#reference-implementation" class="auto internal xref">Section 13</a> added: reference
-              implementation + GitHub repository<a href="#appendix-B.1-1.13" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.14">Added CPB format version field (key 7, default 1) for future
-              evolution; updated CDDL to enforce the 8-entry path limit as a
-              MUST; added top-level "Operational Considerations" section
-              (sizing, production guidance, logging/OAM, partial deployment,
-              congestion, clocks); expanded IANA sub-registry description;
-              clarified handling of unrecognized metric types and Source PCE
-              Identifier field semantics.<a href="#appendix-B.1-1.14" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.15">Post-combine cold review polish: bumped document date to 8 July
-              2026; clarified per-path array (field 1) language to emphasize
-              SHOULD limit with informative CDDL bound of 8 and local
-              enforcement on constrained links; synced timeline1/ snapshot
-              cpb.py and updated its README note; removed stale review/
-              placeholder files; rebuilt draft outputs.<a href="#appendix-B.1-1.15" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.16">2026-07-22 cold-review honesty pass: Abstract and CGR section
-              use stochastic (not adversarial) sim conditions; Implementation
-              Status narrowed to wire encode/decode coverage plus separate
-              PWG ION data-plane entry; offline lab path names replaced with
-              repo-relative timeline1 and real-cpb-ion-test paths; full-field
-              51 B overhead attributed only to the 2-node campaign; document
-              date 22 July 2026; evaluation remains baseline vs one
-              confidence-weighted CPB consumer.<a href="#appendix-B.1-1.16" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.17">2026-07-22 purpose-completion pass: split experiment into
-              wire-format vs routing-value-of-metadata parts; honest
-              deferred-configurations list; sim↔CPB bridge tests; open
-              questions framed as Standards Track follow-ons, not -00 gaps.<a href="#appendix-B.1-1.17" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.18">2026-07-22 probabilistic-routing alignment: expand metric-type
-              and Section 5 mapping against PRoPHET (RFC 6693 aging /
-              RIB / strategies), MaxProp, RAPID, Spray-and-Wait (L out of
-              band), epidemic summary vectors, CGR contact-plan split, and
-              social/hybrid metrics; clarify what CPB carries vs control
-              plane state.<a href="#appendix-B.1-1.18" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="appendix-B.1-1.19">2026-07-23 thesis-grade consistency pass: RFC 9171 CRC/array
-              alignment; eid-reference tstr; CPB epoch seconds (not ms DTN
-              Time); confidence-weighted cost latency/confidence with CRN
-              contacts; honest Config1 results (delivery and mean latency
-              up, p95 not); claim hygiene throughout.<a href="#appendix-B.1-1.19" class="pilcrow">¶</a>
+          <li class="normal" id="appendix-B.1-1.9">CDDL, BTSD embedding, fragmentation pruning, timestamp
+              tie-breaker, and IANA text.<a href="#appendix-B.1-1.9" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>

@@ -35,10 +35,10 @@ jobs:
       - name: Simulator cost-formula unit tests
         run: python3 impl/test_config1_policies.py
 
-      - name: Draft/docs honesty structural tests
-        run: python3 impl/test_draft_honesty.py
+      - name: Draft/docs consistency structural tests
+        run: python3 impl/test_draft_consistency.py
 
-      - name: Sim↔CPB wire bridge tests
+      - name: Sim to CPB wire bridge tests
         run: python3 impl/test_sim_cpb_bridge.py
 
       - name: Paper-battery number pin (structural)
@@ -50,8 +50,7 @@ jobs:
       - name: Verify packaging import
         run: python3 -c "import cpb; print('cpb package import OK')"
 
-  # Build the Internet-Draft from XML. Catches placeholder/stub XML that
-  # previously slipped through when only Python tests ran.
+  # Build the Internet-Draft from XML. Rejects truncated draft sources.
   build-draft:
     name: Build Internet-Draft (xml2rfc)
     runs-on: ubuntu-latest
@@ -63,7 +62,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Reject stub / placeholder draft XML
+      - name: Reject truncated draft XML
         run: |
           set -euo pipefail
           XML=draft-perry-dtn-cpb.xml
@@ -73,9 +72,9 @@ jobs:
           fi
           size=$(wc -c < "$XML")
           echo "XML size: $size bytes"
-          # Real draft is ~100k+; prior MCP accidents left ~100-byte stubs
+          # Full draft is well above 50 KiB
           if [ "$size" -lt 50000 ]; then
-            echo "::error::$XML is only $size bytes — looks like a stub/placeholder, not the full draft"
+            echo "::error::$XML is only $size bytes — draft source appears truncated"
             head -c 500 "$XML" || true
             exit 1
           fi
@@ -84,11 +83,9 @@ jobs:
             head -c 200 "$XML" || true
             exit 1
           fi
-          # Guard against known MCP/stub accident phrases only.
-          # Do not match the word "placeholder" alone — the draft uses it
-          # legitimately (e.g. non-normative EIDs, changelog about stubs).
+          # Reject known accidental paste markers (not ordinary draft wording)
           if grep -qiE '\[full current local|content of local /tmp|TODO: paste full|MCP placeholder' "$XML"; then
-            echo "::error::$XML contains stub accident text"
+            echo "::error::$XML contains accidental paste-marker text"
             grep -niE '\[full current local|content of local /tmp|TODO: paste full|MCP placeholder' "$XML" | head -5
             exit 1
           fi

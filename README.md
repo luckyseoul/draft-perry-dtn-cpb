@@ -4,19 +4,17 @@
   <img src="logo.png" alt="DTN CPB routing" width="168" />
 </p>
 
-Individual Internet-Draft defining the Contact Probability Block (CPB): a
-BPv7 extension block that carries per-contact probability metadata in-bundle
-so delay-tolerant routers can use confidence-weighted forwarding without
-rewriting endpoint identifiers.
+Contact Probability Block (CPB): a BPv7 extension block that carries
+per-contact probability metadata in-bundle so delay-tolerant routers can
+use confidence-weighted forwarding without rewriting endpoint identifiers.
 
-- **Draft:** `draft-perry-dtn-cpb-00` (Experimental) — GitHub working copy;
-  not yet filed on the IETF Internet-Drafts repository. The rendered
-  **Expires** line is xml2rfc boilerplate (document date + 6 months), not a
-  datatracker clock.
+- **Draft:** [`draft-perry-dtn-cpb-00`](draft-perry-dtn-cpb.xml)
+  ([txt](draft-perry-dtn-cpb.txt) · [html](draft-perry-dtn-cpb.html) ·
+  [pdf](draft-perry-dtn-cpb.pdf))
+- **Status:** pre-submission review copy. Not posted to the IETF
+  Internet-Drafts repository.
 - **Quick reference:** [`docs/CPB-QUICK-REFERENCE.md`](docs/CPB-QUICK-REFERENCE.md)
-  — short catch-up (why / what / how + diagrams) so a reader can grasp the
-  concept without working through the full Internet-Draft first. Non-normative;
-  diagrams under `docs/images/`.
+  (diagrams under `docs/images/`)
 
 ## Building the draft
 
@@ -24,9 +22,10 @@ rewriting endpoint identifiers.
 make
 ```
 
-Produces `draft-perry-dtn-cpb.txt` and `draft-perry-dtn-cpb.html` from the XML
-source via xml2rfc. The `lib/` i-d-template submodule is initialized on first
-`make`, or run `git submodule update --init`.
+Produces `draft-perry-dtn-cpb.txt`, `draft-perry-dtn-cpb.html`, and
+`draft-perry-dtn-cpb.pdf` from the XML source via xml2rfc. The `lib/`
+i-d-template submodule is initialized on first `make`, or run
+`git submodule update --init`.
 
 If `python3 -m venv` / `ensurepip` fails on your system, see
 `scripts/ensure-template-venv.sh` and the bootstrap logic in the top-level
@@ -36,7 +35,7 @@ If `python3 -m venv` / `ensurepip` fails on your system, see
 
 [`impl/`](impl/) contains the CPB encoder/decoder (draft §3), conformance
 tests, and the discrete-event simulator used for the Configuration 1 results
-in draft §12.5. PWG ION data-plane artifacts live under
+in draft §12.5. ION data-plane artifacts live under
 `impl/real-pwg-deployment/` and `impl/real-cpb-ion-test/`.
 
 ### Quick start
@@ -46,11 +45,10 @@ cd impl
 
 pip install -e '.[test]'
 
-# Conformance and honesty checks
 python3 test_cpb.py
 python3 test_config1_policies.py
 python3 test_sim_cpb_bridge.py
-python3 test_draft_honesty.py
+python3 test_draft_consistency.py
 
 # Fast sim smoke test (baseline + cpb)
 python3 config1_sim.py --quick
@@ -98,9 +96,5 @@ extra windows. Parallel paper sweep:
 
 ## License
 
-- Reference code in [`impl/`](impl/): [MIT](LICENSE)
-- Draft text: IETF Trust Legal Provisions (BCP 78)
-
-`CONTRIBUTING.md` is the standard IETF template for contributions that enter
-the IETF standards process. Repository code remains MIT-licensed under
-`LICENSE`.
+- Code in [`impl/`](impl/): [MIT](LICENSE)
+- Draft text: see BCP 78 / Trust Legal Provisions as applied to the document

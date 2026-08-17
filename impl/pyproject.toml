@@ -25,7 +25,6 @@ test = [
 [project.urls]
 Homepage = "https://github.com/luckyseoul/draft-perry-dtn-cpb"
 Repository = "https://github.com/luckyseoul/draft-perry-dtn-cpb"
-"IETF Draft" = "https://datatracker.ietf.org/doc/draft-perry-dtn-cpb/"
 
 [tool.setuptools]
 py-modules = ["cpb"]

@@ -10,7 +10,7 @@ Reference implementation of the Contact Probability Block (CPB) defined in [draf
 | `test_cpb.py` | Conformance suite (encode/decode, hex tables, invalid floats, path-array SHOULD). |
 | `test_config1_policies.py` | Unit tests for the draft §12 confidence-weighted cost formula used by the simulator. |
 | `test_sim_cpb_bridge.py` | Bridge: Config 1 confidences encode/decode as metric-type 1 CPB without changing confidence-weighted ranking. |
-| `test_draft_honesty.py` | Structural checks that draft/docs claims match shipped code. |
+| `test_draft_consistency.py` | Structural checks that draft/docs claims match shipped code. |
 | `config1_sim.py` | Discrete-event simulator for draft §12.5 (4-rover, 4-orbiter Mars relay). Strategies: `baseline`, `cpb` (confidence-weighted). CLI: `--quick`, `--battery`, `--strategy`, `--max-bundles`, `--age-conf`, `--csv`. |
 | `requirements.txt` | Python dependencies. |
 
@@ -85,4 +85,4 @@ MIT. See [`../LICENSE`](../LICENSE).
 
 ## Status
 
-Per [RFC 7942](https://datatracker.ietf.org/doc/html/rfc7942), this is a reference implementation by the draft's author. It is not an independent implementation; a second independent implementation is identified in the draft's Implementation Status section (Section 11) as desirable for Standards Track maturation.
+Reference implementation by the draft author (draft §11).

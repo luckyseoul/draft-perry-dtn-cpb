@@ -16,9 +16,6 @@ You agree to comply with all applicable IETF policies and procedures, including,
 BCP 78, 79, the TLP, and the TLP rules regarding code components (e.g. being
 subject to a Simplified BSD License) in Contributions.
 
-**Repository code license:** The reference implementation and other software in
-this repository are licensed under the **MIT License** in [`LICENSE`](LICENSE).
-The Simplified BSD language above is the standard IETF Trust wording for code
-components *as IETF Contributions*; it does not replace or relicense the MIT
-`LICENSE` file that governs use of this repository's code outside the IETF
-process.
+**Code license:** Software in this repository is under the **MIT License** in
+[`LICENSE`](LICENSE). That license governs use of the code; the BCP 78/79 and
+TLP text above applies to contributions into the standards process.
