@@ -97,24 +97,24 @@ The simulator `impl/config1_sim.py` uses **Configuration 1**:
 | Label | Cost / rule |
 |-------|-------------|
 | **baseline** | Earliest predicted arrival (ignore confidence) |
-| **cpb** | `latency / confidence` |
+| **CPB** | `latency / confidence` |
 
 ### Headline results (paper battery)
 
 ![Results](images/06-paper-battery-results.png)
 
 **Delivery first.** Contact-window retries per hop (`R`) are a lever — not
-“cpb always wins”:
+“CPB always wins”:
 
-| R | baseline deliv | cpb deliv | Δ delivery |
+| R | baseline deliv | CPB deliv | Δ delivery |
 |---|----------------|-----------|------------|
 | **2** (tight budget) | ≈0.9789 | ≈0.9901 | **≈+0.011** |
 | **3** (draft default) | ≈0.9965 | ≈0.9984 | ≈+0.0019 |
 | **4** (more retries) | ≈0.9988 | ≈0.9991 | ≈+0.0003 |
 
-On Configuration 1, **cpb** improves **delivery** and usually **mean latency**;
+On Configuration 1, **CPB** improves **delivery** and usually **mean latency**;
 **p95 is often worse** (longer-period high-confidence paths). Path confidence
-is higher under **cpb**.
+is higher under **CPB**.
 
 Two experiment parts (draft §12.1): (1) wire format and ION data-plane
 survival of the extension block; (2) routing value of confidences of the
@@ -160,13 +160,13 @@ common: **2** timestamp, **4** validity TTL, **7** format version.
 Cross-metric arithmetic — e.g. averaging a PRoPHET delivery predictability
 with a CGR confidence. Consume only matching metric-types (draft §3.5).
 
-**What cost formula does the Config 1 “cpb” policy use?**  
+**What cost formula does the Config 1 “CPB” policy use?**  
 `cost = latency / confidence` (end-to-end path confidence product). Baseline
 uses earliest arrival only and ignores confidence.
 
-**On Config 1, what improves under cpb?**  
+**On Config 1, what improves under CPB?**  
 **Delivery** and **mean latency** improve; **p95 latency does not** (slightly
-worse on this topology). Path confidence is higher under cpb.
+worse on this topology). Path confidence is higher under CPB.
 
 **What is still open?**  
 Noisy or adversarial estimates, multi-domain trust, partial deployment

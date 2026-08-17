@@ -1790,7 +1790,7 @@ A3                   ; map with 3 entries
           (BPSec).
         </t>
 
-        <section anchor="source-cpb-append-only">
+        <section anchor="source-CPB-append-only">
           <name>Source CPB with Append-Only Intermediates</name>
           <t>
             The source creates a CPB and attaches a BIB protecting only that
@@ -2056,7 +2056,7 @@ A3                   ; map with 3 entries
         <dd>
           Validation of CPB's routing impact was conducted via the pure-Python
           discrete-event simulator config1_sim.py, which implements vanilla
-          CGR (earliest-arrival) and the Section 12 consumer labeled "cpb"
+          CGR (earliest-arrival) and the Section 12 consumer labeled "CPB"
           (confidence-weighted cost) over Configuration 1 (4 rovers, 4 orbiters,
           1 relay, 3 ground stations). The simulator consumes ground-truth
           confidences of the class CPB carries; it does not encode or
@@ -2200,7 +2200,8 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
             Standard Contact Graph Routing. The cost of a candidate route is
             its earliest predicted arrival time. Confidence values are ignored.
           </dd>
-          <dt>Confidence-weighted CPB consumer (labeled "cpb")</dt>
+          <dt>Confidence-weighted CPB consumer (labeled "CPB";
+              simulator CLI <tt>--strategy cpb</tt>)</dt>
           <dd>
             Experimental consumer of ground-truth confidences of the class
             carried by CPB metric-type 1. Route cost is
@@ -2222,7 +2223,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           Rover-orbiter confidences are in [0.78, 0.96]; space-side hops
           use 0.99. Per-hop data rates are present in the topology with a
           latin-square assignment that is not rank-aligned with the
-          confidence table (separable factors). The published "cpb" cost
+          confidence table (separable factors). The published "CPB" cost
           uses confidence only. Each hop allows up to three contact-window
           trials (failed windows advance to the next cycle). Each run covers
           7 days of simulated time with bundles
@@ -2241,7 +2242,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         <ul>
           <li>Baseline (vanilla CGR): earliest-arrival routing with no use of
               per-contact confidence.</li>
-          <li>Confidence-weighted CPB consumer ("cpb"): cost = latency /
+          <li>Confidence-weighted CPB consumer ("CPB"): cost = latency /
               confidence.</li>
         </ul>
       </section>
@@ -2256,7 +2257,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         </t>
 
         <t>
-          For each seed, baseline and "cpb" were exercised with shared CRN
+          For each seed, baseline and "CPB" were exercised with shared CRN
           contact outcomes (same seed, contact id, and trial index).
         </t>
 
@@ -2265,19 +2266,19 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           via config1_sim.py --battery paper --strategy both):</strong>
         </t>
         <ul>
-          <li>Delivery ratio: baseline mean delivery was 0.9965; "cpb"
-              reached mean delivery 0.9984. Paired (cpb &#8722; baseline)
+          <li>Delivery ratio: baseline mean delivery was 0.9965; "CPB"
+              reached mean delivery 0.9984. Paired (CPB &#8722; baseline)
               delivery mean gain +0.00191 (t &#8776; 7.0 over 10 seeds).</li>
-          <li>Mean latency: baseline mean lat_avg was &#8776;508 s; "cpb"
+          <li>Mean latency: baseline mean lat_avg was &#8776;508 s; "CPB"
               reduced mean lat_avg to &#8776;484 s (paired mean change
               &#8776; &#8722;24 s, t &#8776; &#8722;9.7).</li>
-          <li>Tail latency: baseline mean p95 was &#8776;1604 s; "cpb" mean
+          <li>Tail latency: baseline mean p95 was &#8776;1604 s; "CPB" mean
               p95 was &#8776;1665 s (paired mean change &#8776; +60 s). On
               this topology confidence-weighting does <strong>not</strong>
               improve p95; the experiment does not claim a universal tail
               win.</li>
           <li>Path confidence: mean chosen path product was higher under
-              "cpb" (0.9016) than baseline (0.8600).</li>
+              "CPB" (0.9016) than baseline (0.8600).</li>
         </ul>
 
         <t>
@@ -2286,7 +2287,7 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
           improves delivery ratio and mean latency relative to
           confidence-blind earliest-arrival CGR, while selecting higher path
           confidence. p95 latency is topology- and cost-dependent and was
-          worse under "cpb" here; operators caring about tails must measure
+          worse under "CPB" here; operators caring about tails must measure
           their own cost functions. Other consumers of CPB metadata are
           possible; this experiment evaluates one concrete cost against the
           baseline under CRN contact trials.
@@ -2483,9 +2484,9 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         <ol>
           <li>Statistically significant improvement (p &lt; 0.05) on the
               primary metric. <strong>Met</strong> for delivery: paired
-              (cpb &#8722; baseline) mean gain +0.00191 with t &#8776; 7.0
+              (CPB &#8722; baseline) mean gain +0.00191 with t &#8776; 7.0
               (10 seeds). Mean latency also improved (t &#8776; &#8722;9.7).
-              <strong>Not met</strong> for p95 latency (worse under cpb;
+              <strong>Not met</strong> for p95 latency (worse under CPB;
               see <xref target="exp-results"/>).</li>
           <li>Sample size sufficient for the claims made. <strong>Met:</strong>
               10 independent seeds on Configuration 1, with each policy
@@ -2724,7 +2725,7 @@ python3 impl/config1_sim.py --battery paper --strategy both
         <t>
           The paper battery run takes on the order of tens of seconds and
           should reproduce the Section 12.5 mean delivery figures for the
-          published R=3 methodology (baseline about 0.9965, cpb about 0.9984).
+          published R=3 methodology (baseline about 0.9965, CPB about 0.9984).
         </t>
         <t>
           The 2-node real-stack transmission results (with-CPB vs plain

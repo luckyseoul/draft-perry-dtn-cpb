@@ -2032,7 +2032,7 @@ Internet-Draft                   DTN CPB                     August 2026
    Simulation-Based Validation  Validation of CPB's routing impact was
       conducted via the pure-Python discrete-event simulator
       config1_sim.py, which implements vanilla CGR (earliest-arrival)
-      and the Section 12 consumer labeled "cpb" (confidence-weighted
+      and the Section 12 consumer labeled "CPB" (confidence-weighted
       cost) over Configuration 1 (4 rovers, 4 orbiters, 1 relay, 3
       ground stations).  The simulator consumes ground-truth confidences
       of the class CPB carries; it does not encode or decode on-wire CPB
@@ -2166,15 +2166,15 @@ Internet-Draft                   DTN CPB                     August 2026
       Routing.  The cost of a candidate route is its earliest predicted
       arrival time.  Confidence values are ignored.
 
-   Confidence-weighted CPB consumer (labeled "cpb")  Experimental
-      consumer of ground-truth confidences of the class carried by CPB
-      metric-type 1.  Route cost is latency / confidence, where
-      confidence is the end-to-end path success-probability product.
-      Bottleneck data rates are modeled in the topology for operational
-      realism but are not folded into this published cost, so observed
-      gains are not confounded with pure rate-only routing.  Other
-      consumers (including rate-aware variants) are possible.
-
+   Confidence-weighted CPB consumer (labeled "CPB"; simulator CLI
+   --strategy cpb)  Experimental consumer of ground-truth confidences of
+      the class carried by CPB metric-type 1.  Route cost is latency /
+      confidence, where confidence is the end-to-end path success-
+      probability product.  Bottleneck data rates are modeled in the
+      topology for operational realism but are not folded into this
+      published cost, so observed gains are not confounded with pure
+      rate-only routing.  Other consumers (including rate-aware
+      variants) are possible.
 
 
 
@@ -2193,7 +2193,7 @@ Internet-Draft                   DTN CPB                     August 2026
    Rover-orbiter confidences are in [0.78, 0.96]; space-side hops use
    0.99.  Per-hop data rates are present in the topology with a latin-
    square assignment that is not rank-aligned with the confidence table
-   (separable factors).  The published "cpb" cost uses confidence only.
+   (separable factors).  The published "CPB" cost uses confidence only.
    Each hop allows up to three contact-window trials (failed windows
    advance to the next cycle).  Each run covers 7 days of simulated time
    with bundles generated every 30 s per rover after warm-up (≈80k
@@ -2209,7 +2209,7 @@ Internet-Draft                   DTN CPB                     August 2026
    *  Baseline (vanilla CGR): earliest-arrival routing with no use of
       per-contact confidence.
 
-   *  Confidence-weighted CPB consumer ("cpb"): cost = latency /
+   *  Confidence-weighted CPB consumer ("CPB"): cost = latency /
       confidence.
 
 12.5.  Results
@@ -2218,17 +2218,17 @@ Internet-Draft                   DTN CPB                     August 2026
    config1_sim.py, 10 independent seeds, paper battery (--battery paper
    --strategy both).
 
-   For each seed, baseline and "cpb" were exercised with shared CRN
+   For each seed, baseline and "CPB" were exercised with shared CRN
    contact outcomes (same seed, contact id, and trial index).
 
    *Primary findings (Configuration 1, 10 seeds, paper battery via
    config1_sim.py --battery paper --strategy both):*
 
-   *  Delivery ratio: baseline mean delivery was 0.9965; "cpb" reached
-      mean delivery 0.9984.  Paired (cpb − baseline) delivery mean gain
+   *  Delivery ratio: baseline mean delivery was 0.9965; "CPB" reached
+      mean delivery 0.9984.  Paired (CPB − baseline) delivery mean gain
       +0.00191 (t ≈ 7.0 over 10 seeds).
 
-   *  Mean latency: baseline mean lat_avg was ≈508 s; "cpb" reduced mean
+   *  Mean latency: baseline mean lat_avg was ≈508 s; "CPB" reduced mean
       lat_avg to ≈484 s (paired mean change ≈ −24 s, t ≈ −9.7).
 
 
@@ -2242,19 +2242,19 @@ Perry                   Expires 18 February 2027               [Page 40]
 Internet-Draft                   DTN CPB                     August 2026
 
 
-   *  Tail latency: baseline mean p95 was ≈1604 s; "cpb" mean p95 was
+   *  Tail latency: baseline mean p95 was ≈1604 s; "CPB" mean p95 was
       ≈1665 s (paired mean change ≈ +60 s).  On this topology
       confidence-weighting does *not* improve p95; the experiment does
       not claim a universal tail win.
 
-   *  Path confidence: mean chosen path product was higher under "cpb"
+   *  Path confidence: mean chosen path product was higher under "CPB"
       (0.9016) than baseline (0.8600).
 
    *Interpretation.* On Configuration 1, the confidence-weighted
    consumer of CPB-class ground-truth confidences improves delivery
    ratio and mean latency relative to confidence-blind earliest-arrival
    CGR, while selecting higher path confidence. p95 latency is topology-
-   and cost-dependent and was worse under "cpb" here; operators caring
+   and cost-dependent and was worse under "CPB" here; operators caring
    about tails must measure their own cost functions.  Other consumers
    of CPB metadata are possible; this experiment evaluates one concrete
    cost against the baseline under CRN contact trials.
@@ -2442,9 +2442,9 @@ Internet-Draft                   DTN CPB                     August 2026
    are for that topology and cost only.
 
    1.  Statistically significant improvement (p < 0.05) on the primary
-       metric. *Met* for delivery: paired (cpb − baseline) mean gain
+       metric. *Met* for delivery: paired (CPB − baseline) mean gain
        +0.00191 with t ≈ 7.0 (10 seeds).  Mean latency also improved (t
-       ≈ −9.7).  *Not met* for p95 latency (worse under cpb; see
+       ≈ −9.7).  *Not met* for p95 latency (worse under CPB; see
        Section 12.5).
 
    2.  Sample size sufficient for the claims made. *Met:* 10 independent
@@ -2676,7 +2676,7 @@ Internet-Draft                   DTN CPB                     August 2026
 
    The paper battery run takes on the order of tens of seconds and
    should reproduce the Section 12.5 mean delivery figures for the
-   published R=3 methodology (baseline about 0.9965, cpb about 0.9984).
+   published R=3 methodology (baseline about 0.9965, CPB about 0.9984).
 
    The 2-node real-stack transmission results (with-CPB vs plain bundles
    using the 8 fixed test confidence values, bputa injection after

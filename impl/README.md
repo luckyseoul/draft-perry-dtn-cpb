@@ -47,19 +47,19 @@ Expected `test_cpb.py` output: 23+ `PASS` lines, zero failures.
 Routing policy labels (must match draft §12):
 
 - **baseline** — earliest predicted arrival
-- **cpb** — `cost = latency / confidence`
+- **CPB** — `cost = latency / confidence`
 
 **Delivery primary.** Hop-retry count `R` is a lever (`--hop-retries` /
 `--sweep-hop-retries 2,3,4`). Same CRN and `cost = latency / confidence`
 for both arms. Paper battery (10 seeds):
 
-| R | baseline | cpb | Δ delivery |
+| R | baseline | CPB | Δ delivery |
 |---|----------|-----|------------|
 | 2 | ≈0.9789 | ≈0.9901 | ≈+0.011 |
 | 3 | ≈0.9965 | ≈0.9984 | ≈+0.0019 (draft default) |
 | 4 | ≈0.9988 | ≈0.9991 | ≈+0.0003 |
 
-Tighter R → larger cpb delivery edge (high-value / short-budget traffic).
+Tighter R → larger CPB delivery edge (high-value / short-budget traffic).
 Larger R → higher absolute delivery, smaller gap. p95 is not a free win.
 Parallel: `--workers 86` (ProcessPool; GPU unused — pure Python DES).
 
