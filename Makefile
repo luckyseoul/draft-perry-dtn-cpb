@@ -1,4 +1,6 @@
 LIBDIR := lib
+# Paginated .txt (4-line two-column I-D masthead), same as posted drafts.
+TEXT_PAGINATION := true
 
 # --------------------------------------------------------------------
 # Robust early bootstrap for the IETF template venv.
@@ -61,9 +63,8 @@ test:
 # Include PDF in the standard build outputs (txt + html + pdf)
 latest:: txt html pdf
 
-# xml2rfc --pdf (weasyprint). Needs Noto Serif + Roboto Mono (xml2rfc-fonts).
-# Combined CSS = stock xml2rfc.css + scripts/xml2rfc-pdf.css (no hyphenation).
-draft-perry-dtn-cpb.pdf: draft-perry-dtn-cpb.xml scripts/xml2rfc-pdf.css
-	@echo "==> Building $@ (pdf via xml2rfc)"
-	@python3 -c "import xml2rfc, pathlib; b=pathlib.Path(xml2rfc.__file__).parent/'data'/'xml2rfc.css'; e=pathlib.Path('scripts/xml2rfc-pdf.css'); pathlib.Path('.xml2rfc-pdf-combined.css').write_text(b.read_text(encoding='utf-8')+'\n'+e.read_text(encoding='utf-8'), encoding='utf-8')"
-	@$(xml2rfc) --pdf --css .xml2rfc-pdf-combined.css $< -o $@
+# PDF is the paginated Internet-Draft text (same page image as .txt),
+# not the six-row xml2rfc/WeasyPrint HTML layout.
+draft-perry-dtn-cpb.pdf: draft-perry-dtn-cpb.txt scripts/id-txt-to-pdf.py
+	@echo "==> Building $@ (from paginated .txt)"
+	@$(LIBDIR)/.venv/bin/python scripts/id-txt-to-pdf.py $< $@
