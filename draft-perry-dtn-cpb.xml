@@ -37,7 +37,7 @@
       </address>
     </author>
 
-    <date year="2026" month="July" day="29"/>
+    <date year="2026" month="August" day="17"/>
 
     <area>Internet</area>
     <workgroup>Delay/Disruption Tolerant Networking</workgroup>
@@ -3028,7 +3028,7 @@ python3 impl/config1_sim.py --battery paper --strategy both
       </t>
 
       <section anchor="changelog-00">
-        <name>draft-perry-dtn-cpb-00 (July 2026)</name>
+        <name>draft-perry-dtn-cpb-00 (August 2026)</name>
         <ul>
           <li>Initial Experimental -00: Contact Probability Block wire
               format, metric-type registry, operational and security

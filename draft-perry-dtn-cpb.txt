@@ -4,8 +4,8 @@
 
 Delay/Disruption Tolerant Networking                            N. Perry
 Internet-Draft                                               Independent
-Intended status: Experimental                               29 July 2026
-Expires: 30 January 2027
+Intended status: Experimental                             17 August 2026
+Expires: 18 February 2027
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
@@ -64,7 +64,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 30 January 2027.
+   This Internet-Draft will expire on 18 February 2027.
 
 Copyright Notice
 
@@ -173,7 +173,7 @@ Table of Contents
    Appendix A.  Mars Mission Scenario
    Appendix B.  Acknowledgements
    Appendix C.  Change Log
-     C.1.  draft-perry-dtn-cpb-00 (July 2026)
+     C.1.  draft-perry-dtn-cpb-00 (August 2026)
    Author's Address
 
 1.  Introduction
@@ -2396,7 +2396,7 @@ Appendix C.  Change Log
    _[RFC Editor Note: Please remove this entire section before
    publication.]_
 
-C.1.  draft-perry-dtn-cpb-00 (July 2026)
+C.1.  draft-perry-dtn-cpb-00 (August 2026)
 
    *  Initial Experimental -00: Contact Probability Block wire format,
       metric-type registry, operational and security considerations, and
