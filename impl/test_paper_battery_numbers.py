@@ -37,13 +37,26 @@ PUB_R4_CPB_DELIV = 0.9991
 TOL = 0.0005
 
 
+def _one_job(args: tuple) -> tuple[str, float]:
+    seed, strat, hop_retries = args
+    bundles = simulate(seed, strat, hop_retries=hop_retries)
+    return strat, report_run(bundles, strat, seed)["delivery"]
+
+
 def _means_for_r(hop_retries: int) -> tuple[float, float]:
+    jobs = [(seed, strat, hop_retries) for seed in SEEDS for strat in ("baseline", "cpb")]
+    n = os.cpu_count() or 1
+    workers = max(1, n - 2)
     base: list[float] = []
     cpb: list[float] = []
-    for seed in SEEDS:
-        for strat, bucket in (("baseline", base), ("cpb", cpb)):
-            bundles = simulate(seed, strat, hop_retries=hop_retries)
-            bucket.append(report_run(bundles, strat, seed)["delivery"])
+    if workers == 1 or len(jobs) == 1:
+        results = [_one_job(j) for j in jobs]
+    else:
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            results = list(pool.map(_one_job, jobs))
+    for strat, deliv in results:
+        (base if strat == "baseline" else cpb).append(deliv)
     return statistics.mean(base), statistics.mean(cpb)
 
 
@@ -101,7 +114,17 @@ def test_paper_battery_sweep_if_enabled():
 
 
 if __name__ == "__main__":
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument(
+        "--structural",
+        action="store_true",
+        help="pins only (CI). Default: run the 10-seed paper battery on this machine.",
+    )
+    args = p.parse_args()
     test_structural_pins_and_default_r()
+    if not args.structural:
+        os.environ["RUN_PAPER_BATTERY"] = "1"
     test_paper_battery_default_r3_if_enabled()
     test_paper_battery_r2_if_enabled()
-    print("Paper battery structural pins OK.")
+    print("Paper battery numbers OK." if not args.structural else "Paper battery structural pins OK.")

@@ -42,7 +42,7 @@ jobs:
         run: python3 impl/test_sim_cpb_bridge.py
 
       - name: Paper-battery number pin (structural)
-        run: python3 impl/test_paper_battery_numbers.py
+        run: python3 impl/test_paper_battery_numbers.py --structural
 
       - name: Simulator smoke test (quick mode)
         run: python3 impl/config1_sim.py --quick
