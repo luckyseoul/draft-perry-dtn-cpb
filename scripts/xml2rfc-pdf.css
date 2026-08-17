@@ -1,0 +1,8 @@
+/* Appended after xml2rfc.css by the Makefile PDF target.
+   Stops WeasyPrint hyphenating inside fi/fl ligatures. */
+html, body, p, li, dd, td, th, div, span, a {
+  hyphens: none !important;
+  -weasy-hyphens: none !important;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0, "dlig" 0, "hlig" 0;
+}

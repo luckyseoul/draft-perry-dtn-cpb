@@ -10,7 +10,8 @@
      ipr="trust200902"
      docName="draft-perry-dtn-cpb-00"
      category="exp"
-     submissionType="independent"
+     submissionType="IETF"
+     consensus="false"
      xml:lang="en"
      tocInclude="true"
      tocDepth="3"
@@ -19,7 +20,7 @@
      version="3">
 
   <front>
-    <title abbrev="DTN Probabilistic Routing Metadata">
+    <title abbrev="DTN CPB">
       Probabilistic Contact Metadata for DTN Bundle Routing
     </title>
     <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-00"/>
@@ -39,6 +40,7 @@
     <date year="2026" month="July" day="29"/>
 
     <area>Internet</area>
+    <workgroup>Delay/Disruption Tolerant Networking</workgroup>
 
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
