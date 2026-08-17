@@ -2148,6 +2148,18 @@ A3                   ; map with 3 entries
           operational metric. p95 is reported for completeness and is not
           assumed to move with the mean (see <xref target="exp-results"/>).
         </t>
+        <t>
+          Neither part of the experiment is a convergence-layer study.
+          The Configuration 1 simulator has no Convergence Layer Adapter
+          (CLA): it does not implement UDPCL, TCPCL, LTP, or any other
+          CLA, and it does not model CLA segmentation, MTU, head-of-line
+          blocking, unidirectional links, or CLA-specific loss. Contact
+          success is a per-window Bernoulli trial on an abstract hop.
+          The ION runs use a single CLA (UDPCL) on a sandboxed overlay;
+          they do not compare CLAs or exercise CLA failover. Results
+          therefore do not speak to CPB behavior as a function of the
+          underlying CLA.
+        </t>
       </section>
 
       <section anchor="exp-config">
@@ -2296,8 +2308,10 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
         <t>
           <strong>Limitations and caveats.</strong> Results are for the
           Configuration 1 topology and cost formula as shipped in
-          config1_sim.py. The study does not address noisy or adversarially
-          supplied confidence values; those questions are left for future work.
+          config1_sim.py. The simulator has no CLA and no on-wire bundle
+          encoding; hop delay and contact failure are abstract. The study
+          does not address noisy or adversarially supplied confidence
+          values; those questions are left for future work.
         </t>
       </section>
 
@@ -2431,23 +2445,28 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
         </t>
         <t>
           <strong>Limitations of this validation (distinct from the
-          simulation).</strong> The emulated targets (268484801 and 268484820)
-          are plan and CFDP-entity constructs only; full ION daemons do not
-          run on those EIDs. Many bundles therefore remained queued for
-          forwarding rather than being delivered as application data.
-          Phase 2 injection used bputa on node 268485122 toward the
-          destination CFDP entity (a short span within the plan/CFDP layer on
-          one host). Full in-band consumption of CPB values by ION CGR or
-          DTNEx for forwarding decisions was not exercised. Injection of
-          pre-formed bundles required bputa; standard bpsource does not
-          provide an equivalent path for embedding an experimental extension
-          block. No BPSec was applied in these runs. The validation
-          demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
-          multi-node mesh with DTNEx, bplist visibility, and wire-format
-          survival of experimental extension block type 200 carrying the CPB
-          CBOR map as encoded. It does not constitute a multi-hop
-          routing-policy experiment with in-band CPB consumption on production
-          stacks.
+          simulation).</strong> The testbed is a sandboxed overlay, not
+          flight or range hardware. Real nodes sit on a Tailscale mesh
+          (user-space UDP, typically low terrestrial RTT) and talk
+          point-to-point UDPCL; there is no LTP, TCPCL, or
+          CLA-diversity path and no long light-time. Emulated targets
+          (268484801 and 268484820) are plan and CFDP-entity constructs
+          only; full ION daemons do not run on those EIDs. Many bundles
+          therefore remained queued for forwarding rather than being
+          delivered as application data. Phase 2 injection used bputa on
+          node 268485122 toward the destination CFDP entity (a short
+          span within the plan/CFDP layer on one host). Full in-band
+          consumption of CPB values by ION CGR or DTNEx for forwarding
+          decisions was not exercised. Injection of pre-formed bundles
+          required bputa; standard bpsource does not provide an
+          equivalent path for embedding an experimental extension block.
+          No BPSec was applied in these runs. The validation
+          demonstrates creation, bputa/CFDP injection, UDPCL carriage
+          over a multi-node overlay with DTNEx, bplist visibility, and
+          wire-format survival of experimental extension block type 200
+          carrying the CPB CBOR map as encoded. It does not constitute
+          a multi-hop, multi-CLA, or production-stack routing-policy
+          experiment with in-band CPB consumption.
         </t>
       </section>
 
@@ -2617,6 +2636,14 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
             whether custody acknowledgments themselves carry CPB-relevant
             information and whether custody transfer policies should consume
             CPB.
+          </dd>
+          <dt>Convergence-layer and CLA diversity</dt>
+          <dd>
+            Configuration 1 has no CLA. The ION testbed used only UDPCL
+            on a sandboxed, low-delay overlay with emulated
+            point-to-point spans. Behavior of CPB under TCPCL, LTP,
+            unidirectional CLA, CLA failover, or CLA-imposed MTU and
+            segmentation is unmeasured.
           </dd>
           <dt>Heterogeneous fragmentation behavior</dt>
           <dd>

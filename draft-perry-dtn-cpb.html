@@ -3955,6 +3955,17 @@ A3                   ; map with 3 entries
           for the routing-value hypothesis; mean latency is a secondary
           operational metric. p95 is reported for completeness and is not
           assumed to move with the mean (see <a href="#exp-results" class="auto internal xref">Section 12.5</a>).<a href="#section-12.1-4" class="pilcrow">¶</a></p>
+<p id="section-12.1-5">
+          Neither part of the experiment is a convergence-layer study.
+          The Configuration 1 simulator has no Convergence Layer Adapter
+          (CLA): it does not implement UDPCL, TCPCL, LTP, or any other
+          CLA, and it does not model CLA segmentation, MTU, head-of-line
+          blocking, unidirectional links, or CLA-specific loss. Contact
+          success is a per-window Bernoulli trial on an abstract hop.
+          The ION runs use a single CLA (UDPCL) on a sandboxed overlay;
+          they do not compare CLAs or exercise CLA failover. Results
+          therefore do not speak to CPB behavior as a function of the
+          underlying CLA.<a href="#section-12.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-config">
@@ -4149,8 +4160,10 @@ Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
 <p id="section-12.5-6">
           <strong>Limitations and caveats.</strong> Results are for the
           Configuration 1 topology and cost formula as shipped in
-          config1_sim.py. The study does not address noisy or adversarially
-          supplied confidence values; those questions are left for future work.<a href="#section-12.5-6" class="pilcrow">¶</a></p>
+          config1_sim.py. The simulator has no CLA and no on-wire bundle
+          encoding; hop delay and contact failure are abstract. The study
+          does not address noisy or adversarially supplied confidence
+          values; those questions are left for future work.<a href="#section-12.5-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-real-validation">
@@ -4273,23 +4286,28 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
           full-field samples are under <code>impl/real-cpb-ion-test/</code>.<a href="#section-12.6-16" class="pilcrow">¶</a></p>
 <p id="section-12.6-17">
           <strong>Limitations of this validation (distinct from the
-          simulation).</strong> The emulated targets (268484801 and 268484820)
-          are plan and CFDP-entity constructs only; full ION daemons do not
-          run on those EIDs. Many bundles therefore remained queued for
-          forwarding rather than being delivered as application data.
-          Phase 2 injection used bputa on node 268485122 toward the
-          destination CFDP entity (a short span within the plan/CFDP layer on
-          one host). Full in-band consumption of CPB values by ION CGR or
-          DTNEx for forwarding decisions was not exercised. Injection of
-          pre-formed bundles required bputa; standard bpsource does not
-          provide an equivalent path for embedding an experimental extension
-          block. No BPSec was applied in these runs. The validation
-          demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
-          multi-node mesh with DTNEx, bplist visibility, and wire-format
-          survival of experimental extension block type 200 carrying the CPB
-          CBOR map as encoded. It does not constitute a multi-hop
-          routing-policy experiment with in-band CPB consumption on production
-          stacks.<a href="#section-12.6-17" class="pilcrow">¶</a></p>
+          simulation).</strong> The testbed is a sandboxed overlay, not
+          flight or range hardware. Real nodes sit on a Tailscale mesh
+          (user-space UDP, typically low terrestrial RTT) and talk
+          point-to-point UDPCL; there is no LTP, TCPCL, or
+          CLA-diversity path and no long light-time. Emulated targets
+          (268484801 and 268484820) are plan and CFDP-entity constructs
+          only; full ION daemons do not run on those EIDs. Many bundles
+          therefore remained queued for forwarding rather than being
+          delivered as application data. Phase 2 injection used bputa on
+          node 268485122 toward the destination CFDP entity (a short
+          span within the plan/CFDP layer on one host). Full in-band
+          consumption of CPB values by ION CGR or DTNEx for forwarding
+          decisions was not exercised. Injection of pre-formed bundles
+          required bputa; standard bpsource does not provide an
+          equivalent path for embedding an experimental extension block.
+          No BPSec was applied in these runs. The validation
+          demonstrates creation, bputa/CFDP injection, UDPCL carriage
+          over a multi-node overlay with DTNEx, bplist visibility, and
+          wire-format survival of experimental extension block type 200
+          carrying the CPB CBOR map as encoded. It does not constitute
+          a multi-hop, multi-CLA, or production-stack routing-policy
+          experiment with in-band CPB consumption.<a href="#section-12.6-17" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="exp-goals">
@@ -4493,17 +4511,26 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
             CPB.<a href="#section-12.11-2.14" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-12.11-2.15">Heterogeneous fragmentation behavior</dt>
+<dt id="section-12.11-2.15">Convergence-layer and CLA diversity</dt>
           <dd style="margin-left: 1.5em" id="section-12.11-2.16">
+            Configuration 1 has no CLA. The ION testbed used only UDPCL
+            on a sandboxed, low-delay overlay with emulated
+            point-to-point spans. Behavior of CPB under TCPCL, LTP,
+            unidirectional CLA, CLA failover, or CLA-imposed MTU and
+            segmentation is unmeasured.<a href="#section-12.11-2.16" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.11-2.17">Heterogeneous fragmentation behavior</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.18">
             <a href="#block-processing-flags" class="auto internal xref">Section 3.2.1</a> defines CPB behavior
             under fragmentation, but only the reference Python encoder has
             been exercised against it. Real BP implementations (ION, HDTN,
             uPCN) have subtly different fragmentation pathways and CPB
-            replication behavior across implementations is unproven.<a href="#section-12.11-2.16" class="pilcrow">¶</a>
+            replication behavior across implementations is unproven.<a href="#section-12.11-2.18" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-12.11-2.17">Interoperability with production BP stacks</dt>
-          <dd style="margin-left: 1.5em" id="section-12.11-2.18">
+<dt id="section-12.11-2.19">Interoperability with production BP stacks</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.20">
             Interoperation between at least two independent implementations
             on real BPv7 stacks (for example NASA ION and an independently
             developed alternative such as HDTN, µPCN, or a fresh
@@ -4517,25 +4544,25 @@ c101821a6a23cf0800190e10830600498201821a1000c0c101830a0082001820
             active, and verified intact on the wire. Full consumption of
             CPB values by ION CGR or DTNEx for forwarding decisions,
             multi-hop in-band updates, and BPSec-protected bundles remain
-            open.<a href="#section-12.11-2.18" class="pilcrow">¶</a>
+            open.<a href="#section-12.11-2.20" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-12.11-2.19">Control-theoretic stability analysis</dt>
-          <dd style="margin-left: 1.5em" id="section-12.11-2.20">
+<dt id="section-12.11-2.21">Control-theoretic stability analysis</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.22">
             <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> identifies feedback
             dynamics qualitatively and recommends mitigations, but does not
             provide a formal stability proof. Analyzing the routing system
             as a discrete-time dynamical system with CPB-driven feedback
-            remains future work for dense networks.<a href="#section-12.11-2.20" class="pilcrow">¶</a>
+            remains future work for dense networks.<a href="#section-12.11-2.22" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-12.11-2.21">Metric-type cross-validation</dt>
-          <dd style="margin-left: 1.5em" id="section-12.11-2.22">
+<dt id="section-12.11-2.23">Metric-type cross-validation</dt>
+          <dd style="margin-left: 1.5em" id="section-12.11-2.24">
             <a href="#metric-semantics" class="auto internal xref">Section 3.5</a> prohibits cross-metric
             arithmetic but does not validate the prohibition empirically.
             Whether a router making routing decisions from mixed-metric CPBs
             in practice produces worse outcomes than a router strictly
-            partitioning by metric-type is an open empirical question.<a href="#section-12.11-2.22" class="pilcrow">¶</a>
+            partitioning by metric-type is an open empirical question.<a href="#section-12.11-2.24" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
