@@ -182,27 +182,27 @@ Internet-Draft                   DTN CPB                     August 2026
    11. Implementation Status . . . . . . . . . . . . . . . . . . . .  36
    12. Experiment Description  . . . . . . . . . . . . . . . . . . .  38
      12.1.  Scope and Hypothesis . . . . . . . . . . . . . . . . . .  38
-     12.2.  Test Configuration 1: Multi-Asset Mars Relay . . . . . .  38
-     12.3.  Routing Policies Tested  . . . . . . . . . . . . . . . .  39
+     12.2.  Test Configuration 1: Multi-Asset Mars Relay . . . . . .  39
+     12.3.  Routing Policies Tested  . . . . . . . . . . . . . . . .  40
      12.4.  Methodology  . . . . . . . . . . . . . . . . . . . . . .  40
-     12.5.  Results  . . . . . . . . . . . . . . . . . . . . . . . .  40
-     12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed) . . .  41
-     12.7.  Goals (per RFC 2026 Section 4.2.1) . . . . . . . . . . .  44
-     12.8.  Success Criteria: Outcome  . . . . . . . . . . . . . . .  44
-     12.9.  Failure Criteria (Not Triggered) . . . . . . . . . . . .  45
-     12.10. Deferred Configurations  . . . . . . . . . . . . . . . .  45
-     12.11. Open Experimental Questions  . . . . . . . . . . . . . .  45
-   13. Reference Implementation  . . . . . . . . . . . . . . . . . .  47
-     13.1.  Repository . . . . . . . . . . . . . . . . . . . . . . .  48
-     13.2.  Reproducing the Experiment Results . . . . . . . . . . .  48
-     13.3.  Relationship to Updates of BPv7  . . . . . . . . . . . .  49
-   14. Normative References  . . . . . . . . . . . . . . . . . . . .  49
-   15. Informative References  . . . . . . . . . . . . . . . . . . .  50
-   Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  52
-   Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  52
-   Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  53
-     C.1.  draft-perry-dtn-cpb-00 (August 2026)  . . . . . . . . . .  53
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  53
+     12.5.  Results  . . . . . . . . . . . . . . . . . . . . . . . .  41
+     12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed) . . .  42
+     12.7.  Goals (per RFC 2026 Section 4.2.1) . . . . . . . . . . .  45
+     12.8.  Success Criteria: Outcome  . . . . . . . . . . . . . . .  45
+     12.9.  Failure Criteria (Not Triggered) . . . . . . . . . . . .  46
+     12.10. Deferred Configurations  . . . . . . . . . . . . . . . .  46
+     12.11. Open Experimental Questions  . . . . . . . . . . . . . .  46
+   13. Reference Implementation  . . . . . . . . . . . . . . . . . .  48
+     13.1.  Repository . . . . . . . . . . . . . . . . . . . . . . .  49
+     13.2.  Reproducing the Experiment Results . . . . . . . . . . .  49
+     13.3.  Relationship to Updates of BPv7  . . . . . . . . . . . .  50
+   14. Normative References  . . . . . . . . . . . . . . . . . . . .  50
+   15. Informative References  . . . . . . . . . . . . . . . . . . .  51
+   Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  53
+   Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  53
+   Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  54
+     C.1.  draft-perry-dtn-cpb-00 (August 2026)  . . . . . . . . . .  54
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  54
 
 1.  Introduction
 
@@ -2114,13 +2114,13 @@ Internet-Draft                   DTN CPB                     August 2026
    metric. p95 is reported for completeness and is not assumed to move
    with the mean (see Section 12.5).
 
-12.2.  Test Configuration 1: Multi-Asset Mars Relay
 
-   The experiment uses a multi-asset Mars-to-Earth relay topology with
-   four surface assets, four orbiters, one deep-space relay, and three
-   ground stations.  All node identifiers in the topology use the "ipn"
-   URI scheme as updated by [RFC9758]; node numbers shown are Default
-   Allocator FQNNs.
+
+
+
+
+
+
 
 
 
@@ -2129,6 +2129,24 @@ Perry                   Expires 18 February 2027               [Page 38]
 
 Internet-Draft                   DTN CPB                     August 2026
 
+
+   Neither part of the experiment is a convergence-layer study.  The
+   Configuration 1 simulator has no Convergence Layer Adapter (CLA): it
+   does not implement UDPCL, TCPCL, LTP, or any other CLA, and it does
+   not model CLA segmentation, MTU, head-of-line blocking,
+   unidirectional links, or CLA-specific loss.  Contact success is a
+   per-window Bernoulli trial on an abstract hop.  The ION runs use a
+   single CLA (UDPCL) on a sandboxed overlay; they do not compare CLAs
+   or exercise CLA failover.  Results therefore do not speak to CPB
+   behavior as a function of the underlying CLA.
+
+12.2.  Test Configuration 1: Multi-Asset Mars Relay
+
+   The experiment uses a multi-asset Mars-to-Earth relay topology with
+   four surface assets, four orbiters, one deep-space relay, and three
+   ground stations.  All node identifiers in the topology use the "ipn"
+   URI scheme as updated by [RFC9758]; node numbers shown are Default
+   Allocator FQNNs.
 
    Rovers (1-4)   Orbiters (10-13)   Relay(20)   Grounds(30-32)
    1--+-->A(1200s)---+
@@ -2153,6 +2171,21 @@ Internet-Draft                   DTN CPB                     August 2026
 
             Table 3: Per-(Rover, Orbiter) Success Probabilities
 
+
+
+
+
+
+
+
+
+
+
+Perry                   Expires 18 February 2027               [Page 39]
+
+Internet-Draft                   DTN CPB                     August 2026
+
+
 12.3.  Routing Policies Tested
 
    CPB is a BPv7 extension block that carries per-contact probability
@@ -2175,16 +2208,6 @@ Internet-Draft                   DTN CPB                     August 2026
       published cost, so observed gains are not confounded with pure
       rate-only routing.  Other consumers (including rate-aware
       variants) are possible.
-
-
-
-
-
-
-Perry                   Expires 18 February 2027               [Page 39]
-
-Internet-Draft                   DTN CPB                     August 2026
-
 
 12.4.  Methodology
 
@@ -2212,6 +2235,13 @@ Internet-Draft                   DTN CPB                     August 2026
    *  Confidence-weighted CPB consumer ("CPB"): cost = latency /
       confidence.
 
+
+
+Perry                   Expires 18 February 2027               [Page 40]
+
+Internet-Draft                   DTN CPB                     August 2026
+
+
 12.5.  Results
 
    Results below are for Configuration 1 as implemented by
@@ -2231,17 +2261,6 @@ Internet-Draft                   DTN CPB                     August 2026
    *  Mean latency: baseline mean lat_avg was ≈508 s; "CPB" reduced mean
       lat_avg to ≈484 s (paired mean change ≈ −24 s, t ≈ −9.7).
 
-
-
-
-
-
-
-Perry                   Expires 18 February 2027               [Page 40]
-
-Internet-Draft                   DTN CPB                     August 2026
-
-
    *  Tail latency: baseline mean p95 was ≈1604 s; "CPB" mean p95 was
       ≈1665 s (paired mean change ≈ +60 s).  On this topology
       confidence-weighting does *not* improve p95; the experiment does
@@ -2260,9 +2279,24 @@ Internet-Draft                   DTN CPB                     August 2026
    cost against the baseline under CRN contact trials.
 
    *Limitations and caveats.* Results are for the Configuration 1
-   topology and cost formula as shipped in config1_sim.py.  The study
-   does not address noisy or adversarially supplied confidence values;
-   those questions are left for future work.
+   topology and cost formula as shipped in config1_sim.py.  The
+   simulator has no CLA and no on-wire bundle encoding; hop delay and
+   contact failure are abstract.  The study does not address noisy or
+   adversarially supplied confidence values; those questions are left
+   for future work.
+
+
+
+
+
+
+
+
+
+Perry                   Expires 18 February 2027               [Page 41]
+
+Internet-Draft                   DTN CPB                     August 2026
+
 
 12.6.  Real-Stack Data-Plane Validation (ION PWG Testbed)
 
@@ -2290,14 +2324,6 @@ Internet-Draft                   DTN CPB                     August 2026
    in 0.65..0.99) to each of three dedicated test EIDs (gateway
    268485000, Moon 268484801, Mars 268484820).  Bundles were created
    with source equal to the sending real EID and injected via bputa to
-
-
-
-Perry                   Expires 18 February 2027               [Page 41]
-
-Internet-Draft                   DTN CPB                     August 2026
-
-
    the destination CFDP entity after cfdpadmin configuration (bputa
    enabled, discard=0, segsize=1400, requirecrc=0). cfdpclock and bputa
    were confirmed running on the injector before each batch.
@@ -2310,6 +2336,23 @@ Internet-Draft                   DTN CPB                     August 2026
    to the destination CFDP entity (268484820 for Moon→Mars; 268484801
    for Mars→Moon).  This batch was limited to the two emulated test
    nodes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perry                   Expires 18 February 2027               [Page 42]
+
+Internet-Draft                   DTN CPB                     August 2026
+
 
    All bundles (104 total) were produced by the reference encoder,
    successfully injected, and appeared in bplist for the target EIDs
@@ -2346,14 +2389,6 @@ Internet-Draft                   DTN CPB                     August 2026
    Extension block 200 (the CPB, bytes starting at offset 0x40): [200,
    0, 0x11 (REPLICATE|DISCARD), 0, BTSD].  The BTSD bstr is
    50a200f939330181821a1000c0d4f93933, which decodes to the canonical
-
-
-
-Perry                   Expires 18 February 2027               [Page 42]
-
-Internet-Draft                   DTN CPB                     August 2026
-
-
    CBOR map {0: 0.64990234375 (float16 0xf93933 per draft 3.4), 1:
    [[268484820, 0.64990234375]]}. This is byte-exact to the output of
    cpb.encode_btsd() for the dict passed from create_bundle_with_cpb
@@ -2362,6 +2397,18 @@ Internet-Draft                   DTN CPB                     August 2026
 
    Payload block (type 1): a fixed 27-byte ASCII test string used for
    this campaign.
+
+
+
+
+
+
+
+
+Perry                   Expires 18 February 2027               [Page 43]
+
+Internet-Draft                   DTN CPB                     August 2026
+
 
    The CPB block and its single direct path entry matched the encoder
    output bit-for-bit; no appended path entries or probability mutations
@@ -2391,29 +2438,33 @@ Internet-Draft                   DTN CPB                     August 2026
    are under impl/real-cpb-ion-test/.
 
    *Limitations of this validation (distinct from the simulation).* The
-   emulated targets (268484801 and 268484820) are plan and CFDP-entity
-   constructs only; full ION daemons do not run on those EIDs.  Many
-   bundles therefore remained queued for forwarding rather than being
-   delivered as application data.  Phase 2 injection used bputa on node
-   268485122 toward the destination CFDP entity (a short span within the
-   plan/CFDP layer on one host).  Full in-band consumption of CPB values
-   by ION CGR or DTNEx for forwarding decisions was not exercised.
-   Injection of pre-formed bundles required bputa; standard bpsource
-   does not provide an equivalent path for embedding an experimental
-   extension block.  No BPSec was applied in these runs.  The validation
+   testbed is a sandboxed overlay, not flight or range hardware.  Real
+   nodes sit on a Tailscale mesh (user-space UDP, typically low
+   terrestrial RTT) and talk point-to-point UDPCL; there is no LTP,
+   TCPCL, or CLA-diversity path and no long light-time.  Emulated
+   targets (268484801 and 268484820) are plan and CFDP-entity constructs
+   only; full ION daemons do not run on those EIDs.  Many bundles
+   therefore remained queued for forwarding rather than being delivered
+   as application data.  Phase 2 injection used bputa on node 268485122
+   toward the destination CFDP entity (a short span within the plan/CFDP
+   layer on one host).  Full in-band consumption of CPB values by ION
+   CGR or DTNEx for forwarding decisions was not exercised.  Injection
+   of pre-formed bundles required bputa; standard bpsource does not
+   provide an equivalent path for embedding an experimental extension
+   block.  No BPSec was applied in these runs.  The validation
    demonstrates creation, bputa/CFDP injection, UDPCL carriage over a
+   multi-node overlay with DTNEx, bplist visibility, and wire-format
+   survival of experimental extension block type 200 carrying the CPB
+   CBOR map as encoded.  It does not constitute a multi-hop, multi-CLA,
+   or production-stack routing-policy experiment with in-band CPB
+   consumption.
 
 
 
-Perry                   Expires 18 February 2027               [Page 43]
+Perry                   Expires 18 February 2027               [Page 44]
 
 Internet-Draft                   DTN CPB                     August 2026
 
-
-   multi-node mesh with DTNEx, bplist visibility, and wire-format
-   survival of experimental extension block type 200 carrying the CPB
-   CBOR map as encoded.  It does not constitute a multi-hop routing-
-   policy experiment with in-band CPB consumption on production stacks.
 
 12.7.  Goals (per RFC 2026 Section 4.2.1)
 
@@ -2454,23 +2505,22 @@ Internet-Draft                   DTN CPB                     August 2026
    3.  CPB byte overhead below 5% for 1 KB+ payloads. *Met
        analytically.*
 
-
-
-
-
-
-
-
-Perry                   Expires 18 February 2027               [Page 44]
-
-Internet-Draft                   DTN CPB                     August 2026
-
-
    4.  No fundamental architectural conflicts with BPv7. *Met for the
        extension-block design:* CPB is a standard extension block and
        EID immutability is preserved.  Operational questions (trust,
        multi-domain use, stability) are specified but not experimentally
        closed.
+
+
+
+
+
+
+
+Perry                   Expires 18 February 2027               [Page 45]
+
+Internet-Draft                   DTN CPB                     August 2026
+
 
 12.9.  Failure Criteria (Not Triggered)
 
@@ -2515,18 +2565,19 @@ Internet-Draft                   DTN CPB                     August 2026
    failure realizations in Configuration 1.  The items below remain
    open; this document does not close them.
 
-
-
-Perry                   Expires 18 February 2027               [Page 45]
-
-Internet-Draft                   DTN CPB                     August 2026
-
-
    Robustness to noisy probability estimation  The simulator uses
       ground-truth per-contact probabilities.  Real deployments must
       estimate probabilities from historical observations or model
       predictions, both of which are noisy.  Sensitivity analysis under
       varying estimator noise (e.g., additive Gaussian noise on
+
+
+
+Perry                   Expires 18 February 2027               [Page 46]
+
+Internet-Draft                   DTN CPB                     August 2026
+
+
       confidences, biased estimators, estimator drift over time) is
       needed to characterize the operational regime where CPB-driven
       routing remains beneficial.
@@ -2570,17 +2621,23 @@ Internet-Draft                   DTN CPB                     August 2026
       with BP custody transfer mechanisms ([RFC9171]), but the combined
       behavior of custody-bound bundles carrying CPB data has not been
       exercised end-to-end.  Particular attention should be paid to
+      whether custody acknowledgments themselves carry CPB-relevant
+      information and whether custody transfer policies should consume
+      CPB.
+
+   Convergence-layer and CLA diversity  Configuration 1 has no CLA.  The
 
 
 
-Perry                   Expires 18 February 2027               [Page 46]
+Perry                   Expires 18 February 2027               [Page 47]
 
 Internet-Draft                   DTN CPB                     August 2026
 
 
-      whether custody acknowledgments themselves carry CPB-relevant
-      information and whether custody transfer policies should consume
-      CPB.
+      ION testbed used only UDPCL on a sandboxed, low-delay overlay with
+      emulated point-to-point spans.  Behavior of CPB under TCPCL, LTP,
+      unidirectional CLA, CLA failover, or CLA-imposed MTU and
+      segmentation is unmeasured.
 
    Heterogeneous fragmentation behavior  Section 3.2.1 defines CPB
       behavior under fragmentation, but only the reference Python
@@ -2628,8 +2685,7 @@ Internet-Draft                   DTN CPB                     August 2026
 
 
 
-
-Perry                   Expires 18 February 2027               [Page 47]
+Perry                   Expires 18 February 2027               [Page 48]
 
 Internet-Draft                   DTN CPB                     August 2026
 
@@ -2685,7 +2741,7 @@ Internet-Draft                   DTN CPB                     August 2026
 
 
 
-Perry                   Expires 18 February 2027               [Page 48]
+Perry                   Expires 18 February 2027               [Page 49]
 
 Internet-Draft                   DTN CPB                     August 2026
 
@@ -2741,7 +2797,7 @@ Internet-Draft                   DTN CPB                     August 2026
 
 
 
-Perry                   Expires 18 February 2027               [Page 49]
+Perry                   Expires 18 February 2027               [Page 50]
 
 Internet-Draft                   DTN CPB                     August 2026
 
@@ -2797,7 +2853,7 @@ Internet-Draft                   DTN CPB                     August 2026
 
 
 
-Perry                   Expires 18 February 2027               [Page 50]
+Perry                   Expires 18 February 2027               [Page 51]
 
 Internet-Draft                   DTN CPB                     August 2026
 
@@ -2853,7 +2909,7 @@ Internet-Draft                   DTN CPB                     August 2026
 
 
 
-Perry                   Expires 18 February 2027               [Page 51]
+Perry                   Expires 18 February 2027               [Page 52]
 
 Internet-Draft                   DTN CPB                     August 2026
 
@@ -2909,7 +2965,7 @@ Appendix B.  Acknowledgements
 
 
 
-Perry                   Expires 18 February 2027               [Page 52]
+Perry                   Expires 18 February 2027               [Page 53]
 
 Internet-Draft                   DTN CPB                     August 2026
 
@@ -2965,4 +3021,4 @@ Author's Address
 
 
 
-Perry                   Expires 18 February 2027               [Page 53]
+Perry                   Expires 18 February 2027               [Page 54]
