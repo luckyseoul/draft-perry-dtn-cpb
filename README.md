@@ -1,7 +1,7 @@
 # Probabilistic Contact Metadata for DTN Bundle Routing
 
 <p align="center">
-  <img src="logo.png" alt="DTN CPB routing" width="168" />
+  <img src="logo.svg" alt="CPB: a bundle on an uncertain hop" width="112" />
 </p>
 
 Contact Probability Block (CPB): a BPv7 extension block that carries
