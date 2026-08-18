@@ -131,7 +131,7 @@ Internet-Draft                   DTN CPB                     August 2026
      4.1.  Creation  . . . . . . . . . . . . . . . . . . . . . . . .  21
      4.2.  Processing by Intermediate Routers  . . . . . . . . . . .  22
      4.3.  Usage in Routing Algorithms . . . . . . . . . . . . . . .  22
-     4.4.  Stability Considerations and Feedback Dynamics  . . . . .  22
+     4.4.  Stability Considerations and Feedback Dynamics  . . . . .  23
    5.  Relationship to Existing DTN Routing Protocols  . . . . . . .  24
      5.1.  PRoPHET (RFC 6693)  . . . . . . . . . . . . . . . . . . .  24
      5.2.  MaxProp . . . . . . . . . . . . . . . . . . . . . . . . .  24
@@ -748,16 +748,19 @@ Internet-Draft                   DTN CPB                     August 2026
 
 3.2.2.  Cyclic Redundancy Check (CRC) Handling
 
-   The block-data CRC field ([RFC9171] Section 4.3.2) is optional:
+   CRC Type and CRC are defined in [RFC9171] Sections 4.2.1 and 4.2.2.
+   Their placement in the canonical bundle block array is specified in
+   Section 4.3.2.  The CRC is optional:
 
-   *  *No CRC (recommended):* Set crc-type to 0 and omit the CRC field
-      from the canonical block array (five elements total), per
-      [RFC9171] Section 4.3.2.  This is the default and minimizes
-      overhead.  Implementations MUST NOT emit a CBOR null CRC element
-      when crc-type is 0.
+   *  *No CRC (recommended):* Set crc-type to 0 ([RFC9171]
+      Section 4.2.1) and omit the CRC field from the canonical block
+      array (five elements total), per [RFC9171] Section 4.3.2.  This is
+      the default and minimizes overhead.  Implementations MUST NOT emit
+      a CBOR null CRC element when crc-type is 0.
 
    *  *Optional CRC:* Implementations MAY include CRC type 1 (X.25 CRC-
-      16) or type 2 (CRC32C / Castagnoli) as defined by [RFC9171].
+      16) or type 2 (CRC32C / Castagnoli) as defined by [RFC9171]
+      Sections 4.2.1 and 4.2.2.
 
    Implementations SHOULD prefer BPSec BIBs (Section 8.3) over CRCs for
    integrity, as BIBs provide both authentication and integrity.
@@ -773,9 +776,6 @@ Internet-Draft                   DTN CPB                     August 2026
 
    The bundle extension block format ([RFC9171]) requires each extension
    block to have a type code that identifies what kind of block it is.
-
-
-
 
 
 
@@ -1152,8 +1152,12 @@ Internet-Draft                   DTN CPB                     August 2026
    *  The first-hop router (using local contact statistics)
 
    Implementations SHOULD include a timestamp (field 2) and a validity
-   duration (field 4).  Timestamps MUST be expressed in seconds since
-   2000-01-01 00:00:00 UTC (DTN epoch, per [RFC9171] Section 4.3.1).
+   duration (field 4).  Timestamps MUST be expressed in whole seconds
+   since 2000-01-01 00:00:00 UTC (same epoch origin as DTN Time in
+   [RFC9171] Section 4.2.6, but in seconds rather than the millisecond
+   DTN Time unit; see field 2).  Field 4 uses the same second-based unit
+   so that timestamp + validity comparisons are dimensionally
+   consistent.
 
    In networks with significant propagation delays, clock
    synchronization is challenging.  When validating a CPB timestamp,
@@ -1164,12 +1168,8 @@ Internet-Draft                   DTN CPB                     August 2026
       (default: +/-600 seconds).  CPBs with timestamps > current time +
       drift threshold MUST be discarded.
 
-   *  *Backward skew/age threshold:* CPBs with timestamps < current time
-      - max_age MUST be discarded (default max_age: 86400s
-      interplanetary, 3600s terrestrial).
 
-   *  *Deployment-specific adjustment:* Networks SHOULD define explicit
-      max_drift and max_age per link characteristics.
+
 
 
 
@@ -1177,6 +1177,13 @@ Perry                   Expires 18 February 2027               [Page 21]
 
 Internet-Draft                   DTN CPB                     August 2026
 
+
+   *  *Backward skew/age threshold:* CPBs with timestamps < current time
+      - max_age MUST be discarded (default max_age: 86400s
+      interplanetary, 3600s terrestrial).
+
+   *  *Deployment-specific adjustment:* Networks SHOULD define explicit
+      max_drift and max_age per link characteristics.
 
 4.2.  Processing by Intermediate Routers
 
@@ -1217,14 +1224,7 @@ Internet-Draft                   DTN CPB                     August 2026
    *  *Risk-aware:* Weight decisions by both probability and confidence
       (field 6)
 
-4.4.  Stability Considerations and Feedback Dynamics
 
-   Probability-aware forwarding creates feedback between routing
-   decisions and observed network behavior.  Naive use of CPB data can
-   produce instability that confidence-blind routing avoids.  Three
-   dynamics are particularly relevant:
-
-   Herding  When multiple sources receive identical high-confidence CPB
 
 
 
@@ -1234,6 +1234,14 @@ Perry                   Expires 18 February 2027               [Page 22]
 Internet-Draft                   DTN CPB                     August 2026
 
 
+4.4.  Stability Considerations and Feedback Dynamics
+
+   Probability-aware forwarding creates feedback between routing
+   decisions and observed network behavior.  Naive use of CPB data can
+   produce instability that confidence-blind routing avoids.  Three
+   dynamics are particularly relevant:
+
+   Herding  When multiple sources receive identical high-confidence CPB
       advertisements for the same relay, they all forward to that relay
       simultaneously.  The relay congests, its actual delivery
       probability drops, but in-flight CPBs continue advertising the
@@ -1274,14 +1282,6 @@ Internet-Draft                   DTN CPB                     August 2026
       Closes the feedback loop locally rather than waiting for upstream
       CPB refresh.
 
-   *  *Bounded credulity:* Cap how heavily any single CPB can influence
-      the local routing decision relative to the router's own
-      observations.  Specific weights are deployment-dependent.
-
-
-
-
-
 
 
 
@@ -1289,6 +1289,10 @@ Perry                   Expires 18 February 2027               [Page 23]
 
 Internet-Draft                   DTN CPB                     August 2026
 
+
+   *  *Bounded credulity:* Cap how heavily any single CPB can influence
+      the local routing decision relative to the router's own
+      observations.  Specific weights are deployment-dependent.
 
    A formal control-theoretic stability analysis of CPB-driven feedback
    dynamics is not provided in this document; this is identified as an
@@ -1333,10 +1337,6 @@ Internet-Draft                   DTN CPB                     August 2026
    delivered bundles.  Buffer drop order is tightly coupled to the same
    likelihood metric used for forwarding.
 
-   *What CPB carries:* metric-type 2 as a lossy [0.0, 1.0] inversion of
-   path cost / delivery likelihood so foreign nodes can rank next hops
-   without MaxProp's full peer exchange.
-
 
 
 
@@ -1345,6 +1345,10 @@ Perry                   Expires 18 February 2027               [Page 24]
 
 Internet-Draft                   DTN CPB                     August 2026
 
+
+   *What CPB carries:* metric-type 2 as a lossy [0.0, 1.0] inversion of
+   path cost / delivery likelihood so foreign nodes can rank next hops
+   without MaxProp's full peer exchange.
 
    *What stays local:* cost vectors, hop-lists, delete-ACK flooding, and
    the dual use of likelihood for queue-drop priority (though a CPB-
@@ -1386,10 +1390,6 @@ Internet-Draft                   DTN CPB                     August 2026
    metadata.  CPB neither replaces summary vectors nor carries bundle-
    set digests.  A node may still attach a CPB when forwarding a copy so
    receivers learn the forwarder's confidence snapshot.
-
-
-
-
 
 
 
@@ -1609,13 +1609,13 @@ Internet-Draft                   DTN CPB                     August 2026
 
 7.7.  Clock Considerations
 
-   CPB timestamps are in DTN epoch seconds.  In networks with light-time
-   delay or unsynchronized clocks, the age and future-dated checks in
-   Section 4.1 must use deployment-specific drift and max_age values.
+   CPB timestamps (field 2) and validity durations (field 4) are in
+   whole seconds since the DTN Epoch origin (see field 2; not RFC 9171
+   millisecond DTN Time).  In networks with light-time delay or
+   unsynchronized clocks, the age and future-dated checks in Section 4.1
+   must use deployment-specific drift and max_age values.
    Interplanetary links commonly use larger tolerances (e.g., +/- 600 s
    drift, 86400 s max age) than terrestrial ones.
-
-
 
 
 
