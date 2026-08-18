@@ -667,20 +667,23 @@ metric-type = &(
         <section anchor="crc-handling">
           <name>Cyclic Redundancy Check (CRC) Handling</name>
           <t>
-            The block-data CRC field (<xref target="RFC9171"/> Section 4.3.2)
-            is optional:
+            CRC Type and CRC are defined in <xref target="RFC9171"/>
+            Sections 4.2.1 and 4.2.2. Their placement in the canonical
+            bundle block array is specified in Section 4.3.2. The CRC is
+            optional:
           </t>
           <ul>
-            <li><strong>No CRC (recommended):</strong> Set crc-type to 0 and
-                omit the CRC field from the canonical block
-                array (five elements total), per <xref target="RFC9171"/>
-                Section 4.3.2. This is the default and minimizes overhead.
-                Implementations <bcp14>MUST NOT</bcp14> emit a CBOR null CRC
-                element when crc-type is 0.</li>
+            <li><strong>No CRC (recommended):</strong> Set crc-type to 0
+                (<xref target="RFC9171"/> Section 4.2.1) and omit the CRC
+                field from the canonical block array (five elements total),
+                per <xref target="RFC9171"/> Section 4.3.2. This is the
+                default and minimizes overhead. Implementations
+                <bcp14>MUST NOT</bcp14> emit a CBOR null CRC element when
+                crc-type is 0.</li>
             <li><strong>Optional CRC:</strong> Implementations
                 <bcp14>MAY</bcp14> include CRC type 1 (X.25 CRC-16) or
                 type 2 (CRC32C / Castagnoli) as defined by
-                <xref target="RFC9171"/>.</li>
+                <xref target="RFC9171"/> Sections 4.2.1 and 4.2.2.</li>
           </ul>
           <t>
             Implementations <bcp14>SHOULD</bcp14> prefer BPSec BIBs
@@ -1086,8 +1089,12 @@ A3                   ; map with 3 entries
         <t>
           Implementations <bcp14>SHOULD</bcp14> include a timestamp (field 2)
           and a validity duration (field 4). Timestamps <bcp14>MUST</bcp14> be
-          expressed in seconds since 2000-01-01 00:00:00 UTC (DTN epoch, per
-          <xref target="RFC9171"/> Section 4.3.1).
+          expressed in whole seconds since 2000-01-01 00:00:00 UTC (same
+          epoch origin as DTN Time in <xref target="RFC9171"/> Section 4.2.6,
+          but in seconds rather than the millisecond DTN Time unit; see
+          field 2). Field 4 uses the same second-based unit so that
+          <tt>timestamp + validity</tt> comparisons are dimensionally
+          consistent.
         </t>
         <t>
           In networks with significant propagation delays, clock
@@ -1595,12 +1602,14 @@ A3                   ; map with 3 entries
       <section anchor="op-clocks">
         <name>Clock Considerations</name>
         <t>
-          CPB timestamps are in DTN epoch seconds.  In networks with
-          light-time delay or unsynchronized clocks, the age and
-          future-dated checks in <xref target="op-creation"/> must use
-          deployment-specific drift and max_age values.  Interplanetary
-          links commonly use larger tolerances (e.g., +/- 600 s drift,
-          86400 s max age) than terrestrial ones.
+          CPB timestamps (field 2) and validity durations (field 4) are in
+          whole seconds since the DTN Epoch origin (see field 2; not RFC
+          9171 millisecond DTN Time).  In networks with light-time delay
+          or unsynchronized clocks, the age and future-dated checks in
+          <xref target="op-creation"/> must use deployment-specific drift
+          and max_age values.  Interplanetary links commonly use larger
+          tolerances (e.g., +/- 600 s drift, 86400 s max age) than
+          terrestrial ones.
         </t>
       </section>
     </section>
