@@ -1,28 +1,26 @@
 # Bundle Protocol Contact Probability Block
 
-This is the working area for the individual Internet-Draft, "Bundle Protocol
-Contact Probability Block".
+The Contact Probability Block (CPB) is a BPv7 extension block for carrying a
+bundle-conditioned estimate of forwarding success.  Each entry identifies a
+decision node, a candidate next hop, and the probability of timely delivery
+if that forwarding action is selected.
 
-The normative source is
-[`draft-perry-dtn-cpb.xml`](draft-perry-dtn-cpb.xml).
+## Specification
 
-## Contributing
+The normative specification is
+[`draft-perry-dtn-cpb.xml`](draft-perry-dtn-cpb.xml).  See the
+[quick reference](docs/CPB-QUICK-REFERENCE.md) for the wire format and
+processing rules.
 
-See the [guidelines for contributions](CONTRIBUTING.md).
+## Build
 
-Contributions can be made by creating pull requests. The GitHub interface
-supports creating pull requests using the Edit button.
-
-## Command Line Usage
-
-Formatted text and HTML versions of the draft can be built using `make`.
+Build formatted text and HTML:
 
 ```sh
 make
 ```
 
-Command line usage requires the software described in the
-[i-d-template setup instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md).
+This requires `xml2rfc` and the standard build dependencies.
 
 ## Reference Implementation
 
@@ -35,5 +33,4 @@ python3 -m pytest -q impl
 make cddl
 ```
 
-See [the implementation documentation](impl/README.md) and the
-[CPB quick reference](docs/CPB-QUICK-REFERENCE.md).
+See [implementation details](impl/README.md).
