@@ -75,7 +75,7 @@ jobs:
           xml2rfc --version
           xml2rfc --text draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.txt
           xml2rfc --html draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.html
-          grep -q 'Bundle Protocol Contact Probability Block' /tmp/draft-perry-dtn-cpb.txt
+          grep -q 'Probabilistic Contact Metadata for DTN Bundle Routing' /tmp/draft-perry-dtn-cpb.txt
 
       - name: Upload built draft artifacts
         uses: actions/upload-artifact@v7
