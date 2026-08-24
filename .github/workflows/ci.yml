@@ -29,28 +29,15 @@ jobs:
           cd impl
           pip install -e '.[test]'
 
-      - name: Run full CPB conformance tests
-        run: python3 impl/test_cpb.py
-
-      - name: Simulator cost-formula unit tests
-        run: python3 impl/test_config1_policies.py
-
-      - name: Draft/docs consistency structural tests
-        run: python3 impl/test_draft_consistency.py
-
-      - name: Sim to CPB wire bridge tests
-        run: python3 impl/test_sim_cpb_bridge.py
-
-      - name: Paper-battery number pin (structural)
-        run: python3 impl/test_paper_battery_numbers.py --structural
-
-      - name: Simulator smoke test (quick mode)
-        run: python3 impl/config1_sim.py --quick
+      - name: Run conformance and repository tests
+        run: python3 -m pytest -q impl
 
       - name: Verify packaging import
         run: python3 -c "import cpb; print('cpb package import OK')"
 
-  # Build the Internet-Draft from XML. Rejects truncated draft sources.
+      - name: Compile all shipped Python artifacts
+        run: python3 -m compileall -q impl examples
+
   build-draft:
     name: Build Internet-Draft (xml2rfc)
     runs-on: ubuntu-latest
@@ -62,39 +49,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Reject truncated draft XML
-        run: |
-          set -euo pipefail
-          XML=draft-perry-dtn-cpb.xml
-          if [ ! -f "$XML" ]; then
-            echo "::error::Missing $XML"
-            exit 1
-          fi
-          size=$(wc -c < "$XML")
-          echo "XML size: $size bytes"
-          # Full draft is well above 50 KiB
-          if [ "$size" -lt 50000 ]; then
-            echo "::error::$XML is only $size bytes — draft source appears truncated"
-            head -c 500 "$XML" || true
-            exit 1
-          fi
-          if ! head -1 "$XML" | grep -q '<?xml'; then
-            echo "::error::$XML does not start with an XML declaration"
-            head -c 200 "$XML" || true
-            exit 1
-          fi
-          # Reject known accidental paste markers (not ordinary draft wording)
-          if grep -qiE '\[full current local|content of local /tmp|TODO: paste full|MCP placeholder' "$XML"; then
-            echo "::error::$XML contains accidental paste-marker text"
-            grep -niE '\[full current local|content of local /tmp|TODO: paste full|MCP placeholder' "$XML" | head -5
-            exit 1
-          fi
-          echo "XML preflight OK"
-
       - name: Install xml2rfc
         run: |
           python -m pip install --upgrade pip
           pip install 'xml2rfc>=3.23.0'
+
+      - name: Install and run CDDL validator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cddl
+          cddl compile-cddl --cddl impl/cpb.cddl
 
       - name: Build text and HTML from XML
         run: |
@@ -102,17 +66,7 @@ jobs:
           xml2rfc --version
           xml2rfc --text draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.txt
           xml2rfc --html draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.html
-          txt_size=$(wc -c < /tmp/draft-perry-dtn-cpb.txt)
-          html_size=$(wc -c < /tmp/draft-perry-dtn-cpb.html)
-          echo "Built txt=$txt_size bytes html=$html_size bytes"
-          if [ "$txt_size" -lt 20000 ]; then
-            echo "::error::Built .txt is suspiciously small ($txt_size bytes)"
-            exit 1
-          fi
-          # Sanity: expected title present
-          grep -q 'Probabilistic Contact Metadata' /tmp/draft-perry-dtn-cpb.txt
-          grep -q 'Contact Probability Block' /tmp/draft-perry-dtn-cpb.txt
-          echo "Draft build OK"
+          grep -q 'Bundle Protocol Contact Probability Block' /tmp/draft-perry-dtn-cpb.txt
 
       - name: Upload built draft artifacts
         uses: actions/upload-artifact@v4

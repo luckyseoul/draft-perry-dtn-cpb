@@ -1,0 +1,34 @@
+cpb-btsd = bstr .cbor cpb-data
+
+cpb-data = {
+  0: entries,
+  1: evaluation-time,
+  2: validity-duration,
+  3: producer-node,
+  * (uint .ge 4) => any
+}
+
+entries = [1*8 forwarding-entry]
+
+forwarding-entry = [
+  decision-node: eid,
+  candidate-next-hop: eid,
+  forwarding-success-probability: probability
+]
+
+evaluation-time = uint
+validity-duration = uint .gt 0
+producer-node = eid
+probability = float16
+
+eid = $eid .within eid-structure
+eid-structure = [uri-code: uint, scheme-specific-part: any]
+
+$eid /= [1, tstr / 0]
+$eid /= [2, ipn-ssp2 / ipn-ssp3]
+ipn-ssp2 = [fqnn: uint, service-number: uint]
+ipn-ssp3 = [
+  allocator-identifier: uint .lt 4294967296,
+  node-number: uint .lt 4294967296,
+  service-number: uint
+]

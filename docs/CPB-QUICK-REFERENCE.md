@@ -1,174 +1,87 @@
-# Contact Probability Block (CPB) — Quick Reference
+# CPB quick reference
 
-Short visual intro to **draft-perry-dtn-cpb-00**
-(*Probabilistic Contact Metadata for DTN Bundle Routing*): problem, wire idea,
-fields, lifecycle, experiment headline, and security defaults.
+The normative source is
+[`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml). This file is an
+implementation aid.
 
-See [`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml). Pre-submission
-review copy (not on the IETF Internet-Drafts repository).
+## Meaning
 
----
+For every entry:
 
-## 1. The problem in one sentence
-
-DTN contacts are often **uncertain**, but BPv7 endpoint IDs must stay
-**immutable** — so probability must not be stuffed into the destination URI.
-
-### Why not `ipn:100.1?prob=0.75`?
-
-![Why extension block](images/01-why-extension-block.png)
-
-Routers that rewrite EIDs to carry metadata break integrity, security
-bindings, and the BPv7 model. CPB puts probability in an **extension block**
-instead.
-
----
-
-## 2. What CPB is
-
-CPB is a **BPv7 extension block** that carries *in-bundle* probability /
-confidence metadata between nodes. It is a **transport for estimates**, not
-a replacement for CGR, PRoPHET, MaxProp, or similar protocols.
-
-Those protocols can **produce or consume** CPB data while keeping their own
-algorithms. CPB is only the **in-bundle scalar** ([0,1] plus metric-type).
-Encounter tables, contact plans, summary vectors, Spray copy-count **L**,
-and MaxProp hop-lists stay in each protocol’s control plane (draft §5).
-
-![Bundle anatomy](images/02-bundle-anatomy.png)
-
-- Open questions (noise, adversaries, multi-domain trust, production interop)
-  are listed in the draft and not claimed solved.
-- Examples use block type **200 (0xC8)**; IANA assigns the permanent code.
-  Implementations **must not** hardcode `0xC8`.
-
----
-
-## 3. What’s inside a CPB (fields 0–7)
-
-The block-type-specific data is a **CBOR map**:
-
-![CPB fields](images/03-cpb-fields.png)
-
-| Key | Meaning |
-|-----|---------|
-| 0 | Default probability |
-| 1 | Per-path `[next-hop, probability]` list (senders **SHOULD NOT** exceed 8 on constrained links) |
-| 2 | Timestamp (DTN epoch) |
-| 3 | Source PCE identifier (optional) |
-| 4 | Validity duration (TTL) |
-| 5 | Metric type (0 PRoPHET · 1 CGR · 2 MaxProp · 3 RAPID · 4 generic) |
-| 6 | Confidence / variance of the estimate |
-| 7 | Format version (1 = this specification) |
-
-**Important rule:** do **not** mix metric types in arithmetic (e.g. do not
-average a PRoPHET DP with a CGR confidence).
-
----
-
-## 4. Lifecycle at a router
-
-![Lifecycle](images/07-cpb-lifecycle.png)
-
-1. **Create or receive** a bundle that may carry one or more CPBs.  
-2. **Read** default / per-path probabilities (after trust/BIB policy).  
-3. **Decide** next hop using your routing policy.  
-4. **Optionally update** with fresher local estimates (append or
-   strip-and-replace — see security section of the draft).  
-5. **Forward**; nodes that do not understand CPB pass the block through.
-
----
-
-## 5. Configuration 1 experiment
-
-The simulator `impl/config1_sim.py` uses **Configuration 1**:
-
-![Topology](images/04-config1-topology.png)
-
-- 4 rovers → 4 orbiters → 1 relay → 3 grounds
-- First-hop success probabilities in **[0.78, 0.96]**
-- Space-side hops ~**0.99**
-- Paper battery: **10 seeds**, ~**80k** bundles per arm per seed
-
-### Routing policies (labels match draft §12)
-
-![Policies](images/05-routing-policies.png)
-
-| Label | Cost / rule |
-|-------|-------------|
-| **baseline** | Earliest predicted arrival (ignore confidence) |
-| **CPB** | `latency / confidence` |
-
-### Headline results (paper battery)
-
-![Results](images/06-paper-battery-results.png)
-
-**Delivery first.** Contact-window retries per hop (`R`) are a lever — not
-“CPB always wins”:
-
-| R | baseline deliv | CPB deliv | Δ delivery |
-|---|----------------|-----------|------------|
-| **2** (tight budget) | ≈0.9789 | ≈0.9901 | **≈+0.011** |
-| **3** (draft default) | ≈0.9965 | ≈0.9984 | ≈+0.0019 |
-| **4** (more retries) | ≈0.9988 | ≈0.9991 | ≈+0.0003 |
-
-On Configuration 1, **CPB** improves **delivery** and usually **mean latency**;
-**p95 is often worse** (longer-period high-confidence paths). Path confidence
-is higher under **CPB**.
-
-Two experiment parts (draft §12.1): (1) wire format and ION data-plane
-survival of the extension block; (2) routing value of confidences of the
-class CPB carries (simulator; bridge tests check that encode/decode
-preserves the cost ranking).
-
-```sh
-cd impl
-python3 test_cpb.py
-python3 test_config1_policies.py
-python3 test_sim_cpb_bridge.py
-python3 config1_sim.py --battery paper --strategy both
+```text
+P(bundle delivered before expiry | decision node selects candidate next hop)
 ```
 
----
+The probability includes the attempted next-hop transfer and downstream
+delivery. It is not a raw contact probability, rank, cost, utility, or estimator
+confidence.
 
-## 6. Security (draft §8)
+## Data model
 
-Threats include false probabilities (sinkhole / blackhole), stale CPBs,
-semi-trusted relays biasing routes, and inter-domain trust gaps.
+| Key | Field | Requirement |
+|---:|---|---|
+| 0 | Entries | Required; 1–8 entries |
+| 1 | Evaluation time | Required; DTN milliseconds |
+| 2 | Validity duration | Required; positive milliseconds |
+| 3 | Producer Node ID | Required; complete BP EID |
+| >3 | Extensions | Ignored when unknown; cannot redefine base fields |
 
-- Prefer **BPSec BIB** integrity on CPBs used for routing.
-- **Do not** encrypt CPB with BCB if intermediates must read it to route.
-- Unauthorized or unverifiable CPBs: prefer **strict** (ignore for routing,
-  still forward) over laundering signatures.
-- Multi-CPB precedence applies **after** trust verification.
+Each entry is:
 
----
+```text
+[decision-node EID, candidate-next-hop EID, probability]
+```
 
-## 7. Recap
+EIDs use their BP CBOR representation, for example:
 
-**Why is probability not allowed in the destination EID?**  
-BPv7 EIDs must stay immutable. Stuffing `?prob=…` into the URI invites
-rewrites that break integrity bindings and the endpoint model. Put estimates
-in an extension block instead.
+```text
+[2, [200, 0]]        # ipn:200.0, default allocator
+[2, [7, 200, 0]]     # ipn:7.200.0, explicit allocator
+[1, "//relay.example/"]
+```
 
-**Name three CPB map fields and what they mean.**  
-Examples: **0** default probability; **1** per-path `[next-hop, probability]`
-list; **5** metric-type (which semantic family the scalar belongs to). Also
-common: **2** timestamp, **4** validity TTL, **7** format version.
+IPN matching uses decoded allocator, node, and service values. Equivalent
+two- and three-item SSP encodings compare equal.
 
-**What does metric-type forbid between families?**  
-Cross-metric arithmetic — e.g. averaging a PRoPHET delivery predictability
-with a CGR confidence. Consume only matching metric-types (draft §3.5).
+## Encoding rules
 
-**What cost formula does the Config 1 “CPB” policy use?**  
-`cost = latency / confidence` (end-to-end path confidence product). Baseline
-uses earliest arrival only and ignores confidence.
+- Deterministic CBOR and ascending map keys are mandatory.
+- Probabilities are mandatory CBOR binary16 values in `[0, 1]`.
+- Rounding is IEEE 754 round-to-nearest, ties-to-even.
+- NaN, infinity, wider floats, integer probabilities, clamping, negative zero
+  on the wire, and non-canonical CBOR are rejected.
+- All CPB block processing flags are zero; CPB is not replicated into every
+  fragment.
+- At most four CPBs and 1024 aggregate CPB BTSD octets may be used per bundle.
 
-**On Config 1, what improves under CPB?**  
-**Delivery** and **mean latency** improve; **p95 latency does not** (slightly
-worse on this topology). Path confidence is higher under CPB.
+## Selection
 
-**What is still open?**  
-Noisy or adversarial estimates, multi-domain trust, partial deployment
-quality, production-stack interop, and in-band consumption by live CGR (or
-similar) — draft §12.11.
+1. Validate the block and freshness window.
+2. Authenticate and authorize the producer according to local policy.
+3. Rank eligible CPBs by trust first, then evaluation time, then lowest block
+   number.
+4. Use one selected CPB; do not mix entries from producers.
+5. Match only entries whose decision node is the local Node ID.
+
+Absence of an entry is unknown, not probability zero.
+
+## Security and fragmentation
+
+- Unsigned CPB data must not override authenticated local routing information
+  by default.
+- A BIB-covered CPB cannot be modified; append a new CPB instead.
+- A source applying a BIB to CPB also sets the primary block's
+  `must-not-fragment` flag.
+- A consumer does not use CPB found in a fragment for routing.
+- CRC and integrity-service removal follow RFC 9171 and RFC 9173.
+
+## Reference code
+
+```sh
+python3 -m pip install -r impl/requirements.txt
+python3 -m pytest -q impl/test_cpb.py
+python3 examples/simple_usage.py
+```
+
+Block type 200 is only a private/experimental test value pending IANA
+assignment.
