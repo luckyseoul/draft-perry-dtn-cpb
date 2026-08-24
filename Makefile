@@ -1,12 +1,6 @@
 LIBDIR := lib
 TEXT_PAGINATION := true
 
-ifneq (,$(wildcard $(LIBDIR)/main.mk))
-ifeq ($(shell test -x $(LIBDIR)/.venv/bin/pip 2>/dev/null && echo ok),)
-  $(shell ./scripts/ensure-template-venv.sh >/dev/null 2>&1 || true)
-endif
-endif
-
 -include $(LIBDIR)/main.mk
 
 $(LIBDIR)/main.mk:
@@ -22,10 +16,6 @@ else
 endif
 endif
 
-.PHONY: template-venv
-template-venv:
-	@./scripts/ensure-template-venv.sh
-
 .PHONY: test
 test:
 	@python3 -c "import cbor2, pytest" || { echo "Install impl package with test extras first"; exit 1; }
@@ -35,9 +25,3 @@ test:
 cddl:
 	@command -v cddl >/dev/null || { echo "Install the cddl validator first"; exit 1; }
 	@cddl compile-cddl --cddl impl/cpb.cddl
-
-latest:: txt html pdf
-
-draft-perry-dtn-cpb.pdf: draft-perry-dtn-cpb.txt scripts/id-txt-to-pdf.py
-	@echo "==> Building $@ (from paginated .txt)"
-	@$(LIBDIR)/.venv/bin/python scripts/id-txt-to-pdf.py $< $@

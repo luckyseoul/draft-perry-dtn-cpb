@@ -17,7 +17,7 @@ supports creating pull requests using the Edit button.
 
 ## Command Line Usage
 
-Formatted text, HTML, and PDF versions of the draft can be built using `make`.
+Formatted text and HTML versions of the draft can be built using `make`.
 
 ```sh
 make
