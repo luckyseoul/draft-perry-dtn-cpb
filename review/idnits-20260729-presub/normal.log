@@ -1,9 +1,0 @@
-FAIL - Document /tmp/draft-perry-dtn-cpb-00.txt has nits. (mode: normal)
-
-[1] Comment | NON_ASCII_UTF8 | Review RFC7997 to ensure your document respects UTF-8 rules for non-ASCII.
-[2] Error | MULTIPLE_REFERENCES_SECTION_TITLES | Multiple occurrences of the References section title detected. There should only be one top-level References section.
-[3] Warning | PREFER_BCP14_REF | Consider referencing BCP14 instead of (or in addition to) RFC2119/RFC8174, as BCP14 encompasses both specifications.
-[4] Warning | COMMENT_OUT_OF_CODE_BLOCK | Found something which looks like a code comment -- if you have code sections in the document, please surround them with '<CODE BEGINS>' and '<CODE ENDS>' lines.
-[5] Warning | CODE_BLOCK_MISSING_LICENSE | A code-block is detected, but the document does not contain a license declaration.
-[6] Warning | SECTION_TITLE_HAS_UNEXPECTED_INDENTATION | Document has unexpected indentation in Appendix.
-[7] Warning | SECTION_TITLE_HAS_UNEXPECTED_INDENTATION | Document has unexpected indentation in Appendix.
