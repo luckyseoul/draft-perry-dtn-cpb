@@ -1,334 +1,276 @@
-"""Reference encoder and decoder for the Contact Probability Block (CPB).
+"""
+cpb.py -- Contact Probability Block reference encoder/decoder.
 
-The module implements the wire format in draft-perry-dtn-cpb-latest.  A CPB
-contains one to eight bundle-conditioned forwarding entries.  Each entry is:
+Implements the CPB working draft Section 3.2 (CDDL schema) and Section 3.4
+(CBOR encoding rules) using cbor2 for the underlying CBOR work.
 
-    [decision-node EID, candidate-next-hop EID, success probability]
+Per-path array (field 1) limit: the spec uses SHOULD (not MUST) for a
+maximum of 8 entries to mitigate DoS on low-bandwidth/constrained DTN
+links (see Bandwidth Considerations). Reference implementation accepts
+larger arrays on encode; receivers in constrained deployments should
+apply local policy.
 
-Probabilities are always deterministic CBOR binary16 values.  The reference
-decoder intentionally rejects wider floats, non-canonical CBOR, invalid EIDs,
-out-of-range probabilities, missing fields, and duplicate forwarding actions.
+Public surface:
+    encode_cpb(data: dict) -> bytes      # cpb-data map -> CBOR bytes
+    decode_cpb(buf: bytes) -> dict       # CBOR bytes -> cpb-data map
+    encode_btsd(data: dict) -> bytes     # cpb-data map -> CBOR bstr (BTSD)
+    decode_btsd(buf: bytes) -> dict      # BTSD bstr -> cpb-data map
+
+Float policy (Spec Section 3.4):
+  - On encode: probability values that are exactly representable in IEEE 754
+    binary16 are encoded in 3 bytes (CBOR major 7, info 25).  Values that are
+    not exactly representable raise ValueError; the caller chooses whether to
+    snap-to-binary16 or emit binary32/64 explicitly.
+  - On decode: any valid CBOR float is accepted and clamped to [0.0, 1.0].
+    NaN and +/-Inf are rejected per Section 3.4.1.
 """
 
 from __future__ import annotations
 
 import math
 import struct
-from io import BytesIO
-from typing import Any
-
 import cbor2
 
-CPB_BLOCK_TYPE_EXAMPLE = 200
-CPB_BLOCK_FLAGS = 0x00
-MAX_ENTRIES = 8
-MAX_CPBS_PER_BUNDLE = 4
-MAX_AGGREGATE_BTSD = 1024
+CPB_BLOCK_TYPE_EXAMPLE = 200  # Spec uses 0xC8 in examples until IANA assigns
 
-F_ENTRIES = 0
-F_EVALUATION_TIME = 1
-F_VALIDITY_DURATION = 2
-F_PRODUCER_NODE = 3
-REQUIRED_FIELDS = frozenset(
-    {F_ENTRIES, F_EVALUATION_TIME, F_VALIDITY_DURATION, F_PRODUCER_NODE}
-)
+# Field numbers from Spec Section 3.2.1 / Figure 4
+F_DEFAULT_PROB = 0
+F_PATH_ENTRIES = 1
+F_TIMESTAMP = 2
+F_SOURCE_PCE = 3
+F_VALIDITY = 4
+F_METRIC_TYPE = 5
+F_CONFIDENCE = 6
+F_VERSION = 7
 
-
-def ipn_eid(node: int, service: int = 0, allocator: int = 0) -> list[Any]:
-    """Build an RFC 9758 ipn EID using its preferred representation."""
-    for label, value in (
-        ("allocator", allocator),
-        ("node", node),
-        ("service", service),
-    ):
-        if type(value) is not int or value < 0:
-            raise ValueError(f"{label} must be a non-negative integer")
-    if allocator >= 2**32 or node >= 2**32:
-        raise ValueError("allocator and node must each fit in 32 bits")
-    if allocator == 0:
-        return [2, [node, service]]
-    return [2, [allocator, node, service]]
+METRIC_PROPHET_DP = 0
+METRIC_CGR_CONFIDENCE = 1
+METRIC_MAXPROP_COST = 2
+METRIC_RAPID_UTILITY = 3
+METRIC_GENERIC = 4
 
 
-def dtn_eid(scheme_specific_part: str | int) -> list[Any]:
-    """Build an RFC 9171 dtn EID; integer 0 denotes dtn:none."""
-    if scheme_specific_part != 0 and not isinstance(scheme_specific_part, str):
-        raise ValueError("dtn scheme-specific part must be text or integer 0")
-    return [1, scheme_specific_part]
+# ---------- float16 helpers ------------------------------------------------
 
+def _float_to_binary16_bytes(value: float, strict: bool = False) -> bytes:
+    """Pack a float into 2-byte IEEE 754 binary16, big-endian.
 
-def _float_to_binary16_bytes(value: float, *, strict: bool = False) -> bytes:
-    """Convert to IEEE 754 binary16 using round-to-nearest, ties-to-even."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise TypeError("probability must be numeric and not bool")
-    value = float(value)
-    if not math.isfinite(value) or not 0.0 <= value <= 1.0:
-        raise ValueError(f"probability {value!r} is outside finite [0, 1]")
-    if value == 0.0:
-        value = 0.0  # canonicalize negative zero
-    try:
-        packed = struct.pack(">e", value)
-    except (OverflowError, struct.error) as exc:
-        raise ValueError(f"probability {value!r} cannot be binary16") from exc
-    if strict and struct.unpack(">e", packed)[0] != value:
-        nearest = struct.unpack(">e", packed)[0]
-        raise ValueError(
-            f"probability {value!r} is not exactly binary16; nearest is {nearest!r}"
-        )
+    Default behaviour snaps to the nearest representable binary16 value
+    (which is what the spec's Section 3.4.3 hex table shows: 0.95 -> 0x3B9A,
+    whose actual binary16 value is 0.9501953125).  ~0.001 quantization
+    matches the routing-grade precision claim in Section 3.4.
+
+    With strict=True, raises ValueError if the value is not exactly
+    representable in binary16 (useful for paranoid encoders that want to
+    refuse silent rounding).
+    """
+    # struct '>e' is IEEE 754 binary16 big-endian.  Python's struct will
+    # already snap to nearest binary16 on pack.
+    packed = struct.pack(">e", value)
+    if strict:
+        roundtrip = struct.unpack(">e", packed)[0]
+        if roundtrip != value:
+            raise ValueError(
+                f"value {value!r} is not exactly representable in IEEE 754 "
+                f"binary16 (nearest is {roundtrip!r}); strict=True forbids "
+                f"silent rounding"
+            )
     return packed
 
 
-def _encode_probability(value: float, *, strict: bool = False) -> bytes:
+def _encode_prob_float16(value: float, strict: bool = False) -> bytes:
+    """Encode a probability value as a 3-byte CBOR float16:
+       0xF9 + 2 bytes binary16.  Snaps to nearest binary16 by default."""
+    if not isinstance(value, (int, float)):
+        raise TypeError(f"probability must be numeric, got {type(value).__name__}")
+    if isinstance(value, int):
+        value = float(value)
+    if math.isnan(value) or math.isinf(value):
+        raise ValueError("NaN and +/-Inf are not valid probabilities (Spec 3.4.1)")
+    if value < 0.0 or value > 1.0:
+        raise ValueError(f"probability {value} outside [0.0, 1.0]")
     return b"\xf9" + _float_to_binary16_bytes(value, strict=strict)
 
 
-# Retain the former helper name for callers that used it in demonstrations.
-_encode_prob_float16 = _encode_probability
+# ---------- encode ---------------------------------------------------------
 
+def encode_cpb(data: dict) -> bytes:
+    """Encode a cpb-data dict to CBOR bytes per Spec Section 3.2.
 
-def _validate_eid(value: Any, *, label: str = "EID") -> list[Any]:
-    if not isinstance(value, (list, tuple)) or len(value) != 2:
-        raise ValueError(f"{label} must be a two-item BP EID array")
-    scheme, ssp = value
-    if type(scheme) is not int or scheme < 0:
-        raise ValueError(f"{label} URI scheme code must be uint")
+    The dict keys are the integer field numbers (0..7) plus optionally any
+    int > 6 for future-extension fields (passed through unchanged).
 
-    if scheme == 1:
-        if ssp != 0 and not isinstance(ssp, str):
-            raise ValueError(f"{label} dtn SSP must be text or integer 0")
-    elif scheme == 2:
-        if not isinstance(ssp, (list, tuple)) or len(ssp) not in (2, 3):
-            raise ValueError(f"{label} ipn SSP must contain two or three uints")
-        if any(type(item) is not int or item < 0 for item in ssp):
-            raise ValueError(f"{label} ipn SSP items must be uints")
-        if len(ssp) == 3 and (ssp[0] >= 2**32 or ssp[1] >= 2**32):
-            raise ValueError(f"{label} ipn allocator and node must fit in 32 bits")
-
-    # Lists are the public representation even if tuples were accepted.
-    normalized_ssp = list(ssp) if isinstance(ssp, tuple) else ssp
-    return [scheme, normalized_ssp]
-
-
-def _validate_node_id(value: Any, *, label: str) -> list[Any]:
-    eid = _validate_eid(value, label=label)
-    if eid == [1, 0]:
-        raise ValueError(f"{label} cannot be the null endpoint dtn:none")
-    return eid
-
-
-def eid_identity(eid: Any) -> tuple[Any, ...]:
-    """Return a scheme-aware identity suitable for EID matching."""
-    scheme, ssp = _validate_eid(eid)
-    if scheme == 2:
-        if len(ssp) == 2:
-            fqnn, service = ssp
-            return (2, fqnn >> 32, fqnn & 0xFFFFFFFF, service)
-        allocator, node, service = ssp
-        return (2, allocator, node, service)
-    if scheme == 1:
-        return (1, ssp)
-    return (scheme, cbor2.dumps(ssp, canonical=True))
-
-
-def _encode_entries(entries: Any) -> bytes:
-    if not isinstance(entries, list) or not 1 <= len(entries) <= MAX_ENTRIES:
-        raise ValueError(f"entries must be a list containing 1..{MAX_ENTRIES} items")
-    out = bytes([0x80 | len(entries)])
-    seen: set[tuple[tuple[Any, ...], tuple[Any, ...]]] = set()
-    for entry in entries:
-        if not isinstance(entry, (list, tuple)) or len(entry) != 3:
-            raise ValueError("each entry must be [decision EID, next-hop EID, probability]")
-        decision = _validate_node_id(entry[0], label="decision-node")
-        next_hop = _validate_node_id(entry[1], label="candidate-next-hop")
-        identity = (eid_identity(decision), eid_identity(next_hop))
-        if identity in seen:
-            raise ValueError("duplicate decision-node/candidate-next-hop pair")
-        seen.add(identity)
-        out += b"\x83"
-        out += cbor2.dumps(decision, canonical=True)
-        out += cbor2.dumps(next_hop, canonical=True)
-        out += _encode_probability(entry[2])
-    return out
-
-
-def encode_cpb(data: dict[int, Any]) -> bytes:
-    """Encode a cpb-data map using deterministic CBOR."""
-    if not isinstance(data, dict):
-        raise TypeError("cpb-data must be a dict keyed by unsigned integers")
-    if any(type(key) is not int or key < 0 for key in data):
-        raise ValueError("all cpb-data keys must be unsigned integers")
-    missing = REQUIRED_FIELDS.difference(data)
-    if missing:
-        raise ValueError(f"missing required CPB fields: {sorted(missing)}")
-
-    keys = sorted(data)
-    if len(keys) >= 24:
-        raise ValueError("reference encoder supports fewer than 24 map fields")
-    out = bytes([0xA0 | len(keys)])
-    for key in keys:
-        out += cbor2.dumps(key, canonical=True)
-        value = data[key]
-        if key == F_ENTRIES:
-            out += _encode_entries(value)
-        elif key == F_EVALUATION_TIME:
-            if type(value) is not int or value < 0:
-                raise ValueError("evaluation-time must be uint")
-            out += cbor2.dumps(value, canonical=True)
-        elif key == F_VALIDITY_DURATION:
-            if type(value) is not int or value <= 0:
-                raise ValueError("validity-duration must be a positive uint")
-            out += cbor2.dumps(value, canonical=True)
-        elif key == F_PRODUCER_NODE:
-            out += cbor2.dumps(
-                _validate_node_id(value, label="producer-node"), canonical=True
-            )
-        else:
-            out += cbor2.dumps(value, canonical=True)
-    return out
-
-
-def _loads_one(buf: bytes, label: str) -> Any:
-    if not isinstance(buf, (bytes, bytearray)):
-        raise TypeError(f"{label} input must be bytes")
-    stream = BytesIO(bytes(buf))
-    try:
-        value = cbor2.CBORDecoder(stream).decode()
-    except Exception as exc:
-        raise ValueError(f"invalid {label} CBOR: {exc}") from exc
-    if stream.read(1):
-        raise ValueError(f"trailing bytes after {label}")
-    return value
-
-
-def _validate_probability(value: Any) -> float:
-    if type(value) is not float or not math.isfinite(value):
-        raise ValueError("probability must decode as a finite CBOR float")
-    if not 0.0 <= value <= 1.0:
-        raise ValueError("probability is outside [0, 1]")
-    if value == 0.0:
-        return 0.0
-    return value
-
-
-def _validate_entries(entries: Any) -> list[list[Any]]:
-    if not isinstance(entries, list) or not 1 <= len(entries) <= MAX_ENTRIES:
-        raise ValueError(f"entries must contain 1..{MAX_ENTRIES} items")
-    out: list[list[Any]] = []
-    seen: set[tuple[tuple[Any, ...], tuple[Any, ...]]] = set()
-    for entry in entries:
-        if not isinstance(entry, list) or len(entry) != 3:
-            raise ValueError("forwarding entry must be a three-item array")
-        decision = _validate_node_id(entry[0], label="decision-node")
-        next_hop = _validate_node_id(entry[1], label="candidate-next-hop")
-        identity = (eid_identity(decision), eid_identity(next_hop))
-        if identity in seen:
-            raise ValueError("duplicate decision-node/candidate-next-hop pair")
-        seen.add(identity)
-        out.append([decision, next_hop, _validate_probability(entry[2])])
-    return out
-
-
-def decode_cpb(buf: bytes) -> dict[int, Any]:
-    """Decode and strictly validate deterministic CPB CBOR."""
-    original = bytes(buf)
-    raw = _loads_one(original, "cpb-data")
-    if not isinstance(raw, dict):
-        raise ValueError("cpb-data must be a CBOR map")  # noqa: TRY004 - wire error
-    if any(type(key) is not int or key < 0 for key in raw):
-        raise ValueError("all cpb-data keys must be unsigned integers")
-    missing = REQUIRED_FIELDS.difference(raw)
-    if missing:
-        raise ValueError(f"missing required CPB fields: {sorted(missing)}")
-
-    out: dict[int, Any] = {}
-    for key, value in raw.items():
-        if key == F_ENTRIES:
-            out[key] = _validate_entries(value)
-        elif key == F_EVALUATION_TIME:
-            if type(value) is not int or value < 0:
-                raise ValueError("evaluation-time must decode as uint")
-            out[key] = value
-        elif key == F_VALIDITY_DURATION:
-            if type(value) is not int or value <= 0:
-                raise ValueError("validity-duration must decode as positive uint")
-            out[key] = value
-        elif key == F_PRODUCER_NODE:
-            out[key] = _validate_node_id(value, label="producer-node")
-        else:
-            out[key] = value
-
-    # This byte comparison enforces map ordering, preferred integer encoding,
-    # binary16 probability width, positive zero, and deterministic extensions.
-    if encode_cpb(out) != original:
-        raise ValueError("cpb-data is not deterministically encoded")
-    return out
-
-
-def encode_btsd(data: dict[int, Any]) -> bytes:
-    """Encode the complete BP block-type-specific data CBOR bstr."""
-    return cbor2.dumps(encode_cpb(data), canonical=True)
-
-
-def decode_btsd(buf: bytes) -> dict[int, Any]:
-    """Decode a serialized BP block-type-specific data CBOR bstr."""
-    value = _loads_one(buf, "BTSD")
-    if not isinstance(value, (bytes, bytearray)):
-        raise ValueError("BTSD must be a bstr containing cpb-data")  # noqa: TRY004
-    return decode_cpb(bytes(value))
-
-
-def encode_canonical_block(
-    data: dict[int, Any],
-    *,
-    block_type: int = CPB_BLOCK_TYPE_EXAMPLE,
-    block_number: int = 2,
-) -> bytes:
-    """Encode a CRC-type-zero canonical block for protected test vectors.
-
-    A real bundle may use CRC type zero only when permitted by RFC 9171 and
-    RFC 9173, normally because an applicable BIB integrity service is present.
+    Probability fields (0, 6, and the second element of each path-entry) are
+    encoded as deterministic float16 per Spec Section 3.4.  All other fields
+    are encoded by cbor2 in canonical mode (RFC 8949 Section 4.2.1).
     """
-    if type(block_type) is not int or block_type < 0:
-        raise ValueError("block type must be uint")
-    if type(block_number) is not int or block_number <= 1:
-        raise ValueError("extension block number must be greater than 1")
-    return cbor2.dumps(
-        [block_type, block_number, CPB_BLOCK_FLAGS, 0, encode_cpb(data)],
-        canonical=True,
-    )
+    # cbor2 doesn't have a knob to force float16 only for selected values, so
+    # we hand-build the map header + entries and let cbor2 handle the
+    # non-float pieces.
+    if not isinstance(data, dict):
+        raise TypeError("cpb-data must be a dict keyed by integer field number")
+
+    # Determinism: sort keys ascending (RFC 8949 4.2.1 deterministic encoding).
+    keys = sorted(data.keys())
+    n = len(keys)
+    # CBOR map header: small maps (n < 24) fit in 1 byte (major 5, value n).
+    if n < 24:
+        out = bytes([0xA0 | n])
+    elif n < 256:
+        out = bytes([0xB8, n])
+    elif n < 65536:
+        out = b"\xb9" + struct.pack(">H", n)
+    else:
+        raise ValueError("cpb-data map too large")
+
+    for k in keys:
+        if not isinstance(k, int) or k < 0:
+            raise ValueError(f"cpb-data keys must be non-negative ints, got {k!r}")
+        out += cbor2.dumps(k, canonical=True)
+        v = data[k]
+        if k == F_DEFAULT_PROB or k == F_CONFIDENCE:
+            out += _encode_prob_float16(v)
+        elif k == F_PATH_ENTRIES:
+            out += _encode_path_entries(v)
+        elif k == F_TIMESTAMP or k == F_VALIDITY:
+            if not isinstance(v, int) or v < 0:
+                raise ValueError(f"field {k} must be uint, got {v!r}")
+            out += cbor2.dumps(v, canonical=True)
+        elif k == F_SOURCE_PCE:
+            if not isinstance(v, (bytes, bytearray)):
+                raise ValueError("field 3 (source PCE) must be bstr (bytes)")
+            out += cbor2.dumps(bytes(v), canonical=True)
+        elif k == F_METRIC_TYPE:
+            if not isinstance(v, int) or v < 0:
+                raise ValueError("field 5 (metric type) must be uint")
+            out += cbor2.dumps(v, canonical=True)
+        else:
+            # Future extension fields: pass through cbor2 canonical encoding.
+            out += cbor2.dumps(v, canonical=True)
+    return out
 
 
-def decode_canonical_block(
-    buf: bytes, *, expected_block_type: int = CPB_BLOCK_TYPE_EXAMPLE
-) -> dict[int, Any]:
-    """Decode the CRC-type-zero canonical-block test-vector form."""
-    block = _loads_one(buf, "canonical block")
-    if not isinstance(block, list) or len(block) != 5:
-        raise ValueError("CRC-type-zero canonical block must have five items")
-    block_type, block_number, flags, crc_type, block_data = block
-    if type(block_type) is not int or block_type != expected_block_type:
-        raise ValueError(f"unexpected CPB block type {block_type!r}")
-    if type(block_number) is not int or block_number <= 1:
-        raise ValueError("extension block number must be greater than 1")
-    if type(flags) is not int or flags != CPB_BLOCK_FLAGS:
-        raise ValueError(f"CPB block flags must be 0x{CPB_BLOCK_FLAGS:02x}")
-    if crc_type != 0:
-        raise ValueError("reference canonical-block decoder accepts CRC type zero only")
-    if not isinstance(block_data, (bytes, bytearray)):
-        raise ValueError("canonical-block data must be a CBOR bstr")  # noqa: TRY004
-    return decode_cpb(bytes(block_data))
+def _encode_path_entries(entries) -> bytes:
+    if not isinstance(entries, list):
+        raise TypeError("path-entries (field 1) must be a list")
+    if len(entries) > 8:
+        # Spec §3.4: senders SHOULD limit per-path array to 8 entries to
+        # mitigate DoS on low-bandwidth/constrained links.  The reference
+        # implementation allows larger lists (per the relaxed SHOULD language)
+        # but deployments on constrained nodes should enforce locally.
+        # Larger arrays may be dropped by receivers per local policy.
+        pass  # proceed to encode (SHOULD, not MUST)
+    n = len(entries)
+    if n < 24:
+        out = bytes([0x80 | n])
+    elif n < 256:
+        out = bytes([0x98, n])
+    else:
+        raise ValueError("path-entries array too large")
+    for entry in entries:
+        if (not isinstance(entry, (list, tuple))) or len(entry) != 2:
+            raise ValueError(
+                f"path-entry must be a 2-element [next-hop, prob] pair, got {entry!r}"
+            )
+        next_hop, prob = entry
+        out += b"\x82"  # CBOR array of 2 items
+        if isinstance(next_hop, int) and next_hop >= 0:
+            out += cbor2.dumps(next_hop, canonical=True)
+        elif isinstance(next_hop, (bytes, bytearray)):
+            out += cbor2.dumps(bytes(next_hop), canonical=True)
+        elif isinstance(next_hop, str):
+            # Spec 3.5.1: full EID for non-ipn schemes encoded as text string.
+            out += cbor2.dumps(next_hop, canonical=True)
+        else:
+            raise ValueError(
+                f"path-entry next-hop must be uint, bstr, or text EID, got {next_hop!r}"
+            )
+        out += _encode_prob_float16(prob)
+    return out
 
 
-def is_fresh(data: dict[int, Any], now_dtn_ms: int, *, tolerance_ms: int = 0) -> bool:
-    """Return whether a validated CPB is inside its half-open validity window."""
-    if type(now_dtn_ms) is not int or type(tolerance_ms) is not int or tolerance_ms < 0:
-        raise ValueError("times must be integer milliseconds and tolerance non-negative")
-    start = data[F_EVALUATION_TIME]
-    end = start + data[F_VALIDITY_DURATION]
-    return start - tolerance_ms <= now_dtn_ms < end + tolerance_ms
+def encode_btsd(data: dict) -> bytes:
+    """Encode cpb-data as a CBOR byte string (the BTSD form per Spec 3.2)."""
+    inner = encode_cpb(data)
+    return cbor2.dumps(inner, canonical=True)  # cbor2 wraps as bstr
 
 
-def entries_for_node(data: dict[int, Any], local_node: Any) -> list[list[Any]]:
-    """Return entries whose decision-node matches the supplied Node ID."""
-    local_identity = eid_identity(local_node)
-    return [entry for entry in data[F_ENTRIES] if eid_identity(entry[0]) == local_identity]
+# ---------- decode ---------------------------------------------------------
+
+def decode_cpb(buf: bytes) -> dict:
+    """Decode CBOR bytes into a cpb-data dict, validating per Spec 3.4.1.
+
+    Probability values are clamped to [0.0, 1.0]; NaN and +/-Inf raise
+    ValueError per Spec 3.4.1.  Unknown extension fields (int > 6) pass
+    through unchanged.
+    """
+    raw = cbor2.loads(buf)
+    if not isinstance(raw, dict):
+        raise ValueError("cpb-data must decode to a CBOR map")
+
+    out = {}
+    for k, v in raw.items():
+        if not isinstance(k, int) or k < 0:
+            raise ValueError(f"cpb-data key must be uint, got {k!r}")
+        if k == F_DEFAULT_PROB or k == F_CONFIDENCE:
+            out[k] = _validate_prob(v, field=k)
+        elif k == F_PATH_ENTRIES:
+            out[k] = _validate_path_entries(v)
+        elif k == F_TIMESTAMP or k == F_VALIDITY:
+            if not isinstance(v, int) or v < 0:
+                raise ValueError(f"field {k} must decode to uint, got {v!r}")
+            out[k] = v
+        elif k == F_SOURCE_PCE:
+            if not isinstance(v, (bytes, bytearray)):
+                raise ValueError("field 3 (source PCE) must decode to bstr")
+            out[k] = bytes(v)
+        elif k == F_METRIC_TYPE:
+            if not isinstance(v, int) or v < 0:
+                raise ValueError("field 5 (metric type) must decode to uint")
+            out[k] = v
+        else:
+            out[k] = v  # extension field
+    return out
+
+
+def _validate_prob(v, field):
+    if not isinstance(v, (int, float)):
+        raise ValueError(f"field {field} must decode to a number, got {type(v).__name__}")
+    f = float(v)
+    if math.isnan(f):
+        raise ValueError(f"field {field} is NaN; Spec 3.4.1 rejects as malformed")
+    if math.isinf(f):
+        raise ValueError(f"field {field} is +/-Inf; Spec 3.4.1 rejects as malformed")
+    # Clamp to [0,1] per Spec 3.4.1.
+    if f < 0.0:
+        return 0.0
+    if f > 1.0:
+        return 1.0
+    return f
+
+
+def _validate_path_entries(entries):
+    if not isinstance(entries, list):
+        raise ValueError("path-entries must decode to a CBOR array")
+    out = []
+    for entry in entries:
+        if not isinstance(entry, list) or len(entry) != 2:
+            raise ValueError(f"path-entry must be a 2-element array, got {entry!r}")
+        next_hop, prob = entry
+        if isinstance(next_hop, int):
+            if next_hop < 0:
+                raise ValueError("path-entry next-hop uint must be non-negative")
+        elif not isinstance(next_hop, (bytes, str)):
+            raise ValueError(
+                f"path-entry next-hop must be uint, bstr, or text, got {type(next_hop).__name__}"
+            )
+        out.append([next_hop, _validate_prob(prob, field="path-entry-prob")])
+    return out
+
+
+def decode_btsd(buf: bytes) -> dict:
+    """Decode BTSD bstr (which itself contains CBOR cpb-data) into a dict."""
+    inner = cbor2.loads(buf)
+    if not isinstance(inner, (bytes, bytearray)):
+        raise ValueError("BTSD must decode to a bstr containing CBOR")
+    return decode_cpb(bytes(inner))

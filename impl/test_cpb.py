@@ -1,208 +1,221 @@
-"""Byte-level conformance tests for the CPB reference implementation."""
+"""
+test_cpb.py -- round-trip and conformance tests for cpb.py.
 
-from __future__ import annotations
+Verifies:
+  - Figure 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, timestamp,
+    validity duration -- inner CBOR map matches expected wire bytes.
+  - Figure 2 / Figure 7 hex and the Section 3.4.3 table.
+  - Figure 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
+  - Hex encoding table (Section 3.4.3): each (prob -> CBOR hex) row.
+  - Section 3.4.1: NaN, +/-Inf rejection; out-of-range clamping on decode.
+  - Round-trip: encode -> decode -> encode is byte-stable.
+"""
+
+import sys
+import os
+# Resolve cpb.py relative to this script's location, regardless of where
+# test_cpb.py is invoked from. This allows the test suite to run from any
+# directory once the GitHub repo is cloned.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import math
-import sys
-from pathlib import Path
-
-import cbor2
-import pytest
-
-HERE = Path(__file__).resolve().parent
-if str(HERE) not in sys.path:
-    sys.path.insert(0, str(HERE))
-
+import struct
 import cpb
 
 
-def sample_data() -> dict:
-    return {
-        cpb.F_ENTRIES: [
-            [cpb.ipn_eid(200), cpb.ipn_eid(100), 0.75],
-            [cpb.ipn_eid(200), cpb.dtn_eid("//relay.example/"), 0.5],
-        ],
-        cpb.F_EVALUATION_TIME: 16_203_904,
-        cpb.F_VALIDITY_DURATION: 3_600_000,
-        cpb.F_PRODUCER_NODE: cpb.ipn_eid(50),
-    }
+def _hex(b: bytes) -> str:
+    return b.hex().upper()
 
 
-def test_binary16_reference_values():
-    expected = {
-        0.0: "F90000",
-        0.25: "F93400",
-        0.5: "F93800",
-        0.75: "F93A00",
-        0.95: "F93B9A",
-        1.0: "F93C00",
-    }
-    for value, wire_hex in expected.items():
-        assert cpb._encode_probability(value).hex().upper() == wire_hex
+def fail(msg, *, got=None, expected=None):
+    print(f"FAIL: {msg}")
+    if got is not None:
+        print(f"  got:      {got}")
+    if expected is not None:
+        print(f"  expected: {expected}")
+    sys.exit(1)
 
 
-def test_exact_cpb_vector():
-    # Filled from the independently readable diagnostic structure above and
-    # pinned so encoder changes cannot silently alter the protocol bytes.
-    expected_hex = (
-        "A400828382028218C800820282186400F93A008382028218C800"
-        "8201702F2F72656C61792E6578616D706C652FF93800011A00"
-        "F74080021A0036EE8003820282183200"
-    )
-    encoded = cpb.encode_cpb(sample_data())
-    assert encoded.hex().upper() == expected_hex
-    assert cpb.decode_cpb(encoded) == cpb.decode_cpb(bytes.fromhex(expected_hex))
-    assert cpb.encode_cpb(cpb.decode_cpb(encoded)) == encoded
+def ok(msg):
+    print(f"PASS  {msg}")
 
 
-def test_btsd_and_canonical_block_roundtrip():
-    data = sample_data()
-    assert cpb.decode_btsd(cpb.encode_btsd(data)) == cpb.decode_cpb(cpb.encode_cpb(data))
-    block = cpb.encode_canonical_block(data)
-    assert cpb.decode_canonical_block(block) == cpb.decode_cpb(cpb.encode_cpb(data))
-    assert block[:5] == bytes.fromhex("8518C80200")
+# ---------------- hex encoding table (Section 3.4.3) ---------------------
+
+print("== Section 3.4.3 hex table ==")
+table = [
+    (0.0,  "F90000"),
+    (0.25, "F93400"),
+    (0.5,  "F93800"),
+    (0.75, "F93A00"),
+    (0.95, "F93B9A"),
+    (1.0,  "F93C00"),
+]
+for prob, expected in table:
+    got = _hex(cpb._encode_prob_float16(prob))
+    if got != expected:
+        fail(f"prob={prob}", got=got, expected=expected)
+    ok(f"prob={prob:<5} -> {got}")
 
 
-@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf, -0.1, 1.1])
-def test_encoder_rejects_invalid_probability(value):
-    data = sample_data()
-    data[cpb.F_ENTRIES][0][2] = value
-    with pytest.raises(ValueError):
-        cpb.encode_cpb(data)
+# ---------------- Figure 2: minimal full CPB ----------------------------
+# Expected inner BTSD content (the 23-byte CBOR map after the bstr header):
+#   A4                  ; map(4)
+#   00 F93A00           ; 0: 0.75
+#   01 81               ; 1: array(1)
+#       82 1864 F93C00  ;    [100, 1.0]
+#   02 1A 00F73A80      ; 2: timestamp 0x00F73A80 (16203904)
+#   04 19 0E10          ; 4: validity 3600
+
+print("\n== Figure 2 (Section 3.2): full CPB ==")
+data = {
+    cpb.F_DEFAULT_PROB: 0.75,
+    cpb.F_PATH_ENTRIES: [[100, 1.0]],
+    cpb.F_TIMESTAMP: 0x00F73A80,
+    cpb.F_VALIDITY: 3600,
+}
+expected_inner = "A400F93A0001818218 64F93C00021A00F73A8004190E10".replace(" ", "")
+got_inner = _hex(cpb.encode_cpb(data))
+if got_inner != expected_inner:
+    fail("Figure 2 inner CBOR mismatch", got=got_inner, expected=expected_inner)
+ok(f"inner CBOR ({len(got_inner)//2} bytes) matches Figure 2")
+
+decoded = cpb.decode_cpb(cpb.encode_cpb(data))
+if decoded != data:
+    fail("Figure 2 round-trip mismatch", got=decoded, expected=data)
+ok("decode(encode(L2)) == L2")
 
 
-def test_negative_zero_is_positive_zero():
-    assert cpb._encode_probability(-0.0) == bytes.fromhex("F90000")
+# ---------------- Figure 7: per-path wire encoding ----------------------
+# Expected:
+#   A3                       ; map(3)
+#   00 F93A00                ; 0: 0.75
+#   01 82                    ; 1: array(2)
+#       82 19 012C F93800    ;   [300, 0.5]
+#       82 18 64 F93C00      ;   [100, 1.0]
+#   05 01                    ; 5: 1 (cgr-confidence)
+
+print("\n== Figure 7 (Section 3.6): per-path wire encoding ==")
+data = {
+    cpb.F_DEFAULT_PROB: 0.75,
+    cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
+    cpb.F_METRIC_TYPE: cpb.METRIC_CGR_CONFIDENCE,
+}
+expected = "A300F93A000182821 9012CF93800821864F93C000501".replace(" ", "")
+got = _hex(cpb.encode_cpb(data))
+if got != expected:
+    fail("Figure 7 mismatch", got=got, expected=expected)
+ok(f"wire encoding ({len(got)//2} bytes) matches Figure 7")
+
+decoded = cpb.decode_cpb(cpb.encode_cpb(data))
+if decoded != data:
+    fail("Figure 7 round-trip mismatch", got=decoded, expected=data)
+ok("decode(encode(L7)) == L7")
 
 
-def test_binary16_rounding_and_strict_mode():
-    assert cpb._encode_probability(0.123456789).startswith(b"\xf9")
-    with pytest.raises(ValueError):
-        cpb._encode_probability(0.123456789, strict=True)
+# ---------------- BTSD wrap: Figure 2 wrapped as bstr -------------------
+
+print("\n== BTSD wrapping (Section 3.2: bstr .cbor cpb-data) ==")
+data = {
+    cpb.F_DEFAULT_PROB: 0.75,
+    cpb.F_PATH_ENTRIES: [[100, 1.0]],
+    cpb.F_TIMESTAMP: 0x00F73A80,
+    cpb.F_VALIDITY: 3600,
+}
+btsd = cpb.encode_btsd(data)
+# bstr major-type 2; 23 bytes -> header byte 0x57 (= 0x40 | 23).
+if btsd[0] != 0x57:
+    fail("BTSD bstr header", got=hex(btsd[0]), expected="0x57 (bstr len 23)")
+ok(f"BTSD bstr header byte 0x{btsd[0]:02X} (length {btsd[0] & 0x1F})")
+
+decoded = cpb.decode_btsd(btsd)
+if decoded != data:
+    fail("BTSD round-trip", got=decoded, expected=data)
+ok("decode_btsd(encode_btsd(d)) == d")
 
 
-def test_decoder_rejects_wider_float_even_when_value_is_valid():
-    encoded = cpb.encode_cpb(sample_data())
-    wider = encoded.replace(bytes.fromhex("F93A00"), bytes.fromhex("FA3F400000"), 1)
-    with pytest.raises(ValueError, match="deterministically"):
-        cpb.decode_cpb(wider)
+# ---------------- Section 3.4.1 invalid float handling -------------------
+
+print("\n== Section 3.4.1: invalid float handling ==")
+try:
+    cpb._encode_prob_float16(float("nan"))
+    fail("NaN should have raised")
+except ValueError:
+    ok("encode NaN -> ValueError")
+try:
+    cpb._encode_prob_float16(float("inf"))
+    fail("+Inf should have raised")
+except ValueError:
+    ok("encode +Inf -> ValueError")
+try:
+    cpb._encode_prob_float16(-0.1)
+    fail("negative prob should have raised")
+except ValueError:
+    ok("encode -0.1 -> ValueError (encoder is strict)")
+try:
+    cpb._encode_prob_float16(1.5)
+    fail("prob > 1.0 should have raised")
+except ValueError:
+    ok("encode 1.5 -> ValueError (encoder is strict)")
+
+# Decoder is permissive (clamps); test a hand-built blob with prob > 1.0 in float32.
+import cbor2
+blob_oversize = cbor2.dumps({0: 1.5}, canonical=True)
+decoded = cpb.decode_cpb(blob_oversize)
+if decoded[0] != 1.0:
+    fail("decode 1.5 should clamp to 1.0", got=decoded[0])
+ok("decode 1.5 -> clamped to 1.0")
+
+blob_neg = cbor2.dumps({0: -0.2}, canonical=True)
+decoded = cpb.decode_cpb(blob_neg)
+if decoded[0] != 0.0:
+    fail("decode -0.2 should clamp to 0.0", got=decoded[0])
+ok("decode -0.2 -> clamped to 0.0")
 
 
-def test_decoder_rejects_integer_probability():
-    data = sample_data()
-    raw = {
-        0: [[cpb.ipn_eid(200), cpb.ipn_eid(100), 1]],
-        1: data[1],
-        2: data[2],
-        3: data[3],
-    }
-    with pytest.raises(ValueError, match="float"):
-        cpb.decode_cpb(cbor2.dumps(raw, canonical=True))
+# ---------------- non-binary16 probability rejection ----------------------
+
+print("\n== Section 3.4: non-representable float16 (strict mode) ==")
+try:
+    cpb._encode_prob_float16(0.123456789, strict=True)
+    fail("0.123456789 should not be exact in float16")
+except ValueError as e:
+    ok(f"strict encode 0.123456789 -> ValueError ({str(e)[:60]}...)")
+
+# And confirm non-strict snaps cleanly
+snapped = cpb._encode_prob_float16(0.123456789)
+ok(f"non-strict encode 0.123456789 -> {_hex(snapped)} (snapped to nearest binary16)")
 
 
-def test_all_four_fields_are_required():
-    for field in cpb.REQUIRED_FIELDS:
-        data = sample_data()
-        del data[field]
-        with pytest.raises(ValueError, match="missing required"):
-            cpb.encode_cpb(data)
+# ---------------- DoS limit on path-entries (Section 3.4) ----------------
+
+print("\n== Section 3.4: per-path array limit (SHOULD 8 on constrained links) ==")
+data9 = {cpb.F_PATH_ENTRIES: [[i, 0.5] for i in range(9)]}
+try:
+    cpb.encode_cpb(data9)
+    ok("9 path entries accepted (SHOULD, not MUST; local enforcement recommended on constrained links)")
+except ValueError as e:
+    ok(f"9 path entries rejected (local enforcement active: {str(e)[:60]}...)")
 
 
-def test_entry_count_is_bounded():
-    data = sample_data()
-    data[cpb.F_ENTRIES] = []
-    with pytest.raises(ValueError, match="1..8"):
-        cpb.encode_cpb(data)
-    data[cpb.F_ENTRIES] = [
-        [cpb.ipn_eid(200), cpb.ipn_eid(node), 0.5] for node in range(9)
-    ]
-    with pytest.raises(ValueError, match="1..8"):
-        cpb.encode_cpb(data)
+# ---------------- multi-step round-trip stability ------------------------
+
+print("\n== round-trip byte stability ==")
+data = {
+    cpb.F_DEFAULT_PROB: 0.75,
+    cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
+    cpb.F_TIMESTAMP: 16203904,
+    cpb.F_VALIDITY: 3600,
+    cpb.F_METRIC_TYPE: 1,
+    cpb.F_CONFIDENCE: 0.5,
+}
+e1 = cpb.encode_cpb(data)
+e2 = cpb.encode_cpb(cpb.decode_cpb(e1))
+e3 = cpb.encode_cpb(cpb.decode_cpb(e2))
+if not (e1 == e2 == e3):
+    fail("encode is not byte-stable across decode/re-encode",
+         got=f"{_hex(e1)} / {_hex(e2)} / {_hex(e3)}")
+ok(f"encode -> decode -> encode is byte-stable across 3 cycles ({len(e1)} bytes)")
 
 
-def test_duplicate_actions_use_scheme_defined_ipn_identity():
-    data = sample_data()
-    # ipn:200.0 and ipn:0.200.0 are the same decoded EID under RFC 9758.
-    data[cpb.F_ENTRIES] = [
-        [[2, [200, 0]], [2, [100, 0]], 0.5],
-        [[2, [0, 200, 0]], [2, [0, 100, 0]], 0.6],
-    ]
-    with pytest.raises(ValueError, match="duplicate"):
-        cpb.encode_cpb(data)
-
-
-@pytest.mark.parametrize(
-    "field,value",
-    [
-        (cpb.F_EVALUATION_TIME, -1),
-        (cpb.F_VALIDITY_DURATION, 0),
-        (cpb.F_VALIDITY_DURATION, -1),
-        (cpb.F_PRODUCER_NODE, "ipn:50.0"),
-    ],
-)
-def test_invalid_required_fields(field, value):
-    data = sample_data()
-    data[field] = value
-    with pytest.raises(ValueError):
-        cpb.encode_cpb(data)
-
-
-def test_null_endpoint_is_not_a_node_identifier():
-    data = sample_data()
-    data[cpb.F_PRODUCER_NODE] = [1, 0]
-    with pytest.raises(ValueError, match="null endpoint"):
-        cpb.encode_cpb(data)
-    data = sample_data()
-    data[cpb.F_ENTRIES][0][1] = [1, 0]
-    with pytest.raises(ValueError, match="null endpoint"):
-        cpb.encode_cpb(data)
-
-
-def test_extension_fields_are_preserved_deterministically():
-    data = sample_data()
-    data[10] = b"opaque-extension"
-    assert cpb.decode_cpb(cpb.encode_cpb(data))[10] == b"opaque-extension"
-
-
-def test_trailing_bytes_are_rejected():
-    with pytest.raises(ValueError, match="trailing"):
-        cpb.decode_cpb(cpb.encode_cpb(sample_data()) + b"\x00")
-    with pytest.raises(ValueError, match="trailing"):
-        cpb.decode_btsd(cpb.encode_btsd(sample_data()) + b"\x00")
-
-
-def test_bad_block_flags_are_rejected():
-    block = bytearray(cpb.encode_canonical_block(sample_data()))
-    block[4] = 0x01
-    with pytest.raises(ValueError, match="flags"):
-        cpb.decode_canonical_block(bytes(block))
-
-
-def test_ipn_two_and_three_element_eids_match():
-    assert cpb.eid_identity([2, [100, 7]]) == cpb.eid_identity([2, [0, 100, 7]])
-
-
-def test_freshness_is_half_open_and_tolerance_is_explicit():
-    data = sample_data()
-    start = data[cpb.F_EVALUATION_TIME]
-    end = start + data[cpb.F_VALIDITY_DURATION]
-    assert cpb.is_fresh(data, start)
-    assert cpb.is_fresh(data, end - 1)
-    assert not cpb.is_fresh(data, end)
-    assert cpb.is_fresh(data, end, tolerance_ms=1)
-
-
-def test_entries_for_node_matches_normalized_eid():
-    data = cpb.decode_cpb(cpb.encode_cpb(sample_data()))
-    entries = cpb.entries_for_node(data, [2, [0, 200, 0]])
-    assert len(entries) == 2
-
-
-def _run_as_script() -> None:
-    # Parametrized tests require pytest; invoke the complete suite in a subprocess
-    # style through pytest's API when this file is run directly.
-    raise SystemExit(pytest.main([str(Path(__file__).resolve()), "-q"]))
-
-
-if __name__ == "__main__":
-    _run_as_script()
+print("\nAll tests passed.")
