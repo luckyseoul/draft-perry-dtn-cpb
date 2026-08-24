@@ -531,11 +531,6 @@ A400828382028218C800820282186400F93A008382028218C8008201702F2F
     <section anchor="implementation-status" removeInRFC="true">
       <name>Implementation Status</name>
       <t>
-        This section records implementation information in the format
-        encouraged by <xref target="RFC7942"/> and is to be removed before
-        publication as an RFC.
-      </t>
-      <t>
         The author maintains a Python reference encoder and decoder at
         <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb"/>.
         It implements deterministic binary16 encoding, EID-preserving entries,
@@ -563,7 +558,6 @@ A400828382028218C800820282186400F93A008382028218C8008201702F2F
       <references>
         <name>Informative References</name>
         <reference anchor="RFC6693" target="https://www.rfc-editor.org/info/rfc6693"><front><title>Probabilistic Routing Protocol for Intermittently Connected Networks</title><author initials="A." surname="Lindgren"/><author initials="A." surname="Doria"/><author initials="E." surname="Davies"/><author initials="S." surname="Grasic"/><date year="2012" month="August"/></front><seriesInfo name="RFC" value="6693"/></reference>
-        <reference anchor="RFC7942" target="https://www.rfc-editor.org/info/rfc7942"><front><title>Improving Awareness of Running Code: The Implementation Status Section</title><author initials="Y." surname="Sheffer"/><author initials="A." surname="Farrel"/><date year="2016" month="July"/></front><seriesInfo name="BCP" value="205"/><seriesInfo name="RFC" value="7942"/></reference>
         <reference anchor="I-D.ietf-dtn-bp-sand" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand"><front><title>Bundle Protocol Secure Advertisement and Neighborhood Discovery</title><author initials="B." surname="Sipos"/><author initials="J." surname="Deaton"/><date year="2026" month="July"/></front><seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bp-sand-03"/></reference>
       </references>
     </references>
