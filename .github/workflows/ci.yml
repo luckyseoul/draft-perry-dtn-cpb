@@ -56,8 +56,13 @@ jobs:
 
       - name: Install and run CDDL validator
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cddl
+          curl -L --fail --silent --show-error \
+            https://github.com/anweiss/cddl/releases/download/v0.10.6/cddl-linux-amd64.tar.gz \
+            -o /tmp/cddl-linux-amd64.tar.gz
+          echo "80d23a95cfcf7aba998f45d611f46bd2abf2898f0ca5a0aea375217a5ff548af  /tmp/cddl-linux-amd64.tar.gz" \
+            | sha256sum --check
+          tar -xzf /tmp/cddl-linux-amd64.tar.gz -C /tmp
+          sudo install -m 0755 /tmp/cddl-linux-amd64 /usr/local/bin/cddl
           cddl compile-cddl --cddl impl/cpb.cddl
 
       - name: Build text and HTML from XML

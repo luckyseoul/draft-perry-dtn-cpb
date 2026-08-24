@@ -1,8 +1,10 @@
 LIBDIR := lib
 TEXT_PAGINATION := true
 
+ifneq (,$(wildcard $(LIBDIR)/main.mk))
 ifeq ($(shell test -x $(LIBDIR)/.venv/bin/pip 2>/dev/null && echo ok),)
   $(shell ./scripts/ensure-template-venv.sh >/dev/null 2>&1 || true)
+endif
 endif
 
 -include $(LIBDIR)/main.mk
