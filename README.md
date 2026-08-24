@@ -1,9 +1,9 @@
 # Bundle Protocol Contact Probability Block
 
-The Contact Probability Block (CPB) is a BPv7 extension block for carrying a
-bundle-conditioned estimate of forwarding success.  Each entry identifies a
-decision node, a candidate next hop, and the probability of timely delivery
-if that forwarding action is selected.
+The Contact Probability Block (CPB) is a BPv7 extension block that carries
+probability metadata for a bundle. The specification defines a default
+probability, optional per-next-hop entries, a timestamp, a validity duration,
+and a metric-type tag.
 
 ## Specification
 
@@ -24,12 +24,16 @@ This requires `xml2rfc` and the standard build dependencies.
 
 ## Reference Implementation
 
-The `impl/` directory contains the CPB CDDL, Python encoder and decoder, and
-conformance tests.
+The `impl/` directory contains the standalone CDDL validation schema, Python
+encoder/decoder, and deterministic format and policy tests. These checks do
+not make comparative routing-performance claims.
 
 ```sh
 python3 -m pip install -e './impl[test]'
-python3 -m pytest -q impl
+python3 impl/test_cpb.py
+python3 impl/test_config1_policies.py
+python3 impl/test_sim_cpb_bridge.py
+python3 impl/test_draft_consistency.py
 make cddl
 ```
 

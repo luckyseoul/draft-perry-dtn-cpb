@@ -30,7 +30,11 @@ jobs:
           pip install -e '.[test]'
 
       - name: Run conformance and repository tests
-        run: python3 -m pytest -q impl
+        run: |
+          python3 impl/test_cpb.py
+          python3 impl/test_config1_policies.py
+          python3 impl/test_sim_cpb_bridge.py
+          python3 impl/test_draft_consistency.py
 
       - name: Verify packaging import
         run: python3 -c "import cpb; print('cpb package import OK')"

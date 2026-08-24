@@ -1,0 +1,37 @@
+/* Appended after xml2rfc.css by the Makefile PDF target. */
+
+/* Stock xml2rfc.css sets #identifiers dt { width: 3em }, which collapses
+   the page-1 metadata into a left pile. Match RFC 7995 / rfc9713 layout:
+   label column, then values. */
+#identifiers {
+  display: grid;
+  grid-template-columns: 9.5em 1fr;
+  column-gap: 1.25em;
+  row-gap: 0.12em;
+  margin: 0;
+  font-size: 0.9em;
+}
+#identifiers dt {
+  width: auto;
+  max-width: none;
+  clear: none;
+  float: none;
+  margin: 0;
+  padding: 0;
+}
+#identifiers dd {
+  float: none;
+  margin: 0;
+  max-width: none;
+}
+#identifiers .author {
+  display: block;
+}
+
+/* Do not hyphenate inside fi/fl (shows up as "def i nes" in print). */
+html, body, p, li, dd, td, th, div, span, a {
+  hyphens: none !important;
+  -weasy-hyphens: none !important;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0, "dlig" 0, "hlig" 0;
+}

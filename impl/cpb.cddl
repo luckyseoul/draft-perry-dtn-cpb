@@ -1,34 +1,32 @@
-cpb-btsd = bstr .cbor cpb-data
+; Standalone copy of the CPB data schema in draft Figure "CPB Data Structure".
+; The RFC 9171 extension-block socket binding is specified in the draft and
+; intentionally omitted here because it depends on RFC 9171's complete schema.
 
 cpb-data = {
-  0: entries,
-  1: evaluation-time,
-  2: validity-duration,
-  3: producer-node,
-  * (uint .ge 4) => any
+    ? 0: probability,         ; Default/overall probability
+    ? 1: [* path-entry],      ; Per-path entries
+    ? 2: uint,                ; Timestamp (CPB epoch seconds)
+    ? 3: bstr,                ; Source PCE identifier (optional)
+    ? 4: uint,                ; Validity duration (seconds, TTL)
+    ? 5: metric-type,         ; Metric type identifier
+    ? 6: probability,         ; Confidence/variance estimate
+    ? 7: uint,                ; Format version (1 = this specification)
+    * (int .gt 7) => any      ; Extensibility (future fields)
 }
 
-entries = [1*8 forwarding-entry]
+probability = float           ; See the draft's CBOR Encoding section
 
-forwarding-entry = [
-  decision-node: eid,
-  candidate-next-hop: eid,
-  forwarding-success-probability: probability
+path-entry = [
+    next-hop: eid-reference,
+    probability: float
 ]
 
-evaluation-time = uint
-validity-duration = uint .gt 0
-producer-node = eid
-probability = float16
+eid-reference = uint / tstr
 
-eid = $eid .within eid-structure
-eid-structure = [uri-code: uint, scheme-specific-part: any]
-
-$eid /= [1, tstr / 0]
-$eid /= [2, ipn-ssp2 / ipn-ssp3]
-ipn-ssp2 = [fqnn: uint, service-number: uint]
-ipn-ssp3 = [
-  allocator-identifier: uint .lt 4294967296,
-  node-number: uint .lt 4294967296,
-  service-number: uint
-]
+metric-type = &(
+    prophet-dp: 0,
+    cgr-confidence: 1,
+    maxprop-cost: 2,
+    rapid-utility: 3,
+    generic: 4,
+) / uint
