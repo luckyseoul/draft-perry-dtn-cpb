@@ -3,10 +3,8 @@
 This is the working area for the individual Internet-Draft, "Bundle Protocol
 Contact Probability Block".
 
-* [Editor's Copy](https://luckyseoul.github.io/draft-perry-dtn-cpb/#go.draft-perry-dtn-cpb.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-perry-dtn-cpb)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-perry-dtn-cpb)
-* [Compare Editor's Copy to Individual Draft](https://luckyseoul.github.io/draft-perry-dtn-cpb/#go.draft-perry-dtn-cpb.diff)
+The normative source is
+[`draft-perry-dtn-cpb.xml`](draft-perry-dtn-cpb.xml).
 
 ## Contributing
 

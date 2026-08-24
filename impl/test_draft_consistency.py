@@ -75,11 +75,9 @@ def test_iana_request():
     assert "creates no metric-type registry" in xml
 
 
-def test_repository_links():
+def test_repository_source_link():
     readme = _text(README)
-    assert "Editor's Copy" in readme
-    assert "Datatracker Page" in readme
-    assert "Compare Editor's Copy to Individual Draft" in readme
+    assert "draft-perry-dtn-cpb.xml" in readme
 
 
 def test_sand_relationship():
