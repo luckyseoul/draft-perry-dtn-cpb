@@ -19,6 +19,8 @@ Gemfile.lock
 package-lock.json
 report.xml
 !requirements.txt
+!draft-perry-dtn-cpb.html
+!draft-perry-dtn-cpb.txt
 
 # Python cache
 __pycache__/
