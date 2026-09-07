@@ -16,6 +16,7 @@ package in your PYTHONPATH).
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Allow `python3 examples/simple_usage.py` from the repo root without install.
@@ -29,15 +30,17 @@ import cpb  # noqa: E402
 def main() -> None:
     print("=== CPB simple usage example ===\n")
 
-    # 1. Build a realistic CPB (default probability + two path entries)
-    # This is similar in spirit to Figure 2 / Figure 7 in the draft.
+    # 1. Build a CPB (default probability + two path entries).
+    # An actual consumer also needs the shared transmitter/contact-window
+    # context for metric 1; this example demonstrates wire handling only.
+    epoch = datetime(2000, 1, 1, tzinfo=timezone.utc)
     data = {
         cpb.F_DEFAULT_PROB: 0.82,
         cpb.F_PATH_ENTRIES: [
             [300, 0.91],   # next-hop 300 (e.g. an orbiter) with high confidence
-            [b"\x0a\x0b", 0.67],  # next-hop as bytes (EID or node number)
+            [100, 0.67],   # default-allocator IPN FQNN 100
         ],
-        cpb.F_TIMESTAMP: 16203904,
+        cpb.F_TIMESTAMP: int((datetime.now(timezone.utc) - epoch).total_seconds()),
         cpb.F_VALIDITY: 3600,          # valid for one hour
         cpb.F_METRIC_TYPE: cpb.METRIC_CGR_CONFIDENCE,
         cpb.F_CONFIDENCE: 0.75,        # confidence in the probabilities themselves
