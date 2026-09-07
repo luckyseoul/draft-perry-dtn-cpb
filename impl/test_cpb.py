@@ -7,7 +7,7 @@ Verifies:
   - Figure 2 / Figure 7 hex and the Section 3.4.3 table.
   - Figure 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
   - Hex encoding table (Section 3.4.3): each (prob -> CBOR hex) row.
-  - Section 3.4.1: NaN, +/-Inf rejection; out-of-range clamping on decode.
+  - Section 3.4.1: NaN, +/-Inf rejection; out-of-range rejection on decode.
   - Round-trip: encode -> decode -> encode is byte-stable.
 """
 
@@ -78,14 +78,14 @@ for prob, expected in table:
 #   00 F93A00           ; 0: 0.75
 #   01 81               ; 1: array(1)
 #       82 1864 F93C00  ;    [100, 1.0]
-#   02 1A 00F73A80      ; 2: timestamp 0x00F73A80 (16203904)
+#   02 1A 00F73A80      ; 2: timestamp 0x322EC0C0 (841924800)
 #   04 19 0E10          ; 4: validity 3600
 
 print("\n== Figure 2 (Section 3.2): full CPB ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
     cpb.F_PATH_ENTRIES: [[100, 1.0]],
-    cpb.F_TIMESTAMP: 0x00F73A80,
+    cpb.F_TIMESTAMP: 0x322EC0C0,
     cpb.F_VALIDITY: 3600,
 }
 figure2_wire = draft_hex("fig-listing-2")
@@ -148,7 +148,7 @@ print("\n== BTSD wrapping (Section 3.2: bstr .cbor cpb-data) ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
     cpb.F_PATH_ENTRIES: [[100, 1.0]],
-    cpb.F_TIMESTAMP: 0x00F73A80,
+    cpb.F_TIMESTAMP: 0x322EC0C0,
     cpb.F_VALIDITY: 3600,
 }
 btsd = cpb.encode_btsd(data)
@@ -187,18 +187,20 @@ try:
 except ValueError:
     ok("encode 1.5 -> ValueError (encoder is strict)")
 
-# Decoder is permissive (clamps); test a hand-built blob with prob > 1.0.
+# Decoder rejects out-of-range finite values (no clamp-to-certainty).
 blob_oversize = cbor2.dumps({0: 1.5}, canonical=True)
-decoded = cpb.decode_cpb(blob_oversize)
-if decoded[0] != 1.0:
-    fail("decode 1.5 should clamp to 1.0", got=decoded[0])
-ok("decode 1.5 -> clamped to 1.0")
+try:
+    cpb.decode_cpb(blob_oversize)
+    fail("decode 1.5 should have raised")
+except ValueError:
+    ok("decode 1.5 -> ValueError (rejected)")
 
 blob_neg = cbor2.dumps({0: -0.2}, canonical=True)
-decoded = cpb.decode_cpb(blob_neg)
-if decoded[0] != 0.0:
-    fail("decode -0.2 should clamp to 0.0", got=decoded[0])
-ok("decode -0.2 -> clamped to 0.0")
+try:
+    cpb.decode_cpb(blob_neg)
+    fail("decode -0.2 should have raised")
+except ValueError:
+    ok("decode -0.2 -> ValueError (rejected)")
 
 
 # ---------------- non-binary16 probability rejection ----------------------
@@ -232,7 +234,7 @@ print("\n== round-trip byte stability ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
     cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
-    cpb.F_TIMESTAMP: 16203904,
+    cpb.F_TIMESTAMP: 841924800,
     cpb.F_VALIDITY: 3600,
     cpb.F_METRIC_TYPE: 1,
     cpb.F_CONFIDENCE: 0.5,
