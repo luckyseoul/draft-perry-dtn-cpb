@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="704" viewBox="0 0 1200 704" role="img" aria-labelledby="title desc">
+  <title id="title">CPB data map: CBOR fields 0 through 7</title>
+  <desc id="desc">Eight fields, including metric-scoped probability, unique next hops, timestamp, claimed producer identity, validity requiring a timestamp, metric type, profile-defined confidence, and version.</desc>
+  <style>
+    text { font-family: sans-serif; }
+    .heading { font-size: 26px; font-weight: 700; fill: #17191c; }
+    .name { font-size: 21px; font-weight: 700; fill: #242629; }
+    .detail { font-size: 17px; fill: #555b64; }
+    .key { font-size: 29px; font-weight: 700; fill: white; text-anchor: middle; }
+    .label { fill: #1971e6; stroke: #1558b0; stroke-width: 2; }
+    .cell { fill: #f7f8fa; stroke: #d9dce1; stroke-width: 2; }
+  </style>
+  <rect width="1200" height="704" fill="white"/>
+  <text class="heading" x="600" y="39" text-anchor="middle">CPB data map (CBOR fields 0–7)</text>
+  <defs><g id="row"><rect class="label" x="30" width="120" height="70" rx="6"/><rect class="cell" x="160" width="1010" height="70" rx="6"/></g></defs>
+  <g transform="translate(0 75)"><use href="#row"/><text class="key" x="90" y="46">0</text><text class="name" x="184" y="29">Default probability</text><text class="detail" x="184" y="54">Subject determined by the metric and shared applicability context</text></g>
+  <g transform="translate(0 151)"><use href="#row"/><text class="key" x="90" y="46">1</text><text class="name" x="184" y="29">Per-path array</text><text class="detail" x="184" y="54">Unique normalized next hops; SHOULD NOT exceed 8 on constrained links</text></g>
+  <g transform="translate(0 227)"><use href="#row"/><text class="key" x="90" y="46">2</text><text class="name" x="184" y="29">Timestamp</text><text class="detail" x="184" y="54">Whole seconds since 2000-01-01 00:00:00 UTC</text></g>
+  <g transform="translate(0 303)"><use href="#row"/><text class="key" x="90" y="46">3</text><text class="name" x="184" y="29">Claimed producer identifier</text><text class="detail" x="184" y="54">Optional claim; authority requires authentication and authorization</text></g>
+  <g transform="translate(0 379)"><use href="#row"/><text class="key" x="90" y="46">4</text><text class="name" x="184" y="29">Validity duration (TTL)</text><text class="detail" x="184" y="54">Duration in seconds; requires the timestamp in field 2</text></g>
+  <g transform="translate(0 455)"><use href="#row"/><text class="key" x="90" y="46">5</text><text class="name" x="184" y="29">Metric type</text><text class="detail" x="184" y="54">0 PRoPHET · 1 CGR · 2 MaxProp · 3 RAPID · 4 generic</text></g>
+  <g transform="translate(0 531)"><use href="#row"/><text class="key" x="90" y="46">6</text><text class="name" x="184" y="29">Confidence in the estimate</text><text class="detail" x="184" y="54">Calibration defined by the shared profile</text></g>
+  <g transform="translate(0 607)"><use href="#row"/><text class="key" x="90" y="46">7</text><text class="name" x="184" y="29">Format version</text><text class="detail" x="184" y="54">1 = this specification</text></g>
+</svg>
