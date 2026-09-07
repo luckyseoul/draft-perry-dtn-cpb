@@ -23,9 +23,8 @@
         <email>nick@perrybrandsllc.com</email>
       </address>
     </author>
-    <date year="2026" month="September" day="5"/>
-    <area>Internet</area>
-    <workgroup>Independent</workgroup>
+    <date year="2026" month="September" day="7"/>
+        <workgroup>Independent</workgroup>
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
     <keyword>BPv7</keyword>
@@ -75,9 +74,10 @@
       </t>
       <t>
         This specification defines a bundle extension block (the Contact
-        Probability Block, or CPB) for carrying probabilistic contact metadata,
-        enabling more informed routing decisions in DTNs for applications like
-        space exploration communications.
+        Probability Block, or CPB) for carrying probabilistic contact metadata
+        that routing protocols may consult in DTNs, including applications such
+        as space exploration communications. It does not report experimental
+        results or claim demonstrated routing-performance improvement.
       </t>
       <section anchor="problem-statement">
         <name>Problem Statement (IPNSIG SSI Architecture, Section 4.2)</name>
@@ -166,8 +166,11 @@
         </ul>
         <t>
           By embedding probability estimates directly in bundles as a standard
-          extension block, this specification enables all DTN routing
-          protocols to benefit from more informed forwarding decisions.
+          extension block, this specification gives DTN routing protocols an
+          optional, common transport for those estimates. Whether any given
+          protocol benefits is left to the planned experimental evaluation
+          (<xref target="experiment"/>); this document asserts no demonstrated
+          improvement.
         </t>
       </section>
       <section anchor="requirements-language">
@@ -212,7 +215,7 @@
           <dd>
             An identifier distinguishing the semantic meaning of the
             probability value (e.g., PRoPHET delivery predictability, CGR
-            contact confidence, MaxProp path reliability).
+            contact confidence, MaxProp delivery likelihood).
           </dd>
           <dt>Validity Duration</dt>
           <dd>
@@ -225,8 +228,8 @@
         <name>Notation Conventions</name>
         <t>
           This document uses three distinct notations for describing data
-          structures, following the conventions of other DTN Working Group
-          drafts:
+          structures, following the conventions of other DTN/BPv7
+          documents:
         </t>
         <dl>
           <dt>CDDL (Concise Data Definition Language)</dt>
@@ -419,7 +422,8 @@ ipn:100.1?prob=0.75
       82             ;     [node, prob]
       18 64          ;       node=100
       F93C00         ;       prob=1.0
-   02 1A 322EC0C0    ;   2: timestamp 2026-09-05 12:00:00 UTC (seconds)
+   02 1A 322EC0C0    ;   2: timestamp (seconds)
+                     ;     2026-09-05 12:00:00 UTC
    04 19 0E10        ;   4: validity=3600s
 ]]></sourcecode>
         </figure>
@@ -451,7 +455,7 @@ cpb-data = {
     ? 1: [* path-entry],      ; per-path (SHOULD limit size; Sec 3.4)
     ? 2: uint,                ; Timestamp (CPB epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
-    ? 4: uint,                ; Validity duration (seconds, TTL)
+    ? 4: uint,                ; Validity (seconds; requires field 2)
     ? 5: metric-type,         ; Metric type identifier
     ? 6: probability,         ; Profile-defined confidence
     ? 7: uint,                ; format version (1 = this spec)
@@ -1214,7 +1218,7 @@ A3                   ; map with 3 entries
           </t>
           <t>
             Each path-entry next-hop is encoded in that next-hop's own URI
-            scheme. Path-entry schemes <bcp14>NEED NOT</bcp14> match the
+            scheme. Path-entry schemes need not match the
             bundle destination EID scheme. For an IPN next-hop, the
             reference <bcp14>MUST</bcp14> be a CBOR unsigned integer encoding
             the Fully Qualified Node Number (FQNN) defined in
@@ -2167,7 +2171,7 @@ A3                   ; map with 3 entries
           </tr>
           <tr>
             <td>2</td>
-            <td>MaxProp Delivery Likelihood (inverted cost)</td>
+            <td>MaxProp Delivery Likelihood</td>
             <td>This document</td>
           </tr>
           <tr>
@@ -2502,6 +2506,7 @@ cd draft-perry-dtn-cpb
 python3 -m pip install -r impl/requirements.txt
 
 python3 impl/test_cpb.py
+python3 impl/test_cpb_validation.py
 python3 impl/test_config1_policies.py
 python3 impl/test_sim_cpb_bridge.py
 python3 impl/test_draft_consistency.py
@@ -2654,7 +2659,20 @@ cddl compile-cddl --cddl impl/cpb.cddl
         <seriesInfo name="RFC" value="9758"/>
         <seriesInfo name="DOI" value="10.17487/RFC9758"/>
       </reference>
-    </references>
+    
+        <reference anchor="RFC6693" target="https://www.rfc-editor.org/info/rfc6693">
+        <front>
+          <title>Probabilistic Routing Protocol for Intermittently Connected Networks</title>
+          <author initials="A." surname="Lindgren" fullname="A. Lindgren"/>
+          <author initials="A." surname="Doria" fullname="A. Doria"/>
+          <author initials="E." surname="Davies" fullname="E. Davies"/>
+          <author initials="S." surname="Grasic" fullname="S. Grasic"/>
+          <date year="2012" month="August"/>
+        </front>
+        <seriesInfo name="RFC" value="6693"/>
+        <seriesInfo name="DOI" value="10.17487/RFC6693"/>
+      </reference>
+      </references>
     <references>
       <name>Informative References</name>
       <reference anchor="IPNSIG2023" target="https://www.ipnsig.org/_files/ugd/d716c2_5df0d50ff8ab466380dadc75e166cfcf.pdf">
@@ -2679,18 +2697,7 @@ cddl compile-cddl --cddl impl/cpb.cddl
           </abstract>
         </front>
       </reference>
-      <reference anchor="RFC6693" target="https://www.rfc-editor.org/info/rfc6693">
-        <front>
-          <title>Probabilistic Routing Protocol for Intermittently Connected Networks</title>
-          <author initials="A." surname="Lindgren" fullname="A. Lindgren"/>
-          <author initials="A." surname="Doria" fullname="A. Doria"/>
-          <author initials="E." surname="Davies" fullname="E. Davies"/>
-          <author initials="S." surname="Grasic" fullname="S. Grasic"/>
-          <date year="2012" month="August"/>
-        </front>
-        <seriesInfo name="RFC" value="6693"/>
-        <seriesInfo name="DOI" value="10.17487/RFC6693"/>
-      </reference>
+      
       <reference anchor="RFC9675" target="https://www.rfc-editor.org/info/rfc9675">
         <front>
           <title>Delay-Tolerant Networking Management Architecture</title>
@@ -2908,6 +2915,13 @@ cddl compile-cddl --cddl impl/cpb.cddl
             destination EID; Independent workgroup line; MaxProp delivery
             likelihood naming; Metric Types private-use range 192-255.
           </li>
+          <li>Pre-submit polish: valid BCP 14 wording for path-entry schemes;
+            IANA MaxProp description aligned with delivery-likelihood;
+            Intro/Motivation claim hygiene; RFC6693 normative for metric-type 0
+            aging; terminology/notation cleanup; reproduce listing includes
+            validation tests; Fig2 hex wrap; CDDL comment sync.</li>
+          <li>Pre-Datatracker packaging: keep docname draft-perry-dtn-cpb-latest;
+            document date 2026-09-07; regenerated txt/html/pdf.</li>
         </ul>
       </section>
     </section>
