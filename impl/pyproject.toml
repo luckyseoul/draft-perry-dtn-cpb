@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["DTN", "Bundle Protocol", "BPv7", "CBOR", "routing", "CGR"]
 dependencies = [
-  "cbor2>=5.9.0",
+  "cbor2==5.9.0",
 ]
 
 [project.optional-dependencies]
