@@ -20,7 +20,7 @@ Float policy (Spec Section 3.4):
   - On encode: numeric probabilities are rounded to binary16. The private
     float helper's strict=True option rejects rounding or subnormal flushing.
   - On decode: untagged CBOR floats of all three widths are accepted and
-    clamped to [0.0, 1.0]. NaN and +/-Inf are rejected per Section 3.4.1.
+    rejected if outside [0.0, 1.0]. NaN and +/-Inf are rejected per Section 3.4.1.
   - Positive probabilities below 2**-14 are flushed to zero, independently
     of the received float width, following the draft's binary16 policy.
 
@@ -53,7 +53,8 @@ F_VERSION = 7
 
 METRIC_PROPHET_DP = 0
 METRIC_CGR_CONFIDENCE = 1
-METRIC_MAXPROP_COST = 2
+METRIC_MAXPROP_DELIVERY_LIKELIHOOD = 2
+METRIC_MAXPROP_COST = 2  # alias
 METRIC_RAPID_UTILITY = 3
 METRIC_GENERIC = 4
 
@@ -394,8 +395,8 @@ class _WireReader:
 def decode_cpb(buf: bytes) -> dict:
     """Decode CBOR bytes into a cpb-data dict, validating per Spec 3.4.1.
 
-    Probability values are clamped to [0.0, 1.0]; NaN and +/-Inf raise
-    ValueError per Spec 3.4.1. Unknown extension fields (uint > 7) retain
+    Probability values outside [0.0, 1.0], NaN, and +/-Inf raise
+    ValueError per Spec 3.4 / 3.4.1. Unknown extension fields (uint > 7) retain
     cbor2's semantic values. Rejects duplicate keys, wrong known-field wire
     types, incomplete items, and trailing bytes before semantic decoding.
     """
@@ -422,11 +423,11 @@ def _validate_prob(v, field):
         raise ValueError(f"field {field} is NaN; Spec 3.4.1 rejects as malformed")
     if math.isinf(f):
         raise ValueError(f"field {field} is +/-Inf; Spec 3.4.1 rejects as malformed")
-    # Clamp to [0,1] per Spec 3.4.1.
-    if f < 0.0:
-        return 0.0
-    if f > 1.0:
-        return 1.0
+    # Reject out-of-range finite values per Spec 3.4 / 3.4.1 (do not clamp).
+    if f < 0.0 or f > 1.0:
+        raise ValueError(
+            f"field {field}={f} outside [0.0, 1.0]; Spec 3.4.1 rejects as malformed"
+        )
     if 0.0 < f < MIN_NORMAL_BINARY16:
         return 0.0
     return f
