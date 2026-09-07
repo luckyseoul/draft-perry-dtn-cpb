@@ -25,7 +25,7 @@
     </author>
     <date year="2026" month="September" day="5"/>
     <area>Internet</area>
-    <workgroup>Delay/Disruption Tolerant Networking</workgroup>
+    <workgroup>Independent</workgroup>
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
     <keyword>BPv7</keyword>
@@ -76,7 +76,7 @@
       <t>
         This specification defines a bundle extension block (the Contact
         Probability Block, or CPB) for carrying probabilistic contact metadata,
-        enabling efficient routing decisions in DTNs for applications like
+        enabling more informed routing decisions in DTNs for applications like
         space exploration communications.
       </t>
       <section anchor="problem-statement">
@@ -296,7 +296,7 @@ ipn:100.1?prob=0.75
                 destinations</li>
             <li>EID-based duplicate detection would fail when the same
                 logical endpoint has multiple representations</li>
-            <li>Custody transfer mechanisms would malfunction</li>
+            <li>Bundle uniqueness and lifetime handling that depend on a stable destination EID would be disrupted</li>
           </ul>
         </section>
         <section anchor="router-modification">
@@ -419,7 +419,7 @@ ipn:100.1?prob=0.75
       82             ;     [node, prob]
       18 64          ;       node=100
       F93C00         ;       prob=1.0
-   02 1A 00F73A80    ;   2: timestamp (CPB epoch seconds)
+   02 1A 322EC0C0    ;   2: timestamp 2026-09-05 12:00:00 UTC (seconds)
    04 19 0E10        ;   4: validity=3600s
 ]]></sourcecode>
         </figure>
@@ -473,7 +473,7 @@ eid-reference = uint / tstr   ; packed IPN FQNN or non-IPN EID text
 metric-type = &(
     prophet-dp:      0,       ; PRoPHET delivery predictability
     cgr-confidence:  1,       ; CGR contact confidence
-    maxprop-cost:    2,       ; MaxProp path cost (inverted)
+    maxprop-delivery-likelihood: 2, ; MaxProp higher-is-better score
     rapid-utility:   3,       ; RAPID utility metric
     generic:         4,       ; Unspecified/generic probability
 ) / uint                      ; Extensible via future assignment
@@ -520,6 +520,11 @@ metric-type = &(
             RFC 9171 Section 4.2.6). Receivers <bcp14>MUST</bcp14> interpret
             field 2 and field 4 in this same second-based unit. Enables
             receivers to compute age and apply local decay policies.
+            Implementations <bcp14>MUST NOT</bcp14> copy an RFC 9171 DTN
+            Time or Bundle Age value (milliseconds) into field 2 without
+            converting to whole seconds (integer division by 1000).
+            Example: DTN Time 841924800000 ms is CPB timestamp
+            <tt>841924800</tt> (0x322EC0C0).
           </dd>
           <dt>Field 3: Source PCE Identifier</dt>
           <dd>
@@ -559,8 +564,10 @@ metric-type = &(
           <dt>Field 5: Metric Type</dt>
           <dd>
             Identifies the semantic meaning of the probability value. When
-            absent, implementations <bcp14>SHOULD</bcp14> treat the value as
-            generic (type 4).
+            absent, implementations <bcp14>MUST</bcp14> treat the value as
+            generic (type 4). An unrecognized metric-type codepoint remains
+            distinct: receivers <bcp14>MUST NOT</bcp14> coerce it to type 4
+            (see below).
           </dd>
           <dt>Field 6: Confidence</dt>
           <dd>
@@ -616,8 +623,10 @@ metric-type = &(
                 request a status report or bundle deletion through these
                 flags. Core BP and BPSec processing still applies (see
                 <xref target="invalid-float-handling"/>).</li>
-            <li><strong>Bits 3 and 5-7:</strong><bcp14>MUST</bcp14> be 0
-                (unassigned in <xref target="RFC9171"/>).</li>
+            <li><strong>Bits 3, 5, and 6:</strong><bcp14>MUST</bcp14> be 0
+                (Reserved in <xref target="RFC9171"/>).
+                <strong>Bit 7 and higher unassigned bits:</strong>
+                <bcp14>MUST</bcp14> be 0 until assigned.</li>
           </ul>
           <t>
             In practice, both flags set means the block processing flags byte
@@ -778,8 +787,13 @@ metric-type = &(
           Implementations that produce probability values not representable
           in float16 will incur 5 bytes (float32) or 9 bytes (float64) per
           value under deterministic encoding. Receivers <bcp14>MUST</bcp14>
-          accept any valid CBOR float encoding and clamp the decoded value to
-          [0.0, 1.0].
+          accept finite CBOR float encodings (binary16, binary32, or
+          binary64). They <bcp14>MUST</bcp14> reject NaN and +/-Infinity as
+          malformed, then <bcp14>MUST</bcp14> reject finite values outside
+          [0.0, 1.0] as malformed. Clamping out-of-range values to the
+          interval endpoints is <bcp14>NOT RECOMMENDED</bcp14> because
+          mapping a corrupted value greater than 1.0 to certainty can
+          amplify sinkhole attraction (see <xref target="security"/>).
         </t>
         <t><strong>Bandwidth Considerations and Array Limits:</strong> A CPB
           with per-path probabilities to multiple relays adds overhead
@@ -819,9 +833,10 @@ metric-type = &(
             <li><strong>NaN (0xF97E00):</strong><bcp14>MUST</bcp14> be
                 rejected as malformed.</li>
             <li><strong>+/-Infinity (0xF97C00, 0xF9FC00):</strong><bcp14>MUST</bcp14> be rejected as malformed.</li>
-            <li><strong>Negative values:</strong> Treat as 0.0 (invalid
-                probability).</li>
-            <li><strong>Values &gt; 1.0:</strong> Treat as 1.0 (certainty).</li>
+            <li><strong>Negative values:</strong><bcp14>MUST</bcp14> be
+                rejected as malformed.</li>
+            <li><strong>Values &gt; 1.0:</strong><bcp14>MUST</bcp14> be
+                rejected as malformed.</li>
             <li><strong>Very small positive values:</strong> Decoded
                 probabilities strictly between 0 and 2^-14 (the smallest
                 normal binary16 value) <bcp14>SHOULD</bcp14> be flushed
@@ -981,15 +996,17 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
             consumer cannot establish the applicable context for a value,
             it <bcp14>MUST</bcp14> treat that value as absent for routing.
           </dd>
-          <dt>metric-type 2 (maxprop-cost)</dt>
+          <dt>metric-type 2 (maxprop-delivery-likelihood)</dt>
           <dd>
-            Delivery-likelihood proxy derived from MaxProp-style path cost.
-            Producers <bcp14>MUST</bcp14> map lower MaxProp cost to higher CPB
-            value in [0.0, 1.0] using a documented local inversion (for
-            example, 1/(1+cost) or a rank-normalized score). The inversion is
-            lossy; original cost magnitude and multi-hop cost vectors are not
-            recoverable from the CPB value. Hop-lists used for loop avoidance
-            and delete-ACKs remain local MaxProp state, not CPB fields.
+            Higher-is-better delivery-likelihood proxy derived from
+            MaxProp-style path cost. Producers <bcp14>MUST</bcp14> map lower
+            MaxProp cost to a higher CPB value in [0.0, 1.0] using a
+            documented local inversion (for example, 1/(1+cost) or a
+            rank-normalized score). The wire value is not a raw cost. The
+            inversion is lossy; original cost magnitude and multi-hop cost
+            vectors are not recoverable from the CPB value. Hop-lists used
+            for loop avoidance and delete-ACKs remain local MaxProp state,
+            not CPB fields.
           </dd>
           <dt>metric-type 3 (rapid-utility)</dt>
           <dd>
@@ -1068,7 +1085,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           protocols defining new probability semantics
           <bcp14>SHOULD</bcp14> register a new metric-type code (see
           <xref target="iana-considerations"/>) rather than overloading an
-          existing one. The CPB Metric Types sub-registry exists precisely to
+          existing one. The CPB Metric Types registry exists precisely to
           keep semantically distinct values separable on the wire.
         </t>
         <t><strong>Calibration and normalization:</strong> This document does
@@ -1102,14 +1119,30 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           Implementations <bcp14>SHOULD</bcp14> select one complete CPB per
           group using the following deterministic precedence:
         </t>
+        <t>
+          For deployments that require authentication or otherwise apply a
+          trust policy to CPB producers, implementations
+          <bcp14>MUST</bcp14> use the following precedence within each
+          eligible group (after excluding ineligible CPBs per above and
+          <xref target="trust-conflicts"/>):
+        </t>
         <ol>
-          <li>Prefer a CPB with a timestamp over an undated CPB. Among dated
-              CPBs, prefer the highest timestamp. Two undated CPBs tie at
-              this step.</li>
-          <li>If tied at step 1, prefer the source ranked highest by the
-              implementation's trust policy.</li>
+          <li>Prefer the source ranked highest by the implementation's
+              trust policy (authenticated and authorized producers before
+              lower-ranked or unauthenticated sources that local policy
+              still admits).</li>
+          <li>If trust ranks are equal, prefer a CPB with a timestamp over
+              an undated CPB. Among dated CPBs at that trust rank, prefer
+              the highest timestamp.</li>
           <li>If still tied, prefer the highest bundle block number.</li>
         </ol>
+        <t>
+          Deployments that intentionally consume unauthenticated CPBs and
+          do not apply producer trust ranks <bcp14>MAY</bcp14> use
+          timestamp-first ordering instead, but <bcp14>SHOULD NOT</bcp14>
+          do so where route poisoning is a concern
+          (<xref target="trust-poisoning"/>).
+        </t>
         <t>
           Selection applies to the whole CPB, not independently to each
           field or path entry. A consumer <bcp14>MUST NOT</bcp14> fill gaps
@@ -1180,8 +1213,9 @@ A3                   ; map with 3 entries
             received CPB's authenticated bytes.
           </t>
           <t>
-            EID-references in the path-entry array <bcp14>MUST</bcp14> match
-            the destination bundle's URI scheme. For IPN bundles, each
+            Each path-entry next-hop is encoded in that next-hop's own URI
+            scheme. Path-entry schemes <bcp14>NEED NOT</bcp14> match the
+            bundle destination EID scheme. For an IPN next-hop, the
             reference <bcp14>MUST</bcp14> be a CBOR unsigned integer encoding
             the Fully Qualified Node Number (FQNN) defined in
             <xref target="RFC9758"/> Section 6.1.1:
@@ -1191,12 +1225,15 @@ A3                   ; map with 3 entries
             <bcp14>MUST NOT</bcp14> be transmitted in a CPB. The service
             number is not part of an IPN next-hop key. Matching
             <bcp14>MUST</bcp14> compare decoded allocator and node
-            components, treating equivalent two- and three-component
-            textual forms and binary encodings as the same identity.
+            components against the local next-hop identity, treating
+            equivalent two- and three-component textual forms and binary
+            encodings as the same identity.
             For example, <tt>ipn:977000.100.1</tt> has next-hop key
             <tt>0x000EE86800000064</tt>, whereas <tt>ipn:100.1</tt> has
             next-hop key 100. A text-string reference <bcp14>MUST</bcp14>
             contain a full EID using a non-IPN URI scheme.
+            Implementations <bcp14>MUST NOT</bcp14> encode an IPN next-hop
+            as a text-string EID.
           </t>
           <t><strong>Scheme Mismatch Handling:</strong> When the next-hop
             scheme does not match the CPB's path-entry scheme, implementations
@@ -1414,9 +1451,9 @@ A3                   ; map with 3 entries
           coupled to the same likelihood metric used for forwarding.
         </t>
         <t><strong>What CPB carries:</strong> metric-type 2 as a lossy
-          [0.0, 1.0] inversion of path cost / delivery likelihood so
-          foreign nodes can rank next hops without MaxProp's full peer
-          exchange.
+          [0.0, 1.0] higher-is-better score obtained by inverting MaxProp
+          path cost into a delivery-likelihood proxy so foreign nodes can
+          rank next hops without MaxProp's full peer exchange.
         </t>
         <t><strong>What stays local:</strong> cost vectors, hop-lists,
           delete-ACK flooding, and the dual use of likelihood for
@@ -1505,7 +1542,7 @@ A3                   ; map with 3 entries
           routers use centrality, community labels, or similarity rather
           than pure encounter probability. Those scores may be published
           as metric-type 4 (generic) with local documentation, or as new
-          metric-type codepoints via the IANA sub-registry in
+          metric-type codepoints via the IANA registry in
           <xref target="iana-considerations"/>. CPB still forbids mixing
           them arithmetically with prophet-dp or cgr-confidence.
         </t>
@@ -2100,10 +2137,13 @@ A3                   ; map with 3 entries
         sub-registry of Bundle Block Types). The registration policy is
         Specification Required (<xref target="RFC8126"/>, Section 4.6).
         The value space is CBOR unsigned integers, 0 through
-        18446744073709551615; this document assigns 0-4. Values 5-255
-        are unassigned for compact encodings; values 256 through
-        18446744073709551615 are also unassigned. The registry records
-        the Value, Description, and Reference shown below.
+        18446744073709551615; this document assigns 0-4. Values 5-191
+        are Unassigned (Specification Required). Values 192-255 are
+        Reserved for Private or Experimental Use; private deployments
+        that mint local metric types <bcp14>MUST</bcp14> use this range.
+        Values 256 through 18446744073709551615 are Unassigned
+        (Specification Required). The registry records the Value,
+        Description, and Reference shown below.
       </t>
       <table anchor="tab-iana-metric-types">
         <name>Initial CPB Metric Types registrations</name>
@@ -2127,7 +2167,7 @@ A3                   ; map with 3 entries
           </tr>
           <tr>
             <td>2</td>
-            <td>MaxProp Path Cost (inverted)</td>
+            <td>MaxProp Delivery Likelihood (inverted cost)</td>
             <td>This document</td>
           </tr>
           <tr>
@@ -2162,7 +2202,7 @@ A3                   ; map with 3 entries
           document, and avoid conflicting reuse of an assigned value.
           Requests duplicating an existing metric <bcp14>SHOULD</bcp14>
           explain why a separate assignment is needed. Experts
-          <bcp14>SHOULD</bcp14> prefer an available value in 5-255 when
+          <bcp14>SHOULD</bcp14> prefer an available value in 5-191 when
           suitable, but larger values use the same registration policy.
           Registration does not endorse the accuracy of an estimator or
           establish routing-performance benefits.
@@ -2840,7 +2880,7 @@ cddl compile-cddl --cddl impl/cpb.cddl
       <section anchor="changelog-00">
         <name>Unsubmitted working draft (September 2026)</name>
         <ul>
-          <li>Initial Experimental -00: Contact Probability Block wire
+          <li>Initial unsubmitted Experimental working draft (-latest): Contact Probability Block wire
               format, metric-type registry, operational and security
               considerations, and IANA requests.</li>
           <li>CBOR float16 encoding with deterministic encoding rules;
@@ -2862,6 +2902,12 @@ cddl compile-cddl --cddl impl/cpb.cddl
               authenticated bundle and producer binding; fragment-safe
               fallback; strict codec validation and corrected wire examples,
               size accounting, references, and registry review guidance.</li>
+          <li>
+            Review fixes: finite-float reject policy; trust-before-timestamp
+            precedence for authenticated use; next-hop scheme independent of
+            destination EID; Independent workgroup line; MaxProp delivery
+            likelihood naming; Metric Types private-use range 192-255.
+          </li>
         </ul>
       </section>
     </section>
