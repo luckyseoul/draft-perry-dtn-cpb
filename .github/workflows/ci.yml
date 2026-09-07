@@ -32,6 +32,7 @@ jobs:
       - name: Run conformance and repository tests
         run: |
           python3 impl/test_cpb.py
+          python3 impl/test_cpb_validation.py
           python3 impl/test_config1_policies.py
           python3 impl/test_sim_cpb_bridge.py
           python3 impl/test_draft_consistency.py
