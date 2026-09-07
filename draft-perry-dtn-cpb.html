@@ -42,338 +42,133 @@
 <meta content="draft-perry-dtn-cpb-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.0
-    Python 3.14.4
-    ConfigArgParse 1.7.5
+    Python 3.13.5
+    ConfigArgParse 1.7.7
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
-    lxml 6.1.1
+    lxml 6.1.3
     natsort 8.4.0
-    platformdirs 4.10.0
+    platformdirs 4.11.7
     pycountry 26.2.16
     PyYAML 6.0.3
     requests 2.34.2
-    wcwidth 0.8.2
-    weasyprint 69.0
+    wcwidth 0.8.3
 -->
 <link href="draft-perry-dtn-cpb.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
-<style type="text/css">@font-face {
-  font-family: 'Lora';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
+<style type="text/css">/*
 
-@font-face {
-  font-family: 'Lora';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+  NOTE: Changes at the bottom of this file overrides some earlier settings.
 
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Lora';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+  Once the style has stabilized and has been adopted as an official RFC style,
+  this can be consolidated so that style settings occur only in one place, but
+  for now the contents of this file consists first of the initial CSS work as
+  provided to the RFC Formatter (xml2rfc) work, followed by itemized and
+  commented changes found necessary during the development of the v3
+  formatters.
 
-@font-face {
-  font-family: 'Oxygen Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Oxygen Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-}
+*/
 
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: italic;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: italic;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: italic;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
-  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: italic;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: italic;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: normal;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: normal;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: normal;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
-  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: normal;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Sofia Sans Semi Condensed';
-  font-style: normal;
-  font-weight: 1 1000;
-  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+/* fonts */
+@import url('https://static.ietf.org/fonts/noto-sans/import.css'); /* Sans-serif */
+@import url('https://static.ietf.org/fonts/noto-serif/import.css'); /* Serif (print) */
+@import url('https://static.ietf.org/fonts/roboto-mono/import.css'); /* Monospace */
 
 :root {
-  color-scheme: light dark;
-  --background-color: #fff;
-  --text-color: #222;
-  --title-color: #191919;
-  --link-color: #2a6496;
-  --highlight-color: #f9f9f9;
-  --line-color: #eee;
-  --pilcrow-weak: #ddd;
-  --pilcrow-strong: #bbb;
-  --small-font-size: 14.5px;
-  --font-mono: 'Oxygen Mono', monospace;
-  --font-title: "Sofia Sans Semi Condensed", sans-serif;
-  scrollbar-color: #bbb #eee;
-}
-body {
-  max-width: 600px;
-  margin: 75px auto;
-  padding: 0 5px;
-  color: var(--text-color);
-  background-color: var(--background-color);
-  font: 16px/22px "Lora", serif;
-  scroll-behavior: smooth;
+  --font-sans: 'Noto Sans', Arial, Helvetica, sans-serif;
+  --font-serif: 'Noto Serif', 'Times', 'Times New Roman', serif;
+  --font-mono: 'Roboto Mono', Courier, 'Courier New', monospace;
 }
 
+@viewport {
+  zoom: 1.0;
+}
+@-ms-viewport {
+  width: extend-to-zoom;
+  zoom: 1.0;
+}
+/* general and mobile first */
+html {
+}
+body {
+  max-width: 90%;
+  margin: 1.5em auto;
+  color: #222;
+  background-color: #fff;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  overflow-wrap: break-word;
+}
 .ears {
   display: none;
 }
 
 /* headings */
-section {
+#title, h1, h2, h3, h4, h5, h6 {
+  margin: 1em 0 0.5em;
+  font-weight: bold;
+  line-height: 1.3;
+}
+#title {
   clear: both;
+  border-bottom: 1px solid #ddd;
+  margin: 0 0 0.5em 0;
+  padding: 1em 0 0.5em;
 }
-.section-number {
-  padding-right: 0.5em;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-title);
-  font-weight: 680;
-  margin: 0.8em 0 0.3em;
-  font-size-adjust: 0.5;
-  color: var(--title-color);
-}
-h1#title {
-  font-size: 32px;
-  line-height: 40px;
-  clear: both;
-}
-h1#title, h1#rfcnum {
-  margin: 1.5em 0 0.2em;
-}
-h1#rfcnum + h1#title {
-  margin: 0.2em 0;
-}
-
-h1, h2, h3 {
-  font-size: 22px;
-  line-height: 27px;
-}
-h4, h5, h6 {
-  font-size: 20px;
-  line-height: 24px;
-}
-
-/* general structure */
 .author {
-  padding-bottom: 0.3em;
-  vertical-align: top;
+  padding-bottom: 4px;
 }
-#abstract+p {
+h1 {
+  font-size: 26px;
+  margin: 1em 0;
+}
+h2 {
+  font-size: 22px;
+  margin-top: -20px;  /* provide offset for in-page anchors */
+  padding-top: 33px;
+}
+h3 {
   font-size: 18px;
-  line-height: 24px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
 }
-#abstract+p code, #abstract+p samp, #abstract+p tt {
+h4 {
   font-size: 16px;
-  line-height: 0;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
 }
-
+h5, h6 {
+  font-size: 14px;
+}
+#n-copyright-notice {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1em;
+  margin-bottom: 1em;
+}
+/* general structure */
 p {
   padding: 0;
-  margin: 0.5em 0;
+  margin: 0 0 1em 0;
   text-align: left;
+}
+div, span {
+  position: relative;
 }
 div {
   margin: 0;
 }
 .alignRight.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
   border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
 }
 .alignRight.art-text pre {
   padding: 0;
-  width: auto;
 }
 .alignRight {
   margin: 1em 0;
@@ -392,569 +187,484 @@ div {
 svg {
   display: block;
 }
-/* font-family isn't space-separated, but =~ will have to do */
+@media print {
+  svg {
+    max-height: 850px;
+    max-width: 660px;
+  }
+}
+svg[font-family~="serif" i], svg [font-family~="serif" i] {
+  font-family: var(--font-serif);
+}
+svg[font-family~="sans-serif" i], svg [font-family~="sans-serif" i] {
+  font-family: var(--font-sans);
+}
 svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
   font-family: var(--font-mono);
 }
 .alignCenter.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
   border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
 }
 .alignCenter.art-text pre {
   padding: 0;
-  width: auto;
 }
 .alignCenter {
   margin: 1em 0;
 }
 .alignCenter > *:first-child {
-  border: none;
-  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
-     support flexbox yet.
-  */
   display: table;
+  border: none;
   margin: 0 auto;
 }
 
 /* lists */
 ol, ul {
   padding: 0;
-  margin: 0 0 0.5em 2em;
-  & :is(ol, ul) {
-    margin-left: 1em;
-  }
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
 }
 li {
   margin: 0 0 0.25em 0;
 }
+.ulCompact li {
+  margin: 0;
+}
 ul.empty, .ulEmpty {
   list-style-type: none;
-  & li {
-    margin-top: 0.5em;
-  }
 }
-:is(ul, ol).compact, .ulCompact, .olCompact {
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.ulBare, li.ulBare {
+  margin-left: 0em !important;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
   margin: 0 0 0 2em;
-  & li {
-    margin: 0;
-    & :first-child { margin-top: 0; }
-    & :last-child { margin-bottom: 0; }
-  }
 }
 
 /* definition lists */
 dl {
-  clear: left;
-  --indent: 3ch;
-  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
-  &.olPercent {
-    --indent: 5ch;
-    & > dt {
-      min-width: calc(var(--indent) - 2ch);
-    }
-  }
-  &.olPercent > dt {
-    float: none;
-  }
-
-  dl > dd > & {
-    margin-top: 0.5em;
-    margin-bottom: 0;
-  }
 }
-dl:not(.dlNewline) > dt {
+dl > dt {
   float: left;
-  margin-right: 2ch;
-  min-width: 8ch;
+  margin-right: 1em;
 }
+/* 
+dl.nohang > dt {
+  float: none;
+}
+*/
 dl > dd {
   margin-bottom: .8em;
-  margin-left: var(--indent) !important; /* stupid element overrides */
-  min-height: 2ex;
+  min-height: 1.3em;
 }
-:is(dl.compact, .dlCompact) > dd {
-  margin-bottom: 0;
-  & > :is(:first-child, .break:first-child + *) {
-    margin-top: 0;
-  }
-  & > :is(:last-child) {
-    margin-bottom: 0;
-  }
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
 }
-:is(dd, span).break {
-  display: none;
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
 }
 
 /* links */
-a, a[href].selfRef:hover {
+a {
   text-decoration: none;
 }
 a[href] {
-  color: var(--link-color);
-}
-a[href].selfRef, .iref + a[href].internal {
-  color: var(--text-color);
+  color: #22e; /* Arlen: WCAG 2019 */
 }
 a[href]:hover {
-  text-decoration: underline;
+  background-color: #f2f2f2;
 }
-a[href].selfRef:hover {
-  background-color: var(--highlight-color);
+figcaption a[href],
+a[href].selfRef {
+  color: #222;
 }
-a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
-  white-space: nowrap;
-}
+/* XXX probably not this:
+a.selfRef:hover {
+  background-color: transparent;
+  cursor: default;
+} */
 
 /* Figures */
 tt, code, pre {
-  background-color: var(--highlight-color);
-  font: 14px/22px var(--font-mono);
-}
-tt, code {
-  /* changing the font for inline elements leads to different ascender
-     and descender heights; as we want to retain baseline alignment,
-     remove leading to avoid altering the final height of lines
-     note: this fails if these blocks take an entire line,
-     a different solution would be great */
-  line-height: 0;
-}
-:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
-  font-size: 84%;
+  background-color: #f9f9f9;
+  font-family: var(--font-mono);
 }
 pre {
-  border: 1px solid var(--line-color);
-  font-size: 13.5px;
-  line-height: 16px;
-  letter-spacing: -0.2px;
-  margin: 5px;
-  padding: 5px;
+  border: 1px solid #eee;
+  margin: 0;
+  padding: 1em;
 }
 img {
   max-width: 100%;
 }
 figure {
-  margin: 0.5em 0;
-  padding: 0;
+  margin: 0;
 }
 figure blockquote {
   margin: 0.8em 0.4em 0.4em;
 }
-figcaption, caption {
+figcaption {
   font-style: italic;
-  margin: 0.5em 1.5em;
-  text-align: left;
-  caption-side: bottom;
+  margin: 0 0 1em 0;
 }
 @media screen {
-  /* Auto-collapse boilerplate. */
-  :is(#status-of-memo, #copyright) p {
-    margin: -2px 0;
-    max-height: 0;
-    transition: max-height 2s ease, margin 0.5s ease 0.5s;
-    overflow: hidden;
-  }
-  :is(#status-of-memo, #copyright):hover p,
-  :is(#status-of-memo, #copyright) h2:target ~ p {
-    margin: 0.5em 0;
-    max-height: 500px;
-    overflow: auto;
-  }
-  pre, svg {
-    display: inline-block;
-    /* In the horizontal direction, sometimes people make over-sized figures.
-       Scrollbars for those is therefore necessary: auto adds them as necessary..
-       In the vertical direction, the line-height can combine with the font
-       asender/descender height to produce scrollbars: hidden avoids that. */
-    overflow: auto hidden;
-  }
   pre {
+    overflow-x: auto;
     max-width: 100%;
-    width: calc(100% - 22px - 1em);
-  }
-  svg {
-    max-width: calc(100% - 22px - 1em);
-  }
-  figure pre {
-    display: block;
-    width: calc(100% - 25px);
-  }
-  :is(pre, svg) + .pilcrow {
-    display: inline-block;
-    vertical-align: text-bottom;
-    padding-bottom: 8px;
+    max-width: calc(100% - 22px);
   }
 }
 
 /* aside, blockquote */
 aside, blockquote {
   margin-left: 0;
-  padding: 0 2em;
-  font-style: italic;
+  padding: 1.2em 2em;
 }
 blockquote {
+  background-color: #f9f9f9;
+  color: #111; /* Arlen: WCAG 2019 */
+  border: 1px solid #ddd;
+  border-radius: 3px;
   margin: 1em 0;
-  border-left: 2px var(--pilcrow-strong) solid;
+}
+blockquote > *:last-child {
+  margin-bottom: 0;
 }
 cite {
   display: block;
   text-align: right;
   font-style: italic;
 }
+.xref {
+  overflow-wrap: normal;
+}
 
 /* tables */
 table {
-  width: auto;
-  max-width: 100%;
+  width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
-}
-table.right {
-  margin-left: auto;
-}
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-}
-table.left {
-  margin-right: auto;
-}
-table .text-left {
-  text-align: left;
-}
-table .text-center {
-  text-align: center;
-}
-table .text-right {
-  text-align: right;
-}
-
-thead, tbody {
-  border: 1px solid var(--line-color);
+  border: 1px solid #eee;
 }
 th, td {
   text-align: left;
   vertical-align: top;
-  padding: 5px 10px;
+  padding: 0.5em 0.75em;
 }
 th {
-  background-color: var(--line-color);
+  text-align: left;
+  background-color: #e9e9e9;
 }
-:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
-  background-color: var(--background-color);
-}
-:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
-  background-color: var(--highlight-color);
+tr:nth-child(2n+1) > td {
+  background-color: #f5f5f5;
 }
 table caption {
+  font-style: italic;
   margin: 0;
-  padding: 3px 0 3px 1em;
+  padding: 0;
+  text-align: left;
 }
 table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
   margin: 0;
 }
 
 /* pilcrow */
 a.pilcrow {
-  margin-left: 3px;
-  opacity: 0.2;
+  color: #666; /* Arlen: AHDJ 2019 */
+  text-decoration: none;
+  visibility: hidden;
   user-select: none;
-  &[href] {
-    color: var(--pilcrow-weak);
-    &:hover { text-decoration: none; }
-  }
+  -ms-user-select: none;
+  -o-user-select:none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
-@media not print {
-  :hover > a.pilcrow, a.pilcrow:focus {
-    opacity: 1;
+@media screen {
+  aside:hover > a.pilcrow,
+  p:hover > a.pilcrow,
+  blockquote:hover > a.pilcrow,
+  div:hover > a.pilcrow,
+  li:hover > a.pilcrow,
+  pre:hover > a.pilcrow {
+    visibility: visible;
   }
-  a.pilcrow[href]:hover {
-    color: var(--pilcrow-strong);
+  a.pilcrow:hover {
     background-color: transparent;
-  }
-}
-@media print {
-  a.pilcrow {
-    display: none;
   }
 }
 
 /* misc */
 hr {
   border: 0;
-  border-top: 1px solid var(--line-color);
+  border-top: 1px solid #eee;
 }
 .bcp14 {
   font-variant: small-caps;
-  font-weight: 600;
-  font-size: var(--small-font-size);
 }
+
 .role {
   font-variant: all-small-caps;
-}
-sub, sup {
-  line-height: 1;
-  font-size: 80%;
 }
 
 /* info block */
 #identifiers {
   margin: 0;
-  font-size: var(--small-font-size);
-  line-height: 18px;
-  --identifier-width: 15ch;
-  & dt {
-    width: var(--identifier-width);
-    min-width: var(--identifier-width);
-    clear: left;
-    float: left;
-    text-align: right;
-    margin-right: 1ch;
+  font-size: 0.9em;
+}
+#identifiers dt {
+  width: 3em;
+  clear: left;
+}
+#identifiers dd {
+  float: left;
+  margin-bottom: 0;
+}
+/* Fix PDF info block run off issue */
+@media print {
+  #identifiers dd {
+    max-width: 100%;
   }
-  & dd {
-    margin: 0;
-    margin-left: calc(1em + var(--identifier-width)) !important;
-    min-width: 5em;
-  }
-  & .authors {
-    & .author {
-      display: inline-block;
-      margin-right: 1.5em;
-    }
-    & .org {
-      font-style: italic;
-    }
-  }
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
 }
 
 /* The prepared/rendered info at the very bottom of the page */
 .docInfo {
-  color: #999;
+  color: #666; /* Arlen: WCAG 2019 */
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
 }
 .docInfo .prepared {
   float: right;
 }
 
 /* table of contents */
-#toc {
+#toc  {
   padding: 0.75em 0 2em 0;
   margin-bottom: 1em;
-
-  & nav {
-    & ul {
-      margin: 0 0.5em 0 0;
-      padding: 0;
-      list-style: none;
-    }
-    & li {
-      line-height: 1.3em;
-      margin: 2px 0;
-      padding-left: 1.2em;
-      text-indent: -1.2em;
-    }
-  }
-  & a.xref {
-    white-space: normal;
-  }
+}
+nav.toc ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+nav.toc li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
 }
 
-.references {
-  & > dt {
-    text-align: right;
-    font-weight: bold;
-    min-width: 10ch;
-    margin-right: 1.5ch;
-    &:target::before {
-      content: "⇒";
-      margin: 0 10px 0 -25px;
-    }
-  }
-  & > dd {
-    margin-left: 12ch !important;
-    overflow: visible;
-    & .refInstance {
-      margin-bottom: 0.8em;
-    }
-    & .ascii {
-      margin-bottom: 0.25em;
-    }
-  }
+.refInstance {
+  margin-bottom: 1.25em;
 }
 
-#rfc\.index\.index + ul {
-  margin-left: 0;
+.refSubseries {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    -moz-column-count: 2;
+    -moz-column-gap: 20px;
+  }
+  .index ul ul {
+    -moz-column-count: 1;
+    -moz-column-gap: 0;
+  }
 }
 
 /* authors */
 address.vcard {
   font-style: normal;
-  max-width: 20em;
-  margin: 1em auto 1em 0;
-
-  & .nameRole {
-    font-weight: 700;
-    margin-left: 0;
-  }
-  & .label {
-    margin: 0.5em 0;
-  }
-  & .type {
-    display: none;
-  }
-  & .alternative-contact {
-    margin: 0.5em 0 0.25em 0;
-  }
-  & .non-ascii {
-    margin: 0 0 0 2em;
-  }
-  & div.left {
-    text-align: left;
-  }
-  & div.right {
-    text-align: right;
-  }
+  margin: 1em 0;
 }
 
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  font-family: var(--font-sans);
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
 hr.addr {
   border-top: 1px dashed;
   margin: 0;
   color: #ddd;
   max-width: calc(100% - 16px);
 }
-@media (min-width: 500px) {
-  #authors-addresses > section {
-    column-count: 2;
-    column-gap: 20px;
-  }
-  #authors-addresses > section > h2 {
-    column-span: all;
-  }
-  /* hack for break-inside: avoid-column */
-  #authors-addresses address {
-    display: inline-block;
-    break-inside: avoid-column;
-  }
-}
 
-/* Comments */
-.rfcEditorRemove p:first-of-type {
-  font-style: italic;
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #9e2a00; /* Arlen: WCAG 2019 */
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+  border-radius: 3px;
 }
 .cref {
-  background-color: rgba(249, 232, 105, 0.3);
+  background-color: #ffd; /* Arlen: WCAG 2019 */
   padding: 2px 4px;
 }
 .crefSource {
   font-style: italic;
 }
-
-@media screen {
-  #toc nav {
-    font-family: var(--font-title);
-    font-weight: 360;
-    & > ul { margin-bottom: 2em; }
-    & ul {
-      margin: 0 0 0 4px;
-      & :is(p, li) {
-        margin: 2px 0;
-      }
-    }
+/* alternative layout for smaller screens */
+@media screen and (max-width: 1023px) {
+  body {
+    padding-top: 2em;
   }
-  #toc a.toplink {
-    float: right;
+  #title {
+    padding: 1em 0;
   }
-}
-@media not screen {
-  #toc a.toplink {
-    display: none;
+  h1 {
+    font-size: 24px;
   }
-}
-
-
-/* TOC layout for smaller screens */
-@media screen and (max-width: 929px) {
+  h2 {
+    font-size: 20px;
+    margin-top: -18px;  /* provide offset for in-page anchors */
+    padding-top: 38px;
+  }
+  #identifiers dd {
+    max-width: 60%;
+  }
   #toc {
     position: fixed;
     z-index: 2;
     top: 0;
     right: 0;
-    padding: 1px 0 0 0;
+    padding: 0;
     margin: 0;
+    background-color: inherit;
     border-bottom: 1px solid #ccc;
-    opacity: 0.6;
   }
   #toc h2 {
-    margin: 0;
-    padding: 2px 0 2px 6px;
+    margin: -1px 0 0 0;
+    padding: 4px 0 4px 6px;
     padding-right: 1em;
-    font-size: 18px;
-    line-height: 24px;
     min-width: 190px;
+    font-size: 1.1em;
     text-align: right;
     background-color: #444;
     color: white;
     cursor: pointer;
-    &::before { /* css hamburger */
-      float: right;
-      position: relative;
-      width: 1em;
-      height: 1px;
-      left: -164px;
-      margin: 8px 0 0 0;
-      background: white none repeat scroll 0 0;
-      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-      content: "";
-    }
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 6px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
   }
   #toc nav {
     display: none;
-    background-color: var(--background-color);
     padding: 0.5em 1em 1em;
     overflow: auto;
-    overscroll-behavior: contain;
     height: calc(100vh - 48px);
     border-left: 1px solid #ddd;
   }
-  #toc.active {
-    opacity: 1;
-    & nav { display: block; }
-  }
-  /* Make the collapsed ToC header render white on gray also when it's a link */
-  #toc h2 a,
-  #toc h2 a:is(:link, :focus, :hover),
-  #toc a.toplink,
-  #toc a.toplink:hover {
-    color: white;
-    background-color: #444;
-    text-decoration: none;
-  }
-  #toc a.toplink {
-    margin: 2px 0.5em 0;
-  }
 }
 
-/* TOC layout for wide screens */
-@media screen and (min-width: 930px) {
+/* alternative layout for wide screens */
+@media screen and (min-width: 1024px) {
   body {
-    padding-right: 360px;
-    padding-right: calc(min(180px + 20%, 500px));
+    max-width: 724px;
+    margin: 42px auto;
+    padding-left: 1.5em;
+    padding-right: 29em;
   }
   #toc {
     position: fixed;
-    bottom: 0;
-    right: 0;
-    right: calc(50vw - 480px);
-    width: 312px;
+    top: 42px;
+    right: 42px;
+    width: 25%;
     margin: 0;
-    padding: 0;
+    padding: 0 1em;
     z-index: 1;
   }
   #toc h2 {
+    border-top: none;
+    border-bottom: 1px solid #ddd;
+    font-size: 1em;
+    font-weight: normal;
     margin: 0;
     padding: 0.25em 1em 1em 0;
   }
@@ -962,17 +672,12 @@ hr.addr {
     display: block;
     height: calc(90vh - 84px);
     bottom: 0;
-    padding: 0.5em 0 2em;
+    padding: 0.5em 0 0;
     overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
   }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
-  }
-  #toc a.toplink {
-    margin: 8px 0.5em 0;
   }
 }
 
@@ -995,13 +700,19 @@ hr.addr {
     border-top: none;
     padding-top: 0;
   }
-  figure, pre, .vcard {
+  figure, pre {
     page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  .breakable pre {
+    break-inside: auto;
   }
   h1, h2, h3, h4, h5, h6 {
     page-break-after: avoid;
   }
-  :is(h2, h3, h4, h5, h6)+*, dd {
+  h2+*, h3+*, h4+*, h5+*, h6+* {
     page-break-before: avoid;
   }
   pre {
@@ -1016,6 +727,34 @@ hr.addr {
     border-top: 1px solid #ddd;
   }
 }
+
+/* This is commented out here, as the string-set: doesn't
+   pass W3C validation currently */
+/*
+.ears thead .left {
+  string-set: ears-top-left content();
+}
+
+.ears thead .center {
+  string-set: ears-top-center content();
+}
+
+.ears thead .right {
+  string-set: ears-top-right content();
+}
+
+.ears tfoot .left {
+  string-set: ears-bottom-left content();
+}
+
+.ears tfoot .center {
+  string-set: ears-bottom-center content();
+}
+
+.ears tfoot .right {
+  string-set: ears-bottom-right content();
+}
+*/
 
 @page :first {
   padding-top: 0;
@@ -1037,38 +776,468 @@ hr.addr {
   size: A4;
   margin-bottom: 45mm;
   padding-top: 20px;
+  /* The following is commented out here, but set appropriately by in code, as
+     the content depends on the document */
+  /*
+  @top-left {
+    content: 'Internet-Draft';
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-left {
+    content: string(ears-top-left);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-center {
+    content: string(ears-top-center);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-right {
+    content: string(ears-top-right);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @bottom-left {
+    content: string(ears-bottom-left);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-center {
+    content: string(ears-bottom-center);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-right {
+      content: '[Page ' counter(page) ']';
+      vertical-align: top;
+      border-top: solid 1px #ccc;
+  }
+  */
+
 }
 
-/* Dark mode. */
-@media (prefers-color-scheme: dark) {
-:root {
-  --background-color: #121212;
-  --text-color: #f0f0f0;
-  --title-color: #fff;
-  --link-color: #4da4f0;
-  --highlight-color: #282828;
-  --line-color: #444;
-  --pilcrow-weak: #444;
-  --pilcrow-strong: #666;
-  scrollbar-color: #777 #333;
+/* Changes introduced to fix issues found during implementation */
+/* Make sure links are clickable even if overlapped by following H* */
+a {
+  z-index: 2;
 }
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
 }
 
-/* SVG Trick: a prefix match works because only black and white are allowed */
-svg :is([stroke="black"], [stroke^="#000"]) {
-  stroke: var(--text-color);
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
 }
-svg :is([stroke="white"], [stroke^="#fff"]) {
-  stroke: var(--background-color);
+
+/* Leave room in document info to show Internet-Draft on one line */
+#identifiers dt {
+  width: 8em;
 }
-svg :is([fill="black"], [fill^="#000"], :not([fill])) {
-  fill: var(--text-color);
+
+/* Don't waste quite as much whitespace between label and value in doc info */
+#identifiers dd {
+  margin-left: 1em;
 }
-svg :is([fill="white"], [fill^="#fff"]) {
-  fill: var(--background-color);
+
+/* Give floating toc a background color (needed when it's a div inside section */
+#toc {
+  background-color: white;
+}
+
+/* Make the collapsed ToC header render white on gray also when it's a link */
+@media screen and (max-width: 1023px) {
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+}
+
+/* Give the bottom of the ToC some whitespace */
+@media screen and (min-width: 1024px) {
+  #toc {
+    padding: 0 0 1em 1em;
+  }
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* prevent monospace from becoming overly large */
+tt, code, pre {
+  font-size: 95%;
+}
+
+/* Fix the height/width aspect for ascii art*/
+.sourcecode pre,
+.art-text pre {
+  line-height: 1.12;
+}
+
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin-right: 0.5em;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 30em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+caption a[href] {
+  color: #222;
+}
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+/* Tweak the invisible space above H* in order not to overlay links in text above */
+ h2 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 31px;
+ }
+ h3 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 24px;
+ }
+ h4 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 24px;
+ }
+/* Float artwork pilcrow to the right */
+@media screen {
+  .artwork a.pilcrow {
+    display: block;
+    line-height: 0.7;
+    margin-top: 0.15em;
+  }
+}
+/* Make pilcrows on dd visible */
+@media screen {
+  dd:hover > a.pilcrow {
+    visibility: visible;
+  }
+}
+/* Make the placement of figcaption match that of a table's caption
+   by removing the figure's added bottom margin */
+.alignLeft.art-text,
+.alignCenter.art-text,
+.alignRight.art-text {
+   margin-bottom: 0;
+}
+.alignLeft,
+.alignCenter,
+.alignRight {
+  margin: 1em 0 0 0;
+}
+/* In print, the pilcrow won't show on hover, so prevent it from taking up space,
+   possibly even requiring a new line */
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+/* Styling for the external metadata */
+div#external-metadata {
+  background-color: #eee;
+  padding: 0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+div#internal-metadata {
+  padding: 0.5em;                       /* to match the external-metadata padding */
+}
+/* Styling for title RFC Number */
+h1#rfcnum {
+  clear: both;
+  margin: 0 0 -1em;
+  padding: 1em 0 0 0;
+}
+/* Make .olPercent look the same as <ol><li> */
+dl.olPercent > dd {
+  margin-bottom: 0.25em;
+  min-height: initial;
+}
+/* Give aside some styling to set it apart */
+aside {
+  border-left: 1px solid #ddd;
+  margin: 1em 0 1em 2em;
+  padding: 0.2em 2em;
+}
+aside > dl,
+aside > ol,
+aside > ul,
+aside > table,
+aside > p {
+  margin-bottom: 0.5em;
+}
+/* Additional page break settings */
+@media print {
+  figcaption, table caption {
+    page-break-before: avoid;
+  }
+}
+/* Font size adjustments for print */
+@media print {
+  body  { font-size: 10pt;      line-height: normal; max-width: 96%; }
+  h1    { font-size: 1.72em;    padding-top: 1.5em; } /* 1*1.2*1.2*1.2 */
+  h2    { font-size: 1.44em;    padding-top: 1.5em; } /* 1*1.2*1.2 */
+  h3    { font-size: 1.2em;     padding-top: 1.5em; } /* 1*1.2 */
+  h4    { font-size: 1em;       padding-top: 1.5em; }
+  h5, h6 { font-size: 1em;      margin: initial; padding: 0.5em 0 0.3em; }
+}
+/* Sourcecode margin in print, when there's no pilcrow */
+@media print {
+  .artwork,
+  .artwork > pre,
+  .sourcecode {
+    margin-bottom: 1em;
+  }
+}
+/* Avoid narrow tables forcing too narrow table captions, which may render badly */
+table {
+  min-width: 20em;
+}
+/* ol type a */
+ol.type-a { list-style-type: lower-alpha; }
+ol.type-A { list-style-type: upper-alpha; }
+ol.type-i { list-style-type: lower-roman; }
+ol.type-I { list-style-type: upper-roman; }
+/* Apply the print table and row borders in general, on request from the RPC,
+and increase the contrast between border and odd row background slightly */
+table {
+  border: 1px solid #ddd;
+}
+td {
+  border-top: 1px solid #ddd;
+}
+tr {
+  break-inside: avoid;
+}
+tr:nth-child(2n+1) > td {
+  background-color: #f8f8f8;
+}
+/* Use style rules to govern display of the TOC. */
+@media screen and (max-width: 1023px) {
+  #toc nav { display: none; }
+  #toc.active nav { display: block; }
+}
+/* Add support for keepWithNext */
+.keepWithNext {
+  break-after: avoid-page;
+  break-after: avoid-page;
+}
+/* Add support for keepWithPrevious */
+.keepWithPrevious {
+  break-before: avoid-page;
+}
+/* Change the approach to avoiding breaks inside artwork etc. */
+figure, pre, table, .artwork, .sourcecode  {
+  break-before: auto;
+  break-after: auto;
+}
+/* Avoid breaks between <dt> and <dd> */
+dl {
+  break-before: auto;
+  break-inside: auto;
+}
+dt {
+  break-before: auto;
+  break-after: avoid-page;
+}
+dd {
+  break-before: avoid-page;
+  break-after: auto;
+  orphans: 3;
+  widows: 3
+}
+span.break, dd.break {
+  margin-bottom: 0;
+  min-height: 0;
+  break-before: auto;
+  break-inside: auto;
+  break-after: auto;
+}
+/* Undo break-before ToC */
+@media print {
+  #toc {
+    break-before: auto;
+  }
+}
+/* Text in compact lists should not get extra bottom margin space,
+   since that would makes the list not compact */
+ul.compact p, .ulCompact p,
+ol.compact p, .olCompact p {
+ margin: 0;
+}
+/* But the list as a whole needs the extra space at the end */
+section ul.compact,
+section .ulCompact,
+section ol.compact,
+section .olCompact {
+  margin-bottom: 1em;                    /* same as p not within ul.compact etc. */
+}
+/* The tt and code background above interferes with for instance table cell
+   backgrounds.  Changed to something a bit more selective. */
+tt, code {
+  background-color: transparent;
+}
+p tt, p code, li tt, li code, dt tt, dt code {
+  background-color: #f8f8f8;
+}
+/* Tweak the pre margin -- 0px doesn't come out well */
+pre {
+   margin-top: 0.5px;
+}
+/* Tweak the compact list text */
+ul.compact, .ulCompact,
+ol.compact, .olCompact,
+dl.compact, .dlCompact {
+  line-height: normal;
+}
+/* Don't add top margin for nested lists */
+li > ul, li > ol, li > dl,
+dd > ul, dd > ol, dd > dl,
+dl > dd > dl {
+  margin-top: initial;
+}
+/* Elements that should not be rendered on the same line as a <dt> */
+/* This should match the element list in writer.text.TextWriter.render_dl() */
+dd > div.artwork:first-child,
+dd > aside:first-child,
+dd > blockquote:first-child,
+dd > figure:first-child,
+dd > ol:first-child,
+dd > div.sourcecode:first-child,
+dd > table:first-child,
+dd > ul:first-child {
+  clear: left;
+}
+/* fix for weird browser behaviour when <dd/> is empty */
+dt+dd:empty::before{
+  content: "\00a0";
+}
+/* Make paragraph spacing inside <li> smaller than in body text, to fit better within the list */
+li > p {
+  margin-bottom: 0.5em
+}
+/* Don't let p margin spill out from inside list items */
+li > p:last-of-type:only-child {
+  margin-bottom: 0;
 }
 </style>
-
+<link href="rfc-local.css" rel="stylesheet" type="text/css">
+<script type="application/javascript">async function addMetadata(){try{const e=document.styleSheets[0].cssRules;for(let t=0;t<e.length;t++)if(/#identifiers/.exec(e[t].selectorText)){const a=e[t].cssText.replace("#identifiers","#external-updates");document.styleSheets[0].insertRule(a,document.styleSheets[0].cssRules.length)}}catch(e){console.log(e)}const e=document.getElementById("external-metadata");if(e)try{var t,a="",o=function(e){const t=document.getElementsByTagName("meta");for(let a=0;a<t.length;a++)if(t[a].getAttribute("name")===e)return t[a].getAttribute("content");return""}("rfc.number");if(o){t="https://www.rfc-editor.org/rfc/rfc"+o+".json";try{const e=await fetch(t);a=await e.json()}catch(e){t=document.URL.indexOf("html")>=0?document.URL.replace(/html$/,"json"):document.URL+".json";const o=await fetch(t);a=await o.json()}}if(!a)return;e.style.display="block";const s="",d="https://datatracker.ietf.org/doc",n="https://datatracker.ietf.org/ipr/search",c="https://www.rfc-editor.org/info",l=a.doc_id.toLowerCase(),i=a.doc_id.slice(0,3).toLowerCase(),f=a.doc_id.slice(3).replace(/^0+/,""),u={status:"Status",obsoletes:"Obsoletes",obsoleted_by:"Obsoleted By",updates:"Updates",updated_by:"Updated By",see_also:"See Also",errata_url:"Errata"};let h="<dl style='overflow:hidden' id='external-updates'>";["status","obsoletes","obsoleted_by","updates","updated_by","see_also","errata_url"].forEach(e=>{if("status"==e){a[e]=a[e].toLowerCase();var t=a[e].split(" "),o=t.length,w="",p=1;for(let e=0;e<o;e++)p<o?w=w+r(t[e])+" ":w+=r(t[e]),p++;a[e]=w}else if("obsoletes"==e||"obsoleted_by"==e||"updates"==e||"updated_by"==e){var g,m="",b=1;g=a[e].length;for(let t=0;t<g;t++)a[e][t]&&(a[e][t]=String(a[e][t]).toLowerCase(),m=b<g?m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>, ":m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>",b++);a[e]=m}else if("see_also"==e){var y,L="",C=1;y=a[e].length;for(let t=0;t<y;t++)if(a[e][t]){a[e][t]=String(a[e][t]);var _=a[e][t].slice(0,3),v=a[e][t].slice(3).replace(/^0+/,"");L=C<y?"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>, ":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>, ":"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>",C++}a[e]=L}else if("errata_url"==e){var R="";R=a[e]?R+"<a href='"+a[e]+"'>Errata exist</a> | <a href='"+d+"/"+l+"'>Datatracker</a>| <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>":"<a href='"+d+"/"+l+"'>Datatracker</a> | <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>",a[e]=R}""!=a[e]?"Errata"==u[e]?h+=`<dt>More info:</dt><dd>${a[e]}</dd>`:h+=`<dt>${u[e]}:</dt><dd>${a[e]}</dd>`:"Errata"==u[e]&&(h+=`<dt>More info:</dt><dd>${a[e]}</dd>`)}),h+="</dl>",e.innerHTML=h}catch(e){console.log(e)}else console.log("Could not locate metadata <div> element");function r(e){return e.charAt(0).toUpperCase()+e.slice(1)}}window.removeEventListener("load",addMetadata),window.addEventListener("load",addMetadata);</script>
 </head>
 <body class="xml2rfc">
 <table class="ears">
@@ -1087,7 +1256,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <div id="internal-metadata" class="document-information">
 <dl id="identifiers">
 <dt class="label-workgroup">Workgroup:</dt>
-<dd class="workgroup">Delay/Disruption Tolerant Networking</dd>
+<dd class="workgroup">Independent</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
 <dd class="internet-draft">draft-perry-dtn-cpb-latest</dd>
 <dt class="label-published">Published:</dt>
@@ -1488,9 +1657,10 @@ svg :is([fill="white"], [fill^="#fff"]) {
         between nodes.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">
         This specification defines a bundle extension block (the Contact
-        Probability Block, or CPB) for carrying probabilistic contact metadata,
-        enabling efficient routing decisions in DTNs for applications like
-        space exploration communications.<a href="#section-1-2" class="pilcrow">¶</a></p>
+        Probability Block, or CPB) for carrying probabilistic contact metadata
+        that routing protocols may consult in DTNs, including applications such
+        as space exploration communications. It does not report experimental
+        results or claim demonstrated routing-performance improvement.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <div id="problem-statement">
 <section id="section-1.1">
         <h3 id="name-problem-statement-ipnsig-ss">
@@ -1584,8 +1754,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
         </ul>
 <p id="section-1.2-3">
           By embedding probability estimates directly in bundles as a standard
-          extension block, this specification enables all DTN routing
-          protocols to benefit from more informed forwarding decisions.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+          extension block, this specification gives DTN routing protocols an
+          optional, common transport for those estimates. Whether any given
+          protocol benefits is left to the planned experimental evaluation
+          (<a href="#experiment" class="auto internal xref">Section 12</a>); this document asserts no demonstrated
+          improvement.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="requirements-language">
@@ -1640,7 +1813,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
           <dd style="margin-left: 1.5em" id="section-1.4-1.10">
             An identifier distinguishing the semantic meaning of the
             probability value (e.g., PRoPHET delivery predictability, CGR
-            contact confidence, MaxProp path reliability).<a href="#section-1.4-1.10" class="pilcrow">¶</a>
+            contact confidence, MaxProp delivery likelihood).<a href="#section-1.4-1.10" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-1.4-1.11">Validity Duration</dt>
@@ -1659,8 +1832,8 @@ svg :is([fill="white"], [fill^="#fff"]) {
         </h3>
 <p id="section-1.5-1">
           This document uses three distinct notations for describing data
-          structures, following the conventions of other DTN Working Group
-          drafts:<a href="#section-1.5-1" class="pilcrow">¶</a></p>
+          structures, following the conventions of other DTN/BPv7
+          documents:<a href="#section-1.5-1" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-1.5-2">
           <dt id="section-1.5-2.1">CDDL (Concise Data Definition Language)</dt>
           <dd style="margin-left: 1.5em" id="section-1.5-2.2">
@@ -1745,7 +1918,7 @@ ipn:100.1?prob=0.75
             <li class="normal" id="section-2.1.1-2.6">EID-based duplicate detection would fail when the same
                 logical endpoint has multiple representations<a href="#section-2.1.1-2.6" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-2.1.1-2.7">Custody transfer mechanisms would malfunction<a href="#section-2.1.1-2.7" class="pilcrow">¶</a>
+            <li class="normal" id="section-2.1.1-2.7">Bundle uniqueness and lifetime handling that depend on a stable destination EID would be disrupted<a href="#section-2.1.1-2.7" class="pilcrow">¶</a>
 </li>
           </ul>
 </section>
@@ -1900,7 +2073,8 @@ ipn:100.1?prob=0.75
       82             ;     [node, prob]
       18 64          ;       node=100
       F93C00         ;       prob=1.0
-   02 1A 00F73A80    ;   2: timestamp (CPB epoch seconds)
+   02 1A 322EC0C0    ;   2: timestamp (seconds)
+                     ;     2026-09-05 12:00:00 UTC
    04 19 0E10        ;   4: validity=3600s
 
 &lt;CODE ENDS&gt;</pre>
@@ -1943,7 +2117,7 @@ cpb-data = {
     ? 1: [* path-entry],      ; per-path (SHOULD limit size; Sec 3.4)
     ? 2: uint,                ; Timestamp (CPB epoch seconds)
     ? 3: bstr,                ; Source PCE identifier (optional)
-    ? 4: uint,                ; Validity duration (seconds, TTL)
+    ? 4: uint,                ; Validity (seconds; requires field 2)
     ? 5: metric-type,         ; Metric type identifier
     ? 6: probability,         ; Profile-defined confidence
     ? 7: uint,                ; format version (1 = this spec)
@@ -1965,7 +2139,7 @@ eid-reference = uint / tstr   ; packed IPN FQNN or non-IPN EID text
 metric-type = &amp;(
     prophet-dp:      0,       ; PRoPHET delivery predictability
     cgr-confidence:  1,       ; CGR contact confidence
-    maxprop-cost:    2,       ; MaxProp path cost (inverted)
+    maxprop-delivery-likelihood: 2, ; MaxProp higher-is-better score
     rapid-utility:   3,       ; RAPID utility metric
     generic:         4,       ; Unspecified/generic probability
 ) / uint                      ; Extensible via future assignment
@@ -2016,7 +2190,12 @@ metric-type = &amp;(
             <strong>seconds</strong>, not the millisecond DTN Time unit of
             RFC 9171 Section 4.2.6). Receivers <span class="bcp14">MUST</span> interpret
             field 2 and field 4 in this same second-based unit. Enables
-            receivers to compute age and apply local decay policies.<a href="#section-3.2-11.6" class="pilcrow">¶</a>
+            receivers to compute age and apply local decay policies.
+            Implementations <span class="bcp14">MUST NOT</span> copy an RFC 9171 DTN
+            Time or Bundle Age value (milliseconds) into field 2 without
+            converting to whole seconds (integer division by 1000).
+            Example: DTN Time 841924800000 ms is CPB timestamp
+            <code>841924800</code> (0x322EC0C0).<a href="#section-3.2-11.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-3.2-11.7">Field 3: Source PCE Identifier</dt>
@@ -2059,8 +2238,10 @@ metric-type = &amp;(
 <dt id="section-3.2-11.11">Field 5: Metric Type</dt>
           <dd style="margin-left: 1.5em" id="section-3.2-11.12">
             Identifies the semantic meaning of the probability value. When
-            absent, implementations <span class="bcp14">SHOULD</span> treat the value as
-            generic (type 4).<a href="#section-3.2-11.12" class="pilcrow">¶</a>
+            absent, implementations <span class="bcp14">MUST</span> treat the value as
+            generic (type 4). An unrecognized metric-type codepoint remains
+            distinct: receivers <span class="bcp14">MUST NOT</span> coerce it to type 4
+            (see below).<a href="#section-3.2-11.12" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-3.2-11.13">Field 6: Confidence</dt>
@@ -2127,8 +2308,10 @@ metric-type = &amp;(
                 <a href="#invalid-float-handling" class="auto internal xref">Section 3.4.1</a>).<a href="#section-3.2.1-2.3" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.2.1-2.4">
-              <strong>Bits 3 and 5-7:</strong><span class="bcp14">MUST</span> be 0
-                (unassigned in <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>).<a href="#section-3.2.1-2.4" class="pilcrow">¶</a>
+              <strong>Bits 3, 5, and 6:</strong><span class="bcp14">MUST</span> be 0
+                (Reserved in <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span>).
+                <strong>Bit 7 and higher unassigned bits:</strong>
+              <span class="bcp14">MUST</span> be 0 until assigned.<a href="#section-3.2.1-2.4" class="pilcrow">¶</a>
 </li>
           </ul>
 <p id="section-3.2.1-3">
@@ -2321,8 +2504,13 @@ metric-type = &amp;(
           Implementations that produce probability values not representable
           in float16 will incur 5 bytes (float32) or 9 bytes (float64) per
           value under deterministic encoding. Receivers <span class="bcp14">MUST</span>
-          accept any valid CBOR float encoding and clamp the decoded value to
-          [0.0, 1.0].<a href="#section-3.4-4" class="pilcrow">¶</a></p>
+          accept finite CBOR float encodings (binary16, binary32, or
+          binary64). They <span class="bcp14">MUST</span> reject NaN and +/-Infinity as
+          malformed, then <span class="bcp14">MUST</span> reject finite values outside
+          [0.0, 1.0] as malformed. Clamping out-of-range values to the
+          interval endpoints is <span class="bcp14">NOT RECOMMENDED</span> because
+          mapping a corrupted value greater than 1.0 to certainty can
+          amplify sinkhole attraction (see <a href="#security" class="auto internal xref">Section 8</a>).<a href="#section-3.4-4" class="pilcrow">¶</a></p>
 <p id="section-3.4-5"><strong>Bandwidth Considerations and Array Limits:</strong> A CPB
           with per-path probabilities to multiple relays adds overhead
           (5 bytes per entry for a one-byte uint next hop and binary16
@@ -2366,11 +2554,12 @@ metric-type = &amp;(
               <strong>+/-Infinity (0xF97C00, 0xF9FC00):</strong><span class="bcp14">MUST</span> be rejected as malformed.<a href="#section-3.4.1-2.2" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.4.1-2.3">
-              <strong>Negative values:</strong> Treat as 0.0 (invalid
-                probability).<a href="#section-3.4.1-2.3" class="pilcrow">¶</a>
+              <strong>Negative values:</strong><span class="bcp14">MUST</span> be
+                rejected as malformed.<a href="#section-3.4.1-2.3" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.4.1-2.4">
-              <strong>Values &gt; 1.0:</strong> Treat as 1.0 (certainty).<a href="#section-3.4.1-2.4" class="pilcrow">¶</a>
+              <strong>Values &gt; 1.0:</strong><span class="bcp14">MUST</span> be
+                rejected as malformed.<a href="#section-3.4.1-2.4" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-3.4.1-2.5">
               <strong>Very small positive values:</strong> Decoded
@@ -2555,15 +2744,17 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
             it <span class="bcp14">MUST</span> treat that value as absent for routing.<a href="#section-3.5-3.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-3.5-3.5">metric-type 2 (maxprop-cost)</dt>
+<dt id="section-3.5-3.5">metric-type 2 (maxprop-delivery-likelihood)</dt>
           <dd style="margin-left: 1.5em" id="section-3.5-3.6">
-            Delivery-likelihood proxy derived from MaxProp-style path cost.
-            Producers <span class="bcp14">MUST</span> map lower MaxProp cost to higher CPB
-            value in [0.0, 1.0] using a documented local inversion (for
-            example, 1/(1+cost) or a rank-normalized score). The inversion is
-            lossy; original cost magnitude and multi-hop cost vectors are not
-            recoverable from the CPB value. Hop-lists used for loop avoidance
-            and delete-ACKs remain local MaxProp state, not CPB fields.<a href="#section-3.5-3.6" class="pilcrow">¶</a>
+            Higher-is-better delivery-likelihood proxy derived from
+            MaxProp-style path cost. Producers <span class="bcp14">MUST</span> map lower
+            MaxProp cost to a higher CPB value in [0.0, 1.0] using a
+            documented local inversion (for example, 1/(1+cost) or a
+            rank-normalized score). The wire value is not a raw cost. The
+            inversion is lossy; original cost magnitude and multi-hop cost
+            vectors are not recoverable from the CPB value. Hop-lists used
+            for loop avoidance and delete-ACKs remain local MaxProp state,
+            not CPB fields.<a href="#section-3.5-3.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-3.5-3.7">metric-type 3 (rapid-utility)</dt>
@@ -2645,7 +2836,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           protocols defining new probability semantics
           <span class="bcp14">SHOULD</span> register a new metric-type code (see
           <a href="#iana-considerations" class="auto internal xref">Section 9</a>) rather than overloading an
-          existing one. The CPB Metric Types sub-registry exists precisely to
+          existing one. The CPB Metric Types registry exists precisely to
           keep semantically distinct values separable on the wire.<a href="#section-3.5-8" class="pilcrow">¶</a></p>
 <p id="section-3.5-9"><strong>Calibration and normalization:</strong> This document does
           not specify normalization between metric types because cross-metric
@@ -2679,18 +2870,32 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           entries are present do not by themselves define a new group.
           Implementations <span class="bcp14">SHOULD</span> select one complete CPB per
           group using the following deterministic precedence:<a href="#section-3.6-2" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-3.6-3">
-          <li id="section-3.6-3.1">Prefer a CPB with a timestamp over an undated CPB. Among dated
-              CPBs, prefer the highest timestamp. Two undated CPBs tie at
-              this step.<a href="#section-3.6-3.1" class="pilcrow">¶</a>
+<p id="section-3.6-3">
+          For deployments that require authentication or otherwise apply a
+          trust policy to CPB producers, implementations
+          <span class="bcp14">MUST</span> use the following precedence within each
+          eligible group (after excluding ineligible CPBs per above and
+          <a href="#trust-conflicts" class="auto internal xref">Section 8.2.2</a>):<a href="#section-3.6-3" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3.6-4">
+          <li id="section-3.6-4.1">Prefer the source ranked highest by the implementation's
+              trust policy (authenticated and authorized producers before
+              lower-ranked or unauthenticated sources that local policy
+              still admits).<a href="#section-3.6-4.1" class="pilcrow">¶</a>
 </li>
-          <li id="section-3.6-3.2">If tied at step 1, prefer the source ranked highest by the
-              implementation's trust policy.<a href="#section-3.6-3.2" class="pilcrow">¶</a>
+          <li id="section-3.6-4.2">If trust ranks are equal, prefer a CPB with a timestamp over
+              an undated CPB. Among dated CPBs at that trust rank, prefer
+              the highest timestamp.<a href="#section-3.6-4.2" class="pilcrow">¶</a>
 </li>
-          <li id="section-3.6-3.3">If still tied, prefer the highest bundle block number.<a href="#section-3.6-3.3" class="pilcrow">¶</a>
+          <li id="section-3.6-4.3">If still tied, prefer the highest bundle block number.<a href="#section-3.6-4.3" class="pilcrow">¶</a>
 </li>
         </ol>
-<p id="section-3.6-4">
+<p id="section-3.6-5">
+          Deployments that intentionally consume unauthenticated CPBs and
+          do not apply producer trust ranks <span class="bcp14">MAY</span> use
+          timestamp-first ordering instead, but <span class="bcp14">SHOULD NOT</span>
+          do so where route poisoning is a concern
+          (<a href="#trust-poisoning" class="auto internal xref">Section 8.2.4</a>).<a href="#section-3.6-5" class="pilcrow">¶</a></p>
+<p id="section-3.6-6">
           Selection applies to the whole CPB, not independently to each
           field or path entry. A consumer <span class="bcp14">MUST NOT</span> fill gaps
           in the selected CPB with fields from superseded CPBs in that
@@ -2700,10 +2905,10 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
           for a routing operation, the receiver <span class="bcp14">MUST</span> continue
           using local routing state. A deployment using an alternative
           precedence policy <span class="bcp14">MUST</span> document it and preserve
-          the eligibility, compatibility, and whole-block selection rules.<a href="#section-3.6-4" class="pilcrow">¶</a></p>
+          the eligibility, compatibility, and whole-block selection rules.<a href="#section-3.6-6" class="pilcrow">¶</a></p>
 <span id="name-cpb-with-per-path-probabili"></span><div id="fig-listing-6">
 <figure id="figure-6">
-          <div class="lang-cbor-diag sourcecode" id="section-3.6-5.1">
+          <div class="lang-cbor-diag sourcecode" id="section-3.6-7.1">
 <pre>&lt;CODE BEGINS&gt;
 / CBOR Extended Diagnostic Notation (EDN) /
 {
@@ -2723,7 +2928,7 @@ Total Bytes:     3 (tag byte 0xF9 + 2 float bytes)
 </div>
 <span id="name-cpb-per-path-wire-encoding-"></span><div id="fig-listing-7">
 <figure id="figure-7">
-          <div class="lang-hex sourcecode" id="section-3.6-6.1">
+          <div class="lang-hex sourcecode" id="section-3.6-8.1">
 <pre>&lt;CODE BEGINS&gt;
 A3                   ; map with 3 entries
    00 F93A00         ; key 0: default prob = 0.75
@@ -2777,8 +2982,9 @@ A3                   ; map with 3 entries
             for comparison only and does not authorize modification of a
             received CPB's authenticated bytes.<a href="#section-3.6.1-3" class="pilcrow">¶</a></p>
 <p id="section-3.6.1-4">
-            EID-references in the path-entry array <span class="bcp14">MUST</span> match
-            the destination bundle's URI scheme. For IPN bundles, each
+            Each path-entry next-hop is encoded in that next-hop's own URI
+            scheme. Path-entry schemes need not match the
+            bundle destination EID scheme. For an IPN next-hop, the
             reference <span class="bcp14">MUST</span> be a CBOR unsigned integer encoding
             the Fully Qualified Node Number (FQNN) defined in
             <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> Section 6.1.1:
@@ -2788,12 +2994,15 @@ A3                   ; map with 3 entries
             <span class="bcp14">MUST NOT</span> be transmitted in a CPB. The service
             number is not part of an IPN next-hop key. Matching
             <span class="bcp14">MUST</span> compare decoded allocator and node
-            components, treating equivalent two- and three-component
-            textual forms and binary encodings as the same identity.
+            components against the local next-hop identity, treating
+            equivalent two- and three-component textual forms and binary
+            encodings as the same identity.
             For example, <code>ipn:977000.100.1</code> has next-hop key
             <code>0x000EE86800000064</code>, whereas <code>ipn:100.1</code> has
             next-hop key 100. A text-string reference <span class="bcp14">MUST</span>
-            contain a full EID using a non-IPN URI scheme.<a href="#section-3.6.1-4" class="pilcrow">¶</a></p>
+            contain a full EID using a non-IPN URI scheme.
+            Implementations <span class="bcp14">MUST NOT</span> encode an IPN next-hop
+            as a text-string EID.<a href="#section-3.6.1-4" class="pilcrow">¶</a></p>
 <p id="section-3.6.1-5"><strong>Scheme Mismatch Handling:</strong> When the next-hop
             scheme does not match the CPB's path-entry scheme, implementations
             apply the same metric-specific default test above; if no
@@ -3068,9 +3277,9 @@ A3                   ; map with 3 entries
           peers can drop delivered bundles. Buffer drop order is tightly
           coupled to the same likelihood metric used for forwarding.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 <p id="section-5.2-2"><strong>What CPB carries:</strong> metric-type 2 as a lossy
-          [0.0, 1.0] inversion of path cost / delivery likelihood so
-          foreign nodes can rank next hops without MaxProp's full peer
-          exchange.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+          [0.0, 1.0] higher-is-better score obtained by inverting MaxProp
+          path cost into a delivery-likelihood proxy so foreign nodes can
+          rank next hops without MaxProp's full peer exchange.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
 <p id="section-5.2-3"><strong>What stays local:</strong> cost vectors, hop-lists,
           delete-ACK flooding, and the dual use of likelihood for
           queue-drop priority (though a CPB-aware node
@@ -3168,7 +3377,7 @@ A3                   ; map with 3 entries
           routers use centrality, community labels, or similarity rather
           than pure encounter probability. Those scores may be published
           as metric-type 4 (generic) with local documentation, or as new
-          metric-type codepoints via the IANA sub-registry in
+          metric-type codepoints via the IANA registry in
           <a href="#iana-considerations" class="auto internal xref">Section 9</a>. CPB still forbids mixing
           them arithmetically with prophet-dp or cgr-confidence.<a href="#section-5.7-1" class="pilcrow">¶</a></p>
 </section>
@@ -3863,10 +4072,13 @@ A3                   ; map with 3 entries
         sub-registry of Bundle Block Types). The registration policy is
         Specification Required (<span>[<a href="#RFC8126" class="cite xref">RFC8126</a>]</span>, Section 4.6).
         The value space is CBOR unsigned integers, 0 through
-        18446744073709551615; this document assigns 0-4. Values 5-255
-        are unassigned for compact encodings; values 256 through
-        18446744073709551615 are also unassigned. The registry records
-        the Value, Description, and Reference shown below.<a href="#section-9-4" class="pilcrow">¶</a></p>
+        18446744073709551615; this document assigns 0-4. Values 5-191
+        are Unassigned (Specification Required). Values 192-255 are
+        Reserved for Private or Experimental Use; private deployments
+        that mint local metric types <span class="bcp14">MUST</span> use this range.
+        Values 256 through 18446744073709551615 are Unassigned
+        (Specification Required). The registry records the Value,
+        Description, and Reference shown below.<a href="#section-9-4" class="pilcrow">¶</a></p>
 <span id="name-initial-cpb-metric-types-re"></span><div id="tab-iana-metric-types">
 <table class="center" id="table-3">
         <caption>
@@ -3893,7 +4105,7 @@ A3                   ; map with 3 entries
           </tr>
           <tr>
             <td class="text-left" rowspan="1" colspan="1">2</td>
-            <td class="text-left" rowspan="1" colspan="1">MaxProp Path Cost (inverted)</td>
+            <td class="text-left" rowspan="1" colspan="1">MaxProp Delivery Likelihood</td>
             <td class="text-left" rowspan="1" colspan="1">This document</td>
           </tr>
           <tr>
@@ -3931,7 +4143,7 @@ A3                   ; map with 3 entries
           document, and avoid conflicting reuse of an assigned value.
           Requests duplicating an existing metric <span class="bcp14">SHOULD</span>
           explain why a separate assignment is needed. Experts
-          <span class="bcp14">SHOULD</span> prefer an available value in 5-255 when
+          <span class="bcp14">SHOULD</span> prefer an available value in 5-191 when
           suitable, but larger values use the same registration policy.
           Registration does not endorse the accuracy of an estimator or
           establish routing-performance benefits.<a href="#section-9.1-2" class="pilcrow">¶</a></p>
@@ -4304,6 +4516,7 @@ cd draft-perry-dtn-cpb
 python3 -m pip install -r impl/requirements.txt
 
 python3 impl/test_cpb.py
+python3 impl/test_cpb_validation.py
 python3 impl/test_config1_policies.py
 python3 impl/test_sim_cpb_bridge.py
 python3 impl/test_draft_consistency.py
@@ -4407,8 +4620,12 @@ cddl compile-cddl --cddl impl/cpb.cddl
 <span class="refAuthor">Cotton, M.</span>, <span class="refAuthor">Leiba, B.</span>, and <span class="refAuthor">T. Narten</span>, <span class="refTitle">"Guidelines for Writing an IANA Considerations Section in RFCs"</span>, <span class="seriesInfo">BCP 26</span>, <span class="seriesInfo">RFC 8126</span>, <span class="seriesInfo">DOI 10.17487/RFC8126</span>, <time datetime="2017-06" class="refDate">June 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8126">https://www.rfc-editor.org/info/rfc8126</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9758">[RFC9758]</dt>
-      <dd>
+        <dd>
 <span class="refAuthor">Taylor, R.</span> and <span class="refAuthor">E. Birrane</span>, <span class="refTitle">"Updates to the "ipn" URI Scheme"</span>, <span class="seriesInfo">RFC 9758</span>, <span class="seriesInfo">DOI 10.17487/RFC9758</span>, <time datetime="2025-05" class="refDate">May 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9758">https://www.rfc-editor.org/info/rfc9758</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6693">[RFC6693]</dt>
+      <dd>
+<span class="refAuthor">Lindgren, A.</span>, <span class="refAuthor">Doria, A.</span>, <span class="refAuthor">Davies, E.</span>, and <span class="refAuthor">S. Grasic</span>, <span class="refTitle">"Probabilistic Routing Protocol for Intermittently Connected Networks"</span>, <span class="seriesInfo">RFC 6693</span>, <span class="seriesInfo">DOI 10.17487/RFC6693</span>, <time datetime="2012-08" class="refDate">August 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6693">https://www.rfc-editor.org/info/rfc6693</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -4420,10 +4637,6 @@ cddl compile-cddl --cddl impl/cpb.cddl
 <dt id="IPNSIG2023">[IPNSIG2023]</dt>
         <dd>
 <span class="refAuthor">Kaneko, Y.</span>, <span class="refAuthor">Cerf, V.</span>, <span class="refAuthor">Tabunshchyk, H.</span>, <span class="refAuthor">Burleigh, S.</span>, <span class="refAuthor">Blanchet, M.</span>, <span class="refAuthor">Scott, K.</span>, <span class="refAuthor">Suzuki, K.</span>, <span class="refAuthor">Garcia, O.</span>, <span class="refAuthor">Chappell, L.</span>, <span class="refAuthor">Danielson, H.</span>, <span class="refAuthor">Pace, S.</span>, <span class="refAuthor">Green, J.</span>, and <span class="refAuthor">J. Schier</span>, <span class="refTitle">"Solar System Internet Architecture and Governance -- from the Moon to Mars and beyond"</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.ipnsig.org/_files/ugd/d716c2_5df0d50ff8ab466380dadc75e166cfcf.pdf">https://www.ipnsig.org/_files/ugd/d716c2_5df0d50ff8ab466380dadc75e166cfcf.pdf</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC6693">[RFC6693]</dt>
-        <dd>
-<span class="refAuthor">Lindgren, A.</span>, <span class="refAuthor">Doria, A.</span>, <span class="refAuthor">Davies, E.</span>, and <span class="refAuthor">S. Grasic</span>, <span class="refTitle">"Probabilistic Routing Protocol for Intermittently Connected Networks"</span>, <span class="seriesInfo">RFC 6693</span>, <span class="seriesInfo">DOI 10.17487/RFC6693</span>, <time datetime="2012-08" class="refDate">August 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6693">https://www.rfc-editor.org/info/rfc6693</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9675">[RFC9675]</dt>
         <dd>
@@ -4551,7 +4764,7 @@ cddl compile-cddl --cddl impl/cpb.cddl
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-unsubmitted-working-draft-s" class="section-name selfRef">Unsubmitted working draft (September 2026)</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="appendix-C.1-1.1">Initial Experimental -00: Contact Probability Block wire
+<li class="normal" id="appendix-C.1-1.1">Initial unsubmitted Experimental working draft (-latest): Contact Probability Block wire
               format, metric-type registry, operational and security
               considerations, and IANA requests.<a href="#appendix-C.1-1.1" class="pilcrow">¶</a>
 </li>
@@ -4580,6 +4793,18 @@ cddl compile-cddl --cddl impl/cpb.cddl
               authenticated bundle and producer binding; fragment-safe
               fallback; strict codec validation and corrected wire examples,
               size accounting, references, and registry review guidance.<a href="#appendix-C.1-1.8" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-C.1-1.9">
+            Review fixes: finite-float reject policy; trust-before-timestamp
+            precedence for authenticated use; next-hop scheme independent of
+            destination EID; Independent workgroup line; MaxProp delivery
+            likelihood naming; Metric Types private-use range 192-255.<a href="#appendix-C.1-1.9" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-C.1-1.10">Pre-submit polish: valid BCP 14 wording for path-entry schemes;
+            IANA MaxProp description aligned with delivery-likelihood;
+            Intro/Motivation claim hygiene; RFC6693 normative for metric-type 0
+            aging; terminology/notation cleanup; reproduce listing includes
+            validation tests; Fig2 hex wrap; CDDL comment sync.<a href="#appendix-C.1-1.10" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
