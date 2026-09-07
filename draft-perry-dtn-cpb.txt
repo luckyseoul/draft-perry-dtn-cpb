@@ -9,7 +9,7 @@ Expires: 11 March 2027
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
-                         draft-perry-dtn-cpb-00
+                       draft-perry-dtn-cpb-latest
 
 Abstract
 
@@ -175,7 +175,7 @@ Internet-Draft                   DTN CPB                  September 2026
    Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  49
    Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  50
    Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  50
-     C.1.  draft-perry-dtn-cpb-00 (September 2026) . . . . . . . . .  50
+     C.1.  Unsubmitted working draft (September 2026)  . . . . . . .  50
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  51
 
 1.  Introduction
@@ -2766,11 +2766,11 @@ Appendix C.  Change Log
    _[RFC Editor Note: Please remove this entire section before
    publication.]_
 
-C.1.  draft-perry-dtn-cpb-00 (September 2026)
+C.1.  Unsubmitted working draft (September 2026)
 
-   *  Initial Experimental Internet-Draft (-00): Contact Probability
-      Block wire format, metric-type registry, operational and security
-      considerations, and IANA requests.
+   *  Initial unsubmitted Experimental working draft (-latest): Contact
+      Probability Block wire format, metric-type registry, operational
+      and security considerations, and IANA requests.
 
    *  CBOR float16 encoding with deterministic encoding rules; format
       version field (key 7); per-path array size guidance as SHOULD with
@@ -2818,8 +2818,8 @@ Internet-Draft                   DTN CPB                  September 2026
       aging; terminology/notation cleanup; reproduce listing includes
       validation tests; Fig2 hex wrap; CDDL comment sync.
 
-   *  Submission packaging: docname/seriesInfo draft-perry-dtn-cpb-00;
-      document date 2026-09-07; regenerated txt/html/pdf.
+   *  Pre-Datatracker packaging: keep docname draft-perry-dtn-cpb-
+      latest; document date 2026-09-07; regenerated txt/html/pdf.
 
 Author's Address
 
