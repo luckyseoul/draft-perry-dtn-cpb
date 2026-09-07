@@ -29,7 +29,7 @@ eid-reference = uint / tstr   ; packed IPN FQNN or non-IPN EID text
 metric-type = &(
     prophet-dp: 0,
     cgr-confidence: 1,
-    maxprop-cost: 2,
+    maxprop-delivery-likelihood: 2,
     rapid-utility: 3,
     generic: 4,
 ) / uint
