@@ -20,6 +20,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import math
 import struct
+import io
+from pathlib import Path
+import xml.etree.ElementTree as ET
+import cbor2
 import cpb
 
 
@@ -38,6 +42,16 @@ def fail(msg, *, got=None, expected=None):
 
 def ok(msg):
     print(f"PASS  {msg}")
+
+
+def draft_hex(anchor):
+    """Read the literal published bytes, excluding artwork comments."""
+    draft = Path(__file__).resolve().parents[1] / "draft-perry-dtn-cpb.xml"
+    source = ET.parse(draft).find(f".//figure[@anchor='{anchor}']/sourcecode")
+    if source is None or source.text is None:
+        fail(f"missing XML hex figure {anchor}")
+    return bytes.fromhex("".join(line.partition(";")[0]
+                                  for line in source.text.splitlines()))
 
 
 # ---------------- hex encoding table (Section 3.4.3) ---------------------
@@ -74,7 +88,21 @@ data = {
     cpb.F_TIMESTAMP: 0x00F73A80,
     cpb.F_VALIDITY: 3600,
 }
-expected_inner = "A400F93A0001818218 64F93C00021A00F73A8004190E10".replace(" ", "")
+figure2_wire = draft_hex("fig-listing-2")
+stream = io.BytesIO(figure2_wire)
+figure2_block = cbor2.CBORDecoder(stream).decode()
+if stream.tell() != len(figure2_wire):
+    fail("Figure 2 must contain exactly one complete CBOR item")
+if (not isinstance(figure2_block, list) or len(figure2_block) != 5
+        or figure2_block[:4] != [200, 2, 0x11, 0]
+        or not isinstance(figure2_block[4], bytes)):
+    fail("Figure 2 canonical-block structure", got=figure2_block)
+expected_block = cbor2.dumps([200, 2, 0x11, 0, cpb.encode_cpb(data)], canonical=True)
+if figure2_wire != expected_block:
+    fail("Figure 2 complete block mismatch", got=_hex(figure2_wire),
+         expected=_hex(expected_block))
+ok(f"literal XML Figure 2 is one complete {len(figure2_wire)}-byte canonical block")
+expected_inner = _hex(figure2_block[4])
 got_inner = _hex(cpb.encode_cpb(data))
 if got_inner != expected_inner:
     fail("Figure 2 inner CBOR mismatch", got=got_inner, expected=expected_inner)
@@ -101,16 +129,17 @@ data = {
     cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
     cpb.F_METRIC_TYPE: cpb.METRIC_CGR_CONFIDENCE,
 }
-expected = "A300F93A000182821 9012CF93800821864F93C000501".replace(" ", "")
+figure7_wire = draft_hex("fig-listing-7")
+expected = _hex(figure7_wire)
 got = _hex(cpb.encode_cpb(data))
 if got != expected:
     fail("Figure 7 mismatch", got=got, expected=expected)
 ok(f"wire encoding ({len(got)//2} bytes) matches Figure 7")
 
-decoded = cpb.decode_cpb(cpb.encode_cpb(data))
+decoded = cpb.decode_cpb(figure7_wire)
 if decoded != data:
     fail("Figure 7 round-trip mismatch", got=decoded, expected=data)
-ok("decode(encode(L7)) == L7")
+ok("decode(literal XML Figure 7) == L7 with complete input consumption")
 
 
 # ---------------- BTSD wrap: Figure 2 wrapped as bstr -------------------
@@ -158,8 +187,7 @@ try:
 except ValueError:
     ok("encode 1.5 -> ValueError (encoder is strict)")
 
-# Decoder is permissive (clamps); test a hand-built blob with prob > 1.0 in float32.
-import cbor2
+# Decoder is permissive (clamps); test a hand-built blob with prob > 1.0.
 blob_oversize = cbor2.dumps({0: 1.5}, canonical=True)
 decoded = cpb.decode_cpb(blob_oversize)
 if decoded[0] != 1.0:

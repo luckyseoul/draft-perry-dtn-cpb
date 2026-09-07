@@ -1,4 +1,8 @@
 LIBDIR := lib
+# Capture the caller's interpreter before the template prepends its own venv
+# to PATH. The codec's pinned dependencies belong to the implementation env.
+# Override with: make test CPB_PYTHON=/absolute/path/to/python
+CPB_PYTHON := $(or $(CPB_PYTHON),$(shell command -v python3))
 # Paginated .txt (4-line two-column I-D masthead), same as posted drafts.
 TEXT_PAGINATION := true
 
@@ -50,12 +54,12 @@ template-venv:
 
 .PHONY: test
 test:
-	@python3 -c "import cbor2" || { echo "cbor2 is required; install the implementation test dependency first."; exit 1; }
+	@"$(CPB_PYTHON)" -c "from importlib.metadata import version; assert version('cbor2') == '5.9.0', 'cbor2==5.9.0 is required'" || { echo "Install impl/requirements.txt with $(CPB_PYTHON), or set CPB_PYTHON to that environment's interpreter."; exit 1; }
 	@echo "==> CPB reference implementation tests"
-	@cd impl && python3 test_cpb.py
-	@cd impl && python3 test_config1_policies.py
-	@cd impl && python3 test_sim_cpb_bridge.py
-	@cd impl && python3 test_draft_consistency.py
+	@cd impl && "$(CPB_PYTHON)" test_cpb.py
+	@cd impl && "$(CPB_PYTHON)" test_config1_policies.py
+	@cd impl && "$(CPB_PYTHON)" test_sim_cpb_bridge.py
+	@cd impl && "$(CPB_PYTHON)" test_draft_consistency.py
 	@echo
 	@echo "==> All reference implementation tests passed."
 

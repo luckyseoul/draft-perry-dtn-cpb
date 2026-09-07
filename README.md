@@ -7,20 +7,27 @@ and a metric-type tag.
 
 ## Specification
 
-The normative specification is
-[`draft-perry-dtn-cpb.xml`](draft-perry-dtn-cpb.xml).  See the
+Read the [formatted draft](draft-perry-dtn-cpb.html); its normative source is
+[`draft-perry-dtn-cpb.xml`](draft-perry-dtn-cpb.xml). See the
 [quick reference](docs/CPB-QUICK-REFERENCE.md) for the wire format and
 processing rules.
 
 ## Build
 
-Build formatted text and HTML:
+Build formatted text, HTML, and PDF:
 
 ```sh
 make
 ```
 
 This requires `xml2rfc` and the standard build dependencies.
+
+## Experimental Scope
+
+This is an unsubmitted GitHub presubmission with intended status Experimental.
+The draft contains a plan for future routing, robustness, and interoperability
+experiments. It reports no experimental results or demonstrated performance
+improvement. Reference-code development checks do not execute that plan.
 
 ## Reference Implementation
 
@@ -38,3 +45,14 @@ make cddl
 ```
 
 See [implementation details](impl/README.md).
+
+`make test` runs the same implementation checks using the Python interpreter
+from the caller's environment. To select a separate environment, use
+`make test CPB_PYTHON=/absolute/path/to/python`. The implementation pins
+`cbor2==5.9.0` because its deterministic encoder uses that version's Python
+backend; the draft rendering tools use their own template environment.
+
+The editor copy uses `-latest`. Numbered submission artifacts can be prepared
+locally without uploading them. The publishing workflow uploads to Datatracker
+when a `draft-*` tag is pushed or the workflow is dispatched; use those
+actions only when the author is ready to submit.
