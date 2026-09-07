@@ -57,6 +57,7 @@ test:
 	@"$(CPB_PYTHON)" -c "from importlib.metadata import version; assert version('cbor2') == '5.9.0', 'cbor2==5.9.0 is required'" || { echo "Install impl/requirements.txt with $(CPB_PYTHON), or set CPB_PYTHON to that environment's interpreter."; exit 1; }
 	@echo "==> CPB reference implementation tests"
 	@cd impl && "$(CPB_PYTHON)" test_cpb.py
+	@cd impl && "$(CPB_PYTHON)" test_cpb_validation.py
 	@cd impl && "$(CPB_PYTHON)" test_config1_policies.py
 	@cd impl && "$(CPB_PYTHON)" test_sim_cpb_bridge.py
 	@cd impl && "$(CPB_PYTHON)" test_draft_consistency.py
