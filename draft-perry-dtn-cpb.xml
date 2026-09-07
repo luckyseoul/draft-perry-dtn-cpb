@@ -6,12 +6,12 @@
 <!ENTITY nbhy "&#8209;">
 <!ENTITY wj "&#8288;">
 ]>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902" docName="draft-perry-dtn-cpb-latest" category="exp" submissionType="IETF" consensus="false" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="false" version="3">
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902" docName="draft-perry-dtn-cpb-00" category="exp" submissionType="IETF" consensus="false" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="false" version="3">
   <front>
     <title abbrev="DTN CPB">
       Probabilistic Contact Metadata for DTN Bundle Routing
     </title>
-    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-latest"/>
+    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-00"/>
     <author fullname="Nicholas Perry" initials="N." surname="Perry">
       <organization>Independent</organization>
       <address>
@@ -23,7 +23,7 @@
         <email>nick@perrybrandsllc.com</email>
       </address>
     </author>
-    <date year="2026" month="September" day="5"/>
+    <date year="2026" month="September" day="7"/>
         <workgroup>Independent</workgroup>
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
@@ -2885,9 +2885,9 @@ cddl compile-cddl --cddl impl/cpb.cddl
         publication.]</em>
       </t>
       <section anchor="changelog-00">
-        <name>Unsubmitted working draft (September 2026)</name>
+        <name>draft-perry-dtn-cpb-00 (September 2026)</name>
         <ul>
-          <li>Initial unsubmitted Experimental working draft (-latest): Contact Probability Block wire
+          <li>Initial Experimental Internet-Draft (-00): Contact Probability Block wire
               format, metric-type registry, operational and security
               considerations, and IANA requests.</li>
           <li>CBOR float16 encoding with deterministic encoding rules;
@@ -2920,6 +2920,8 @@ cddl compile-cddl --cddl impl/cpb.cddl
             Intro/Motivation claim hygiene; RFC6693 normative for metric-type 0
             aging; terminology/notation cleanup; reproduce listing includes
             validation tests; Fig2 hex wrap; CDDL comment sync.</li>
+          <li>Submission packaging: docname/seriesInfo draft-perry-dtn-cpb-00;
+            document date 2026-09-07; regenerated txt/html/pdf.</li>
         </ul>
       </section>
     </section>
