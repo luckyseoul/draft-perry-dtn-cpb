@@ -154,17 +154,17 @@ class CPBValidationTests(unittest.TestCase):
             with self.subTest(wire=wire):
                 self.reject(bytes.fromhex(wire))
 
-    def test_all_float_widths_clamp_reject_nonfinite_and_flush(self):
+    def test_all_float_widths_reject_oor_nonfinite_and_flush(self):
         values = (-2.0, -0.0, 0.0, 2.0 ** -24, 2.0 ** -15,
                   2.0 ** -14, 0.5, 1.0, 2.0, math.inf, -math.inf, math.nan)
         for prefix, fmt in ((b"\xf9", ">e"), (b"\xfa", ">f"), (b"\xfb", ">d")):
             for value in values:
                 for wire in probability_wires(prefix + struct.pack(fmt, value)):
                     with self.subTest(width=fmt, value=value, wire=wire.hex()):
-                        if not math.isfinite(value):
+                        if (not math.isfinite(value)) or value < 0.0 or value > 1.0:
                             self.reject(wire)
                             continue
-                        expected = min(1.0, max(0.0, value))
+                        expected = value
                         if 0.0 < expected < cpb.MIN_NORMAL_BINARY16:
                             expected = 0.0
                         result = cpb.decode_cpb(wire)
@@ -179,11 +179,11 @@ class CPBValidationTests(unittest.TestCase):
             packed = bits.to_bytes(2, "big")
             value = struct.unpack(">e", packed)[0]
             wire = b"\xa1\x00\xf9" + packed
-            if not math.isfinite(value):
+            if (not math.isfinite(value)) or value < 0.0 or value > 1.0:
                 with self.assertRaises(ValueError, msg=f"binary16 0x{bits:04x}"):
                     cpb.decode_cpb(wire)
             else:
-                expected = min(1.0, max(0.0, value))
+                expected = value
                 if 0.0 < expected < 2.0 ** -14:
                     expected = 0.0
                 self.assertEqual(cpb.decode_cpb(wire)[0], expected, f"binary16 0x{bits:04x}")
