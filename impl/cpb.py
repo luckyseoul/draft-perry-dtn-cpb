@@ -54,7 +54,8 @@ F_VERSION = 7
 METRIC_PROPHET_DP = 0
 METRIC_CGR_CONFIDENCE = 1
 METRIC_MAXPROP_DELIVERY_LIKELIHOOD = 2
-METRIC_MAXPROP_COST = 2  # alias
+# Deprecated alias: wire value is higher-is-better delivery-likelihood, not raw cost.
+METRIC_MAXPROP_COST = 2  # deprecated; use METRIC_MAXPROP_DELIVERY_LIKELIHOOD
 METRIC_RAPID_UTILITY = 3
 METRIC_GENERIC = 4
 
