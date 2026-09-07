@@ -2430,7 +2430,7 @@ A3                   ; map with 3 entries
     <section anchor="experiment">
       <name>Planned Experimental Evaluation</name>
       <t>
-        This unsubmitted Experimental draft proposes the following evaluation
+        This Experimental draft proposes the following evaluation
         plan. These experiments have not been carried out for this draft;
         no results or performance benefits are asserted.
       </t>
@@ -2885,9 +2885,9 @@ cddl compile-cddl --cddl impl/cpb.cddl
         publication.]</em>
       </t>
       <section anchor="changelog-00">
-        <name>Unsubmitted working draft (September 2026)</name>
+        <name>September 2026</name>
         <ul>
-          <li>Initial unsubmitted Experimental working draft (-latest): Contact Probability Block wire
+          <li>Initial Experimental Internet-Draft: Contact Probability Block wire
               format, metric-type registry, operational and security
               considerations, and IANA requests.</li>
           <li>CBOR float16 encoding with deterministic encoding rules;
@@ -2915,13 +2915,11 @@ cddl compile-cddl --cddl impl/cpb.cddl
             destination EID; Independent workgroup line; MaxProp delivery
             likelihood naming; Metric Types private-use range 192-255.
           </li>
-          <li>Pre-submit polish: valid BCP 14 wording for path-entry schemes;
-            IANA MaxProp description aligned with delivery-likelihood;
-            Intro/Motivation claim hygiene; RFC6693 normative for metric-type 0
-            aging; terminology/notation cleanup; reproduce listing includes
+          <li>Valid BCP 14 wording for path-entry schemes; IANA MaxProp
+            description aligned with delivery-likelihood; Intro/Motivation
+            claim hygiene; RFC6693 normative for metric-type 0 aging;
+            terminology/notation cleanup; reproduce listing includes
             validation tests; Fig2 hex wrap; CDDL comment sync.</li>
-          <li>Pre-Datatracker packaging: keep docname draft-perry-dtn-cpb-latest;
-            document date 2026-09-07; regenerated txt/html/pdf.</li>
         </ul>
       </section>
     </section>
