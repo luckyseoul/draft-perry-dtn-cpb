@@ -4,12 +4,12 @@
 
 Independent                                                     N. Perry
 Internet-Draft                                               Independent
-Intended status: Experimental                           5 September 2026
-Expires: 9 March 2027
+Intended status: Experimental                           7 September 2026
+Expires: 11 March 2027
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
-                       draft-perry-dtn-cpb-latest
+                         draft-perry-dtn-cpb-00
 
 Abstract
 
@@ -46,14 +46,14 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 March 2027.
+   This Internet-Draft will expire on 11 March 2027.
 
 
 
 
 
 
-Perry                     Expires 9 March 2027                  [Page 1]
+Perry                     Expires 11 March 2027                 [Page 1]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Perry                     Expires 9 March 2027                  [Page 2]
+Perry                     Expires 11 March 2027                 [Page 2]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -165,7 +165,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 3]
+Perry                     Expires 11 March 2027                 [Page 3]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -175,7 +175,7 @@ Internet-Draft                   DTN CPB                  September 2026
    Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  49
    Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  50
    Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  50
-     C.1.  Unsubmitted working draft (September 2026)  . . . . . . .  50
+     C.1.  draft-perry-dtn-cpb-00 (September 2026) . . . . . . . . .  50
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  51
 
 1.  Introduction
@@ -221,7 +221,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 4]
+Perry                     Expires 11 March 2027                 [Page 4]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -277,7 +277,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 5]
+Perry                     Expires 11 March 2027                 [Page 5]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -333,7 +333,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 6]
+Perry                     Expires 11 March 2027                 [Page 6]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -389,7 +389,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 7]
+Perry                     Expires 11 March 2027                 [Page 7]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -445,7 +445,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 8]
+Perry                     Expires 11 March 2027                 [Page 8]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -501,7 +501,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                  [Page 9]
+Perry                     Expires 11 March 2027                 [Page 9]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -557,7 +557,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 10]
+Perry                     Expires 11 March 2027                [Page 10]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -613,7 +613,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 11]
+Perry                     Expires 11 March 2027                [Page 11]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -669,7 +669,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 12]
+Perry                     Expires 11 March 2027                [Page 12]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -725,7 +725,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 13]
+Perry                     Expires 11 March 2027                [Page 13]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -781,7 +781,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 14]
+Perry                     Expires 11 March 2027                [Page 14]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -837,7 +837,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 15]
+Perry                     Expires 11 March 2027                [Page 15]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -893,7 +893,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 16]
+Perry                     Expires 11 March 2027                [Page 16]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -949,7 +949,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 17]
+Perry                     Expires 11 March 2027                [Page 17]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1005,7 +1005,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 18]
+Perry                     Expires 11 March 2027                [Page 18]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1061,7 +1061,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 19]
+Perry                     Expires 11 March 2027                [Page 19]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1117,7 +1117,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 20]
+Perry                     Expires 11 March 2027                [Page 20]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1173,7 +1173,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 21]
+Perry                     Expires 11 March 2027                [Page 21]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1229,7 +1229,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 22]
+Perry                     Expires 11 March 2027                [Page 22]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1285,7 +1285,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 23]
+Perry                     Expires 11 March 2027                [Page 23]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1341,7 +1341,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 24]
+Perry                     Expires 11 March 2027                [Page 24]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1397,7 +1397,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 25]
+Perry                     Expires 11 March 2027                [Page 25]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1453,7 +1453,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 26]
+Perry                     Expires 11 March 2027                [Page 26]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1509,7 +1509,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 27]
+Perry                     Expires 11 March 2027                [Page 27]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1565,7 +1565,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 28]
+Perry                     Expires 11 March 2027                [Page 28]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1621,7 +1621,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 29]
+Perry                     Expires 11 March 2027                [Page 29]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1677,7 +1677,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 30]
+Perry                     Expires 11 March 2027                [Page 30]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1733,7 +1733,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 31]
+Perry                     Expires 11 March 2027                [Page 31]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1789,7 +1789,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 32]
+Perry                     Expires 11 March 2027                [Page 32]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1845,7 +1845,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 33]
+Perry                     Expires 11 March 2027                [Page 33]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1901,7 +1901,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 34]
+Perry                     Expires 11 March 2027                [Page 34]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -1957,7 +1957,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 35]
+Perry                     Expires 11 March 2027                [Page 35]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2013,7 +2013,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 36]
+Perry                     Expires 11 March 2027                [Page 36]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2069,7 +2069,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 37]
+Perry                     Expires 11 March 2027                [Page 37]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2125,7 +2125,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 38]
+Perry                     Expires 11 March 2027                [Page 38]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2181,7 +2181,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 39]
+Perry                     Expires 11 March 2027                [Page 39]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2237,7 +2237,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 40]
+Perry                     Expires 11 March 2027                [Page 40]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2293,7 +2293,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 41]
+Perry                     Expires 11 March 2027                [Page 41]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2349,7 +2349,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 42]
+Perry                     Expires 11 March 2027                [Page 42]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2405,7 +2405,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 43]
+Perry                     Expires 11 March 2027                [Page 43]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2461,7 +2461,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 44]
+Perry                     Expires 11 March 2027                [Page 44]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2517,7 +2517,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 45]
+Perry                     Expires 11 March 2027                [Page 45]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2573,7 +2573,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 46]
+Perry                     Expires 11 March 2027                [Page 46]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2629,7 +2629,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 47]
+Perry                     Expires 11 March 2027                [Page 47]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2685,7 +2685,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 9 March 2027                 [Page 48]
+Perry                     Expires 11 March 2027                [Page 48]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2741,7 +2741,7 @@ Appendix A.  Mars Mission Scenario
 
 
 
-Perry                     Expires 9 March 2027                 [Page 49]
+Perry                     Expires 11 March 2027                [Page 49]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2766,11 +2766,11 @@ Appendix C.  Change Log
    _[RFC Editor Note: Please remove this entire section before
    publication.]_
 
-C.1.  Unsubmitted working draft (September 2026)
+C.1.  draft-perry-dtn-cpb-00 (September 2026)
 
-   *  Initial unsubmitted Experimental working draft (-latest): Contact
-      Probability Block wire format, metric-type registry, operational
-      and security considerations, and IANA requests.
+   *  Initial Experimental Internet-Draft (-00): Contact Probability
+      Block wire format, metric-type registry, operational and security
+      considerations, and IANA requests.
 
    *  CBOR float16 encoding with deterministic encoding rules; format
       version field (key 7); per-path array size guidance as SHOULD with
@@ -2797,7 +2797,7 @@ C.1.  Unsubmitted working draft (September 2026)
 
 
 
-Perry                     Expires 9 March 2027                 [Page 50]
+Perry                     Expires 11 March 2027                [Page 50]
 
 Internet-Draft                   DTN CPB                  September 2026
 
@@ -2817,6 +2817,9 @@ Internet-Draft                   DTN CPB                  September 2026
       Motivation claim hygiene; RFC6693 normative for metric-type 0
       aging; terminology/notation cleanup; reproduce listing includes
       validation tests; Fig2 hex wrap; CDDL comment sync.
+
+   *  Submission packaging: docname/seriesInfo draft-perry-dtn-cpb-00;
+      document date 2026-09-07; regenerated txt/html/pdf.
 
 Author's Address
 
@@ -2850,7 +2853,4 @@ Author's Address
 
 
 
-
-
-
-Perry                     Expires 9 March 2027                 [Page 51]
+Perry                     Expires 11 March 2027                [Page 51]
