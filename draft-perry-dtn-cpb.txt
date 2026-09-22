@@ -175,7 +175,7 @@ Internet-Draft                   DTN CPB                  September 2026
    Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  49
    Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  50
    Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  50
-     C.1.  Unsubmitted working draft (September 2026)  . . . . . . .  50
+     C.1.  September 2026  . . . . . . . . . . . . . . . . . . . . .  50
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  51
 
 1.  Introduction
@@ -2412,8 +2412,8 @@ Internet-Draft                   DTN CPB                  September 2026
 
 12.  Planned Experimental Evaluation
 
-   This unsubmitted Experimental draft proposes the following evaluation
-   plan.  These experiments have not been carried out for this draft; no
+   This Experimental draft proposes the following evaluation plan.
+   These experiments have not been carried out for this draft; no
    results or performance benefits are asserted.
 
    Routing behavior  Compare the same routing implementation with and
@@ -2766,11 +2766,11 @@ Appendix C.  Change Log
    _[RFC Editor Note: Please remove this entire section before
    publication.]_
 
-C.1.  Unsubmitted working draft (September 2026)
+C.1.  September 2026
 
-   *  Initial unsubmitted Experimental working draft (-latest): Contact
-      Probability Block wire format, metric-type registry, operational
-      and security considerations, and IANA requests.
+   *  Initial Experimental Internet-Draft: Contact Probability Block
+      wire format, metric-type registry, operational and security
+      considerations, and IANA requests.
 
    *  CBOR float16 encoding with deterministic encoding rules; format
       version field (key 7); per-path array size guidance as SHOULD with
@@ -2812,14 +2812,11 @@ Internet-Draft                   DTN CPB                  September 2026
       destination EID; Independent workgroup line; MaxProp delivery
       likelihood naming; Metric Types private-use range 192-255.
 
-   *  Pre-submit polish: valid BCP 14 wording for path-entry schemes;
-      IANA MaxProp description aligned with delivery-likelihood; Intro/
-      Motivation claim hygiene; RFC6693 normative for metric-type 0
-      aging; terminology/notation cleanup; reproduce listing includes
+   *  Valid BCP 14 wording for path-entry schemes; IANA MaxProp
+      description aligned with delivery-likelihood; Intro/Motivation
+      claim hygiene; RFC6693 normative for metric-type 0 aging;
+      terminology/notation cleanup; reproduce listing includes
       validation tests; Fig2 hex wrap; CDDL comment sync.
-
-   *  Pre-Datatracker packaging: keep docname draft-perry-dtn-cpb-
-      latest; document date 2026-09-07; regenerated txt/html/pdf.
 
 Author's Address
 
@@ -2828,6 +2825,9 @@ Author's Address
    Council Bluffs, Iowa
    United States of America
    Email: nick@perrybrandsllc.com
+
+
+
 
 
 
