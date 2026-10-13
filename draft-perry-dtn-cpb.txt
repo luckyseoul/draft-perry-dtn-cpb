@@ -4,12 +4,12 @@
 
 Independent                                                     N. Perry
 Internet-Draft                                               Independent
-Intended status: Experimental                           7 September 2026
-Expires: 11 March 2027
+Intended status: Experimental                            12 October 2026
+Expires: 15 April 2027
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
-                       draft-perry-dtn-cpb-latest
+                         draft-perry-dtn-cpb-00
 
 Abstract
 
@@ -26,11 +26,6 @@ Abstract
    shared applicability context distinguish estimates; cross-metric
    arithmetic is prohibited.
 
-   This Experimental draft outlines a plan to evaluate routing behavior,
-   robustness to noisy or adversarial estimates, and interoperability
-   across independent BPv7 implementations.  It reports no experimental
-   results or demonstrated routing-performance improvement.
-
 Status of This Memo
 
    This Internet-Draft is submitted in full conformance with the
@@ -46,43 +41,39 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 11 March 2027.
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                 [Page 1]
-
-Internet-Draft                   DTN CPB                  September 2026
-
+   This Internet-Draft will expire on 15 April 2027.
 
 Copyright Notice
 
    Copyright (c) 2026 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
+
+
+
+
+
+Perry                     Expires 15 April 2027                 [Page 1]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents (https://trustee.ietf.org/
    license-info) in effect on the date of publication of this document.
    Please review these documents carefully, as they describe your rights
-   and restrictions with respect to this document.  Code Components
-   extracted from this document must include Revised BSD License text as
-   described in Section 4.e of the Trust Legal Provisions and are
-   provided without warranty as described in the Revised BSD License.
+   and restrictions with respect to this document.
 
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
-     1.1.  Problem Statement (IPNSIG SSI Architecture,
-           Section 4.2)  . . . . . . . . . . . . . . . . . . . . . .   4
+     1.1.  Problem Statement . . . . . . . . . . . . . . . . . . . .   4
      1.2.  Motivation  . . . . . . . . . . . . . . . . . . . . . . .   5
      1.3.  Requirements Language . . . . . . . . . . . . . . . . . .   6
      1.4.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   6
      1.5.  Notation Conventions  . . . . . . . . . . . . . . . . . .   6
    2.  Architectural Considerations  . . . . . . . . . . . . . . . .   7
-     2.1.  Why NOT URI Query Parameters  . . . . . . . . . . . . . .   7
+     2.1.  Why Not URI Query Parameters  . . . . . . . . . . . . . .   7
        2.1.1.  Endpoint Identifier Immutability  . . . . . . . . . .   7
        2.1.2.  Router Modification Problem . . . . . . . . . . . . .   8
      2.2.  Solution: Bundle Extension Blocks . . . . . . . . . . . .   8
@@ -106,14 +97,6 @@ Table of Contents
      4.1.  Creation  . . . . . . . . . . . . . . . . . . . . . . . .  24
      4.2.  Processing by Intermediate Routers  . . . . . . . . . . .  25
      4.3.  Usage in Routing Algorithms . . . . . . . . . . . . . . .  26
-
-
-
-Perry                     Expires 11 March 2027                 [Page 2]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
      4.4.  Stability Considerations and Feedback Dynamics  . . . . .  26
    5.  Relationship to Existing DTN Routing Protocols  . . . . . . .  27
      5.1.  PRoPHET (RFC 6693)  . . . . . . . . . . . . . . . . . . .  28
@@ -123,60 +106,69 @@ Internet-Draft                   DTN CPB                  September 2026
      5.5.  Epidemic and Summary-Vector Protocols . . . . . . . . . .  29
      5.6.  Contact Graph Routing (CGR) . . . . . . . . . . . . . . .  29
      5.7.  Social and Hybrid Metrics . . . . . . . . . . . . . . . .  30
+
+
+
+Perry                     Expires 15 April 2027                 [Page 2]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
      5.8.  DTNMA (RFC 9675)  . . . . . . . . . . . . . . . . . . . .  30
      5.9.  Neighborhood Advertisement and Scheduled Topology . . . .  30
-     5.10. Summary: CPB as Cross-Cutting Metadata  . . . . . . . . .  31
-   6.  Backwards Compatibility . . . . . . . . . . . . . . . . . . .  31
-   7.  Operational Considerations  . . . . . . . . . . . . . . . . .  31
-     7.1.  When and Where to Emit CPBs . . . . . . . . . . . . . . .  31
-     7.2.  Bundle Store and Memory Sizing  . . . . . . . . . . . . .  32
-     7.3.  Computational and Storage Overhead on Constrained
+     5.10. Relationship to Updates of BPv7 . . . . . . . . . . . . .  31
+     5.11. Summary: CPB as Cross-Cutting Metadata  . . . . . . . . .  31
+   6.  Operational Considerations  . . . . . . . . . . . . . . . . .  32
+     6.1.  When and Where to Emit CPBs . . . . . . . . . . . . . . .  32
+     6.2.  Bundle Store and Memory Sizing  . . . . . . . . . . . . .  32
+     6.3.  Computational and Storage Overhead on Constrained
            Nodes . . . . . . . . . . . . . . . . . . . . . . . . . .  32
-     7.4.  Logging, Monitoring, and OAM  . . . . . . . . . . . . . .  32
-     7.5.  Partial Deployment  . . . . . . . . . . . . . . . . . . .  33
-     7.6.  Congestion and Storage Pressure . . . . . . . . . . . . .  33
-     7.7.  Clock Considerations  . . . . . . . . . . . . . . . . . .  33
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  33
-     8.1.  Threat Model  . . . . . . . . . . . . . . . . . . . . . .  33
-     8.2.  Trust Model . . . . . . . . . . . . . . . . . . . . . . .  34
-       8.2.1.  Who is Authorized to Append CPBs  . . . . . . . . . .  34
-       8.2.2.  Cryptographic Adjudication of Conflicting CPBs  . . .  35
-       8.2.3.  Downstream Handling of Upstream BIBs  . . . . . . . .  35
-       8.2.4.  Route Poisoning by Semi-Trusted Relays  . . . . . . .  36
-       8.2.5.  Inter-Domain Trust  . . . . . . . . . . . . . . . . .  36
-       8.2.6.  Replay Resistance . . . . . . . . . . . . . . . . . .  37
-     8.3.  Integrity Protection  . . . . . . . . . . . . . . . . . .  37
-       8.3.1.  Source CPB with Append-Only Intermediates . . . . . .  38
-       8.3.2.  Strip-and-Replace Model . . . . . . . . . . . . . . .  38
-       8.3.3.  Prohibition on BCB Encryption . . . . . . . . . . . .  38
-     8.4.  Mitigations . . . . . . . . . . . . . . . . . . . . . . .  38
-     8.5.  Privacy Considerations  . . . . . . . . . . . . . . . . .  39
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  39
-     9.1.  Guidance for Designated Experts . . . . . . . . . . . . .  40
-   10. Overhead Analysis . . . . . . . . . . . . . . . . . . . . . .  40
-     10.1.  Computational and Storage Overhead . . . . . . . . . . .  42
-   11. Implementation Status . . . . . . . . . . . . . . . . . . . .  43
-   12. Planned Experimental Evaluation . . . . . . . . . . . . . . .  44
-   13. Reference Implementation  . . . . . . . . . . . . . . . . . .  44
-     13.1.  Repository . . . . . . . . . . . . . . . . . . . . . . .  45
-     13.2.  Reference Implementation Development Checks  . . . . . .  45
-     13.3.  Relationship to Updates of BPv7  . . . . . . . . . . . .  45
-   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  46
+     6.4.  Logging, Monitoring, and OAM  . . . . . . . . . . . . . .  33
+     6.5.  Partial Deployment  . . . . . . . . . . . . . . . . . . .  33
+     6.6.  Congestion and Storage Pressure . . . . . . . . . . . . .  33
+     6.7.  Clock Considerations  . . . . . . . . . . . . . . . . . .  34
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  34
+     7.1.  Threat Model  . . . . . . . . . . . . . . . . . . . . . .  34
+     7.2.  Trust Model . . . . . . . . . . . . . . . . . . . . . . .  34
+       7.2.1.  Who is Authorized to Append CPBs  . . . . . . . . . .  35
+       7.2.2.  Cryptographic Adjudication of Conflicting CPBs  . . .  35
+       7.2.3.  Downstream Handling of Upstream BIBs  . . . . . . . .  35
+       7.2.4.  Route Poisoning by Semi-Trusted Relays  . . . . . . .  36
+       7.2.5.  Inter-Domain Trust  . . . . . . . . . . . . . . . . .  37
+       7.2.6.  Replay Resistance . . . . . . . . . . . . . . . . . .  37
+     7.3.  Integrity Protection  . . . . . . . . . . . . . . . . . .  38
+       7.3.1.  Source CPB with Append-Only Intermediates . . . . . .  38
+       7.3.2.  Strip-and-Replace Model . . . . . . . . . . . . . . .  38
+       7.3.3.  Prohibition on BCB Encryption . . . . . . . . . . . .  39
+     7.4.  Mitigations . . . . . . . . . . . . . . . . . . . . . . .  39
+     7.5.  Privacy Considerations  . . . . . . . . . . . . . . . . .  39
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  39
+     8.1.  Guidance for Designated Experts . . . . . . . . . . . . .  41
+   9.  Overhead Analysis . . . . . . . . . . . . . . . . . . . . . .  41
+     9.1.  Computational and Storage Overhead  . . . . . . . . . . .  42
+   10. Implementation Status . . . . . . . . . . . . . . . . . . . .  44
+   11. Experiment Description  . . . . . . . . . . . . . . . . . . .  44
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  45
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  45
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  46
+   Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  48
+   Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  49
+   Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  49
+     C.1.  draft-perry-dtn-cpb-00  . . . . . . . . . . . . . . . . .  49
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  49
 
 
 
-Perry                     Expires 11 March 2027                 [Page 3]
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                 [Page 3]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
-
-     14.1.  Normative References . . . . . . . . . . . . . . . . . .  46
-     14.2.  Informative References . . . . . . . . . . . . . . . . .  47
-   Appendix A.  Mars Mission Scenario  . . . . . . . . . . . . . . .  49
-   Appendix B.  Acknowledgements . . . . . . . . . . . . . . . . . .  50
-   Appendix C.  Change Log . . . . . . . . . . . . . . . . . . . . .  50
-     C.1.  September 2026  . . . . . . . . . . . . . . . . . . . . .  50
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  51
 
 1.  Introduction
 
@@ -194,11 +186,18 @@ Internet-Draft                   DTN CPB                  September 2026
    report experimental results or claim demonstrated routing-performance
    improvement.
 
-1.1.  Problem Statement (IPNSIG SSI Architecture, Section 4.2)
+   CPB is an experimental extension block.  It does not modify the
+   bundle processing defined in [RFC9171], the security processing
+   defined in [RFC9172], or the default security contexts defined in
+   [RFC9173]; nodes that do not implement CPB process bundles carrying
+   it exactly as those specifications require for an unrecognized
+   extension block.
+
+1.1.  Problem Statement
 
    The Interplanetary Networking Special Interest Group (IPNSIG), the
    Interplanetary Chapter of the Internet Society, published "Solar
-   System Internet Architecture and Governance — from the Moon to Mars
+   System Internet Architecture and Governance -- from the Moon to Mars
    and beyond" in September 2023 [IPNSIG2023].  Section 4.2 ("Routing
    and Forwarding") of that document frames the routing problem this
    specification addresses:
@@ -221,9 +220,10 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                 [Page 4]
+
+Perry                     Expires 15 April 2027                 [Page 4]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    The Contact Probability Block defined here is precisely such a
@@ -277,23 +277,23 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                 [Page 5]
+Perry                     Expires 15 April 2027                 [Page 5]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    By embedding probability estimates directly in bundles as a standard
    extension block, this specification gives DTN routing protocols an
    optional, common transport for those estimates.  Whether any given
    protocol benefits is left to the planned experimental evaluation
-   (Section 12); this document asserts no demonstrated improvement.
+   (Section 11); this document asserts no demonstrated improvement.
 
 1.3.  Requirements Language
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
-   "OPTIONAL" in this document are to be interpreted as described in
-   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
 1.4.  Terminology
@@ -333,9 +333,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                 [Page 6]
+Perry                     Expires 15 April 2027                 [Page 6]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
       representations of CBOR data per [RFC8610] Appendix G.  Listings
@@ -352,7 +352,7 @@ Internet-Draft                   DTN CPB                  September 2026
    extension blocks rather than URI query parameters for probabilistic
    routing metadata.
 
-2.1.  Why NOT URI Query Parameters
+2.1.  Why Not URI Query Parameters
 
    An earlier design considered encoding probability as a URI query
    parameter in the destination EID:
@@ -389,9 +389,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                 [Page 7]
+Perry                     Expires 15 April 2027                 [Page 7]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *  EID-based duplicate detection would fail when the same logical
@@ -445,9 +445,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                 [Page 8]
+Perry                     Expires 15 April 2027                 [Page 8]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *  Legacy nodes safely ignore unknown extension blocks without
@@ -501,9 +501,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                 [Page 9]
+Perry                     Expires 15 April 2027                 [Page 9]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    The following annotated hex shows a CPB with default probability 0.75
@@ -557,9 +557,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 10]
+Perry                     Expires 15 April 2027                [Page 10]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    <CODE BEGINS>
@@ -605,7 +605,7 @@ Internet-Draft                   DTN CPB                  September 2026
    pattern and permits an opaque byte string at the structural binding
    layer.  It does not authorize encryption of a CPB: CPB content
    processing requires the cpb-data map, and the prohibition on BCB
-   encryption in Section 8.3.3 applies.
+   encryption in Section 7.3.3 applies.
 
    *Field Semantics:*
 
@@ -613,9 +613,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 11]
+Perry                     Expires 15 April 2027                [Page 11]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
       per-path data is unavailable.  Range [0.0, 1.0].
@@ -625,7 +625,7 @@ Internet-Draft                   DTN CPB                  September 2026
       bandwidth- or memory-constrained links SHOULD enforce a local
       policy limit (8 entries is RECOMMENDED) and MAY treat a CPB
       exceeding the local limit as malformed for that deployment,
-      logging under Section 7.4.  The CDDL array is unbounded; the size
+      logging under Section 6.4.  The CDDL array is unbounded; the size
       recommendation is the prose requirement above.  Receivers and
       senders on unconstrained links MAY use larger arrays.
 
@@ -643,13 +643,13 @@ Internet-Draft                   DTN CPB                  September 2026
    Field 3: Source PCE Identifier  An opaque byte string identifying the
       entity (e.g., a PCE or router) that computed the probability
       values in this CPB.  This field supports trust and policy
-      decisions (see Section 8).  No particular encoding or registry is
+      decisions (see Section 7).  No particular encoding or registry is
       defined.  The value is meaningful only within the administrative
       scope(s) that trust the producer.  The identifier is a claim of
       provenance.  For authenticated routing use, the receiver MUST
       establish that the authenticated security principal is authorized
       to assert this identifier, including any configured delegation, as
-      specified in Section 8.2.1.  Deployments MAY omit this field when
+      specified in Section 7.2.1.  Deployments MAY omit this field when
       no source attribution is required or when an authenticated
       principal or explicit local policy supplies the required producer
       binding.
@@ -669,9 +669,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 12]
+Perry                     Expires 15 April 2027                [Page 12]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
       timestamp during which this probability estimate remains usable.
@@ -714,7 +714,7 @@ Internet-Draft                   DTN CPB                  September 2026
    codepoint.  They MUST NOT silently coerce an unknown metric-type into
    metric-type 4 (generic) for automated arithmetic or ranking.  Senders
    MUST use only registered values defined in the IANA "CPB Metric
-   Types" registry (see Section 9) unless operating in a private or
+   Types" registry (see Section 8) unless operating in a private or
    experimental context.
 
 3.2.1.  Block Processing Flags
@@ -725,9 +725,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 13]
+Perry                     Expires 15 April 2027                [Page 13]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *  *Bit 0 (0x01): Replicate in all fragments:* Implementers MUST set
@@ -769,7 +769,7 @@ Internet-Draft                   DTN CPB                  September 2026
    BIB header fields to arrange replication after the security result is
    computed.
 
-   The profile for authenticated routing in Section 8.3 binds a CPB to
+   The profile for authenticated routing in Section 7.3 binds a CPB to
    its containing bundle.  Even if the CPB and BIB are both copied,
    changing the primary block for fragmentation prevents primary-bound
    verification before reassembly, as described in [RFC9173]
@@ -777,13 +777,13 @@ Internet-Draft                   DTN CPB                  September 2026
    CPBs in fragments as unavailable for routing until reassembly permits
    verification, and use local routing state instead.  A node MUST NOT
    add a BIB or BCB to a bundle marked as a fragment ([RFC9172]
-   Section 5.2); the CPB update models in Section 8.3 do not override
+   Section 5.2); the CPB update models in Section 7.3 do not override
 
 
 
-Perry                     Expires 11 March 2027                [Page 14]
+Perry                     Expires 15 April 2027                [Page 14]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    this restriction.  Deployments needing authenticated metadata on each
@@ -807,7 +807,7 @@ Internet-Draft                   DTN CPB                  September 2026
       16) or type 2 (CRC32C / Castagnoli) as defined by [RFC9171]
       Sections 4.2.1 and 4.2.2.
 
-   Implementations SHOULD prefer BPSec BIBs (Section 8.3) over CRCs for
+   Implementations SHOULD prefer BPSec BIBs (Section 7.3) over CRCs for
    integrity, using a context that provides cryptographic authentication
    as specified there.  A CRC detects transmission errors and does not
    authenticate a producer.
@@ -837,9 +837,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 15]
+Perry                     Expires 15 April 2027                [Page 15]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *  Production deployments SHOULD use the IANA-assigned code
@@ -857,6 +857,17 @@ Internet-Draft                   DTN CPB                  September 2026
 
    3.  There is no BPv7 flag meaning "remove if can't process" (that
        language is from BPv6).  Do not invent one.
+
+   Consequently:
+
+   *  The bundle's destination, source, and other primary block fields
+      are unaffected by the CPB.
+
+   *  Routing protocols that do not consume CPB (CGR, PRoPHET, MaxProp,
+      RAPID, Spray-and-Wait) continue to function without it.
+
+   *  The CPB is optional; bundles without it use standard routing
+      behavior.
 
 3.4.  CBOR Encoding of Probability Values
 
@@ -880,6 +891,13 @@ Internet-Draft                   DTN CPB                  September 2026
    *  *Precision:* Approximately 3 decimal digits, adequate for routing
       decisions
 
+
+
+Perry                     Expires 15 April 2027                [Page 16]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    *  *Overhead:* 3 bytes per value when float16 is used
 
    *  *Standard:* Defined in [RFC8949] (CBOR specification)
@@ -890,17 +908,9 @@ Internet-Draft                   DTN CPB                  September 2026
    float encodings (binary16, binary32, or binary64).  They MUST reject
    NaN and +/-Infinity as malformed, then MUST reject finite values
    outside [0.0, 1.0] as malformed.  Clamping out-of-range values to the
-
-
-
-Perry                     Expires 11 March 2027                [Page 16]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    interval endpoints is NOT RECOMMENDED because mapping a corrupted
    value greater than 1.0 to certainty can amplify sinkhole attraction
-   (see Section 8).
+   (see Section 7).
 
    *Bandwidth Considerations and Array Limits:* A CPB with per-path
    probabilities to multiple relays adds overhead (5 bytes per entry for
@@ -910,7 +920,7 @@ Internet-Draft                   DTN CPB                  September 2026
    produce per-path arrays larger than 8 entries.  Receivers in
    constrained deployments SHOULD enforce a local limit (default 8) and
    treat excess entries as malformed for that link, logging the event
-   under Section 7.4.  This guidance is normative for resource
+   under Section 6.4.  This guidance is normative for resource
    protection.  The CDDL for field 1 is [* path-entry] (unbounded); the
    limit of 8 is prose, not a CDDL constraint.
 
@@ -936,6 +946,14 @@ Internet-Draft                   DTN CPB                  September 2026
 
    *  *Negative values:*MUST be rejected as malformed.
 
+
+
+
+Perry                     Expires 15 April 2027                [Page 17]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    *  *Values > 1.0:*MUST be rejected as malformed.
 
    *  *Very small positive values:* Decoded probabilities strictly
@@ -945,14 +963,6 @@ Internet-Draft                   DTN CPB                  September 2026
 
    *  *Malformed CBOR:* Discard the CPB block and continue processing
       the bundle.
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 17]
-
-Internet-Draft                   DTN CPB                  September 2026
-
 
    In all error cases, implementations SHOULD log the error (including
    source, timestamp, and offending value) for debugging.  The discard-
@@ -992,6 +1002,14 @@ Internet-Draft                   DTN CPB                  September 2026
                | 0.95        | 0x3B9A   | 0xF93B9A | 3     |
                +-------------+----------+----------+-------+
                | 1.0         | 0x3C00   | 0xF93C00 | 3     |
+
+
+
+Perry                     Expires 15 April 2027                [Page 18]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
                +-------------+----------+----------+-------+
 
                      Table 1: CBOR Encodings for Common
@@ -1000,15 +1018,6 @@ Internet-Draft                   DTN CPB                  September 2026
    The 0.95 row denotes a nominal input: its nearest binary16 value,
    encoded as 0x3B9A, is 0.9501953125.  The other listed probabilities
    are exactly representable.
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 18]
-
-Internet-Draft                   DTN CPB                  September 2026
-
 
 3.5.  Metric-Type Semantics and Cross-Metric Comparison
 
@@ -1049,6 +1058,14 @@ Internet-Draft                   DTN CPB                  September 2026
       scalar confidence the plan or local estimator associates with a
       hop or default path.  Before importing such a value, the
       deployment MUST establish a documented applicability profile that
+
+
+
+Perry                     Expires 15 April 2027                [Page 19]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
       identifies the transmitting node, next hop, direction, and contact
       interval to which it applies, or a defined aggregate over
       identified contacts.  The profile MAY obtain this context from a
@@ -1058,14 +1075,6 @@ Internet-Draft                   DTN CPB                  September 2026
       estimate creation and field 4 limits estimate validity; neither
       identifies a contact interval.  A consumer MUST NOT infer that an
       upstream estimate describes its own outgoing contact solely
-
-
-
-Perry                     Expires 11 March 2027                [Page 19]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
       because the next-hop identifier matches.  If the consumer cannot
       establish the applicable context for a value, it MUST treat that
       value as absent for routing.
@@ -1105,6 +1114,14 @@ Internet-Draft                   DTN CPB                  September 2026
    normalized.  Rank-normalized values are only ordinal within that
    reference set unless the profile defines a common scale.  Consumers
    MUST NOT apply shared numerical thresholds, cross-context magnitude
+
+
+
+Perry                     Expires 15 April 2027                [Page 20]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    comparisons, or arithmetic to values whose scales have not been
    established as compatible.  Producer-relative ranking within its
    defined reference set remains possible.  The same requirement applies
@@ -1112,15 +1129,6 @@ Internet-Draft                   DTN CPB                  September 2026
    specification defines no universal calibration for that field.
    Profiles are deployment context and are not signaled by the metric-
    type code alone.
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 20]
-
-Internet-Draft                   DTN CPB                  September 2026
-
 
    *Cross-metric arithmetic is prohibited.* A router MUST NOT combine
    values from different metric types via arithmetic (addition,
@@ -1153,7 +1161,7 @@ Internet-Draft                   DTN CPB                  September 2026
 
    *Metric-type registry policy:* Future routing protocols defining new
    probability semantics SHOULD register a new metric-type code (see
-   Section 9) rather than overloading an existing one.  The CPB Metric
+   Section 8) rather than overloading an existing one.  The CPB Metric
    Types registry exists precisely to keep semantically distinct values
    separable on the wire.
 
@@ -1162,21 +1170,17 @@ Internet-Draft                   DTN CPB                  September 2026
    has no rigorous theoretical foundation in the published DTN
    literature.  Implementations that wish to combine evidence from
    multiple metrics for ranking purposes SHOULD do so using a
+
+
+
+Perry                     Expires 15 April 2027                [Page 21]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    documented, deployment-specific policy and SHOULD NOT rely on
    numerical comparability across types.  This remains an open research
    question.
-
-
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 21]
-
-Internet-Draft                   DTN CPB                  September 2026
-
 
 3.6.  Multiple CPBs in One Bundle
 
@@ -1200,7 +1204,7 @@ Internet-Draft                   DTN CPB                  September 2026
    For deployments that require authentication or otherwise apply a
    trust policy to CPB producers, implementations MUST use the following
    precedence within each eligible group (after excluding ineligible
-   CPBs per above and Section 8.2.2):
+   CPBs per above and Section 7.2.2):
 
    1.  Prefer the source ranked highest by the implementation's trust
        policy (authenticated and authorized producers before lower-
@@ -1216,28 +1220,20 @@ Internet-Draft                   DTN CPB                  September 2026
    Deployments that intentionally consume unauthenticated CPBs and do
    not apply producer trust ranks MAY use timestamp-first ordering
    instead, but SHOULD NOT do so where route poisoning is a concern
-   (Section 8.2.4).
-
-
-
-
-
-
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 22]
-
-Internet-Draft                   DTN CPB                  September 2026
-
+   (Section 7.2.4).
 
    Selection applies to the whole CPB, not independently to each field
    or path entry.  A consumer MUST NOT fill gaps in the selected CPB
    with fields from superseded CPBs in that group.  It applies
    Section 3.6.1 to the selected block and falls back to local routing
+
+
+
+Perry                     Expires 15 April 2027                [Page 22]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    state when that block supplies no applicable value.  If there is no
    eligible CPB for a routing operation, the receiver MUST continue
    using local routing state.  A deployment using an alternative
@@ -1285,9 +1281,13 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 23]
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 23]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    3.  Otherwise, use default probability (field 0) only when its
@@ -1329,7 +1329,7 @@ Internet-Draft                   DTN CPB                  September 2026
    the CPB's path-entry scheme, implementations apply the same metric-
    specific default test above; if no applicable default exists, they
    treat the estimate as absent and use local routing state.
-   Implementations SHOULD log the scheme mismatch under Section 7.4.
+   Implementations SHOULD log the scheme mismatch under Section 6.4.
 
 4.  Operational Semantics
 
@@ -1341,9 +1341,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 24]
+Perry                     Expires 15 April 2027                [Page 24]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *  The source application (using historical or predicted contact
@@ -1390,16 +1390,16 @@ Internet-Draft                   DTN CPB                  September 2026
 
    3.  *Update (optional):* If the router has fresher probability data,
        it SHOULD append a new CPB block subject to the fragmentation and
-       security-operation constraints in Section 3.2.1 and Section 8.3.
+       security-operation constraints in Section 3.2.1 and Section 7.3.
        Appending a CPB preserves integrity protection of an unchanged
        original CPB.
 
 
 
 
-Perry                     Expires 11 March 2027                [Page 25]
+Perry                     Expires 15 April 2027                [Page 25]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    4.  *Forward:* Transmit the bundle with the CPB(s) to the next hop.
@@ -1453,9 +1453,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 26]
+Perry                     Expires 15 April 2027                [Page 26]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
       reaction by many routers to the same CPB update can produce
@@ -1509,9 +1509,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 27]
+Perry                     Expires 15 April 2027                [Page 27]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
 5.1.  PRoPHET (RFC 6693)
@@ -1535,7 +1535,7 @@ Internet-Draft                   DTN CPB                  September 2026
    / beta parameters, the full RIB dictionary, Hello / anti-entropy
    session state, bundle offer and response TLVs, custody policy, and
    named forwarding/queueing strategies.  CPB does not replace the
-   PRoPHET control plane in RFC 6693 Sections 3–5.
+   PRoPHET control plane in RFC 6693 Sections 3-5.
 
 5.2.  MaxProp
 
@@ -1553,7 +1553,7 @@ Internet-Draft                   DTN CPB                  September 2026
    *What stays local:* cost vectors, hop-lists, delete-ACK flooding, and
    the dual use of likelihood for queue-drop priority (though a CPB-
    aware node MAY use metric-type 2 values as one input to local drop
-   ranking; see Section 5.10).
+   ranking; see Section 5.11).
 
 5.3.  RAPID
 
@@ -1565,9 +1565,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 28]
+Perry                     Expires 15 April 2027                [Page 28]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *What CPB carries:* metric-type 3 only after the producer normalizes
@@ -1606,7 +1606,7 @@ Internet-Draft                   DTN CPB                  September 2026
    CGR-UCoP [Raverta21] extends CGR using route delivery probabilities
    derived from Routing under Uncertain Contact Plans (RUCoP).  Its
    decision model is distinct from the illustrative latency/confidence
-   helper shipped with this draft.
+   cost model used in this document.
 
    *What CPB carries:* metric-type 1 confidences for default or per-
    next-hop edges whose transmitter and contact interval are established
@@ -1621,9 +1621,9 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 29]
+Perry                     Expires 15 April 2027                [Page 29]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
    *What stays in the contact plan:* time windows, rates, OWLT, and
@@ -1639,7 +1639,7 @@ Internet-Draft                   DTN CPB                  September 2026
    use centrality, community labels, or similarity rather than pure
    encounter probability.  Those scores may be published as metric-type
    4 (generic) with local documentation, or as new metric-type
-   codepoints via the IANA registry in Section 9.  CPB still forbids
+   codepoints via the IANA registry in Section 8.  CPB still forbids
    mixing them arithmetically with prophet-dp or cgr-confidence.
 
 5.8.  DTNMA (RFC 9675)
@@ -1677,12 +1677,42 @@ Internet-Draft                   DTN CPB                  September 2026
 
 
 
-Perry                     Expires 11 March 2027                [Page 30]
+Perry                     Expires 15 April 2027                [Page 30]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
-5.10.  Summary: CPB as Cross-Cutting Metadata
+5.10.  Relationship to Updates of BPv7
+
+   [RFC9171] (BPv7) has been updated by [RFC9713] (administrative record
+   types registry, January 2025) and [RFC9758] (ipn URI scheme updates,
+   May 2025).  Neither update affects the wire format defined in
+   Section 3:
+
+   *  [RFC9713] concerns administrative record types; CPB is an
+      extension block, not an administrative record, so RFC 9713 does
+      not apply directly.
+
+   *  [RFC9758] updates the "ipn" URI scheme.  CPB implementations MUST
+      encode and decode ipn EIDs per RFC 9758, including Default
+      Allocator FQNNs.  The LocalNode ipn URI form (Allocator=0,
+      NodeNumber=2^32 - 1) has no meaning off-node and MUST NOT appear
+      in CPB path-entries transmitted to other nodes.
+
+   *  RFC 9171 erratum 8376 (https://www.rfc-editor.org/errata/eid8376)
+      records concerns about extension-block placement during
+      fragmentation.  It is Held for Document Update and does not
+      replace the published fragmentation rules.  CPB's handling under
+      those rules is defined in Section 3.2.1.
+
+   Related security work includes the BPSec COSE context
+   [I-D.ietf-dtn-bpsec-cose] (work in progress) and ACME DTN Node ID
+   validation [RFC9891].  These address security contexts and credential
+   provisioning, respectively.  Neither independently establishes a
+   credential's authority over a CPB producer identifier or supplies the
+   CPB applicability and bundle-association policy required here.
+
+5.11.  Summary: CPB as Cross-Cutting Metadata
 
    Across the families above, a recurring split appears:
 
@@ -1700,29 +1730,22 @@ Internet-Draft                   DTN CPB                  September 2026
    buffer-drop priority, and MAY produce CPB for downstream nodes,
    without requiring the peer to implement the producer's full protocol.
 
-6.  Backwards Compatibility
 
-   *  Nodes that do not recognize the CPB block type discard it under
-      the required block processing flags and continue processing the
-      bundle as specified in Section 3.3.2
 
-   *  The bundle's destination, source, and other standard fields are
-      unaffected by the CPB
 
-   *  Legacy routing protocols (CGR, PRoPHET, MaxProp, RAPID, Spray-and-
-      Wait) continue to function without the CPB
+Perry                     Expires 15 April 2027                [Page 31]
+
+Internet-Draft                   DTN CPB                    October 2026
 
-   *  The CPB is optional; bundles without it use standard routing
-      behavior
 
-7.  Operational Considerations
+6.  Operational Considerations
 
    This section collects deployment, sizing, and operational guidance
    for CPB.  It draws from the processing rules in Section 4, the
-   overhead analysis in Section 10, and the backwards-compatibility
-   rules in Section 6.
+   overhead analysis in Section 9, and the backwards-compatibility rules
+   in Section 3.3.2.
 
-7.1.  When and Where to Emit CPBs
+6.1.  When and Where to Emit CPBs
 
    A CPB may be created by the source application (using historical or
    predicted contact data), a path computation element (PCE) (using
@@ -1730,45 +1753,46 @@ Internet-Draft                   DTN CPB                  September 2026
    statistics).  Deployments SHOULD document their policy for which
    entity is authoritative for a given bundle class.
 
-
-
-
-Perry                     Expires 11 March 2027                [Page 31]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    In environments with significant propagation delay (e.g.,
    interplanetary), a PCE close to the source is often preferable so
    that the initial CPB reflects the most current available model.  In
    low-delay terrestrial meshes, the first-hop router may have fresher
    local observations.
 
-7.2.  Bundle Store and Memory Sizing
+6.2.  Bundle Store and Memory Sizing
 
-   If the strip-and-replace optimization in Section 8.3.2 is not used,
+   If the strip-and-replace optimization in Section 7.3.2 is not used,
    bundles can accumulate multiple CPBs across hops.  CPB size depends
    on the included fields and identifier lengths; the examples in
-   Section 10 range from 12 to 100 bytes per canonical block before BIB
+   Section 9 range from 12 to 100 bytes per canonical block before BIB
    overhead.  These are illustrative configurations, not size bounds.
    Implementations on memory-constrained nodes SHOULD bound the number
    of retained CPBs per bundle and apply the removal of earlier
-   instances, when authorized under Section 8.3.2, when appending a
+   instances, when authorized under Section 7.3.2, when appending a
    fresher CPB.
 
    Bundle stores SHOULD account for the additional per-bundle overhead
    when dimensioning for CPB-enabled traffic.
 
-7.3.  Computational and Storage Overhead on Constrained Nodes
+6.3.  Computational and Storage Overhead on Constrained Nodes
 
    Decode and storage costs depend on the included fields, identifier
-   lengths, implementation, and hardware.  Section 10 gives encoded-size
+   lengths, implementation, and hardware.  Section 9 gives encoded-size
    examples; this document provides no measured processing-time claims.
 
    If the CPB is protected by a BPSec BIB, each consumption requires a
    signature or MAC verification.  Implementations MAY cache
    verification results subject to the input and policy invalidation
-   rules in Section 10.1.
+   rules in Section 9.1.
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 32]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
    Route recomputation triggered by new CPB observations can be bounded
    by the hysteresis and rate-limiting techniques described in
@@ -1778,7 +1802,7 @@ Internet-Draft                   DTN CPB                  September 2026
    per CPB, memory delta, etc.) alongside interoperability reports, per
    the guidance in [RFC7942].
 
-7.4.  Logging, Monitoring, and OAM
+6.4.  Logging, Monitoring, and OAM
 
    Nodes SHOULD log CPB-related events (reception of invalid floats,
    scheme mismatches, version numbers higher than supported, BIB
@@ -1786,31 +1810,23 @@ Internet-Draft                   DTN CPB                  September 2026
    management procedures.  The adaptive information push in [RFC9675]
    Section 4.3 is architectural guidance; neither that section nor CPB
    defines a CPB event schema or logging API.  Logging SHOULD be rate
-
-
-
-Perry                     Expires 11 March 2027                [Page 32]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    limited so malformed input cannot exhaust management resources.
 
    When a CPB is discarded due to age, future-dated timestamp, or
    malformed content, a management event SHOULD be generated to aid
    debugging of clock skew or misbehaving producers.
 
-7.5.  Partial Deployment
+6.5.  Partial Deployment
 
    CPB is designed for incremental deployment.  Nodes that do not
    recognize the block type discard the CPB under its required
-   processing flags and continue forwarding the bundle (see Section 6).
-   CPB metadata therefore does not cross a legacy node unchanged.
-   Deployments SHOULD monitor the fraction of CPB-aware nodes and may
-   choose to emit CPBs only on segments where a useful number of
-   consumers exist.
+   processing flags and continue forwarding the bundle (see
+   Section 3.3.2).  CPB metadata therefore does not cross a legacy node
+   unchanged.  Deployments SHOULD monitor the fraction of CPB-aware
+   nodes and may choose to emit CPBs only on segments where a useful
+   number of consumers exist.
 
-7.6.  Congestion and Storage Pressure
+6.6.  Congestion and Storage Pressure
 
    Probability-aware routing tends to concentrate traffic on high-
    confidence routes.  Under sustained load this can lead to congestion
@@ -1823,7 +1839,18 @@ Internet-Draft                   DTN CPB                  September 2026
    back to confidence-blind policies or to reduce CPB production rate
    during overload.
 
-7.7.  Clock Considerations
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 33]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
+6.7.  Clock Considerations
 
    CPB timestamps (field 2) are whole seconds since the DTN Epoch
    origin; validity durations (field 4) are elapsed seconds from that
@@ -1834,21 +1861,14 @@ Internet-Draft                   DTN CPB                  September 2026
    +/- 600 s drift, 86400 s max age) than another; these are examples,
    not mission-independent defaults.
 
-8.  Security Considerations
+7.  Security Considerations
 
-8.1.  Threat Model
+7.1.  Threat Model
 
    *  *Untrusted networks:* An attacker could inject false probability
       values to cause mis-routing (classic blackhole/sinkhole attraction
       via _inflated_ metrics that draw traffic then drop it; selfish
       avoidance via deflated metrics)
-
-
-
-Perry                     Expires 11 March 2027                [Page 33]
-
-Internet-Draft                   DTN CPB                  September 2026
-
 
    *  *Stale data:* A captured bundle with outdated probabilities could
       cause poor routing decisions
@@ -1870,16 +1890,23 @@ Internet-Draft                   DTN CPB                  September 2026
       where the producer is unknown; the second domain has no basis for
       trust evaluation
 
-8.2.  Trust Model
+7.2.  Trust Model
 
    This document does not mandate a single trust model because DTN
-   deployments span a wide range of administrative scenarios — from a
+   deployments span a wide range of administrative scenarios -- from a
    single-operator interplanetary relay network to multi-party
    terrestrial mesh deployments.  Instead, this subsection identifies
    the trust questions every CPB deployment MUST answer in its local
    trust policy, and provides default guidance.
 
-8.2.1.  Who is Authorized to Append CPBs
+
+
+Perry                     Expires 15 April 2027                [Page 34]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
+7.2.1.  Who is Authorized to Append CPBs
 
    By default, any node along the bundle's path MAY append a CPB.  This
    is permissive and suitable for low-stakes deployments where the cost
@@ -1898,30 +1925,22 @@ Internet-Draft                   DTN CPB                  September 2026
    local policy.  CPBs that fail these checks MUST NOT be used for
    authenticated routing; their retention or removal follows the
    applicable BPSec policy.  Rejections SHOULD be logged using
-
-
-
-Perry                     Expires 11 March 2027                [Page 34]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    deployment management facilities informed by [RFC9675] Section 4.3.
 
-8.2.2.  Cryptographic Adjudication of Conflicting CPBs
+7.2.2.  Cryptographic Adjudication of Conflicting CPBs
 
    When a bundle carries multiple CPBs from different sources with
    conflicting probabilities, the eligibility and precedence rules of
    Section 3.6 apply within each compatible metric, applicability, and
    normalization profile partition.  In trust-policy contexts requiring
    authentication, a CPB MUST pass BIB verification, the coverage checks
-   in Section 8.3, and producer authorization in Section 8.2.1 before
+   in Section 7.3, and producer authorization in Section 7.2.1 before
    entering the precedence calculation.  Unsigned, unverifiable, BIB-
    invalid, or unauthorized CPBs MUST be excluded in those contexts.
    Source trust ranking MUST use the authenticated, authorized producer
    binding when authentication is required.
 
-8.2.3.  Downstream Handling of Upstream BIBs
+7.2.3.  Downstream Handling of Upstream BIBs
 
    A downstream router that cannot verify an upstream BIB (missing key
    material, expired credentials, unrecognized security context) follows
@@ -1933,6 +1952,15 @@ Internet-Draft                   DTN CPB                  September 2026
       routing use when authentication is required.  Where BPSec policy
       permits, retain the CPB and its BIB when forwarding so downstream
       routers with the correct credentials may still consume it.
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 35]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
    *  *Permissive:* Use the unverified CPB advisorily only when local
       policy permits unauthenticated routing input.  Its declared
@@ -1950,19 +1978,7 @@ Internet-Draft                   DTN CPB                  September 2026
    unverifiable original.  On a fragment, it MUST NOT add a new BIB and
    follows the local routing fallback in Section 3.2.1.
 
-
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 35]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
-8.2.4.  Route Poisoning by Semi-Trusted Relays
+7.2.4.  Route Poisoning by Semi-Trusted Relays
 
    A relay that is trusted enough to participate in the network, but not
    trusted to make routing decisions for the entire domain, can still
@@ -1995,7 +2011,14 @@ Internet-Draft                   DTN CPB                  September 2026
    formal reputation aggregation or attestation chains) are out of scope
    for this document.
 
-8.2.5.  Inter-Domain Trust
+
+
+Perry                     Expires 15 April 2027                [Page 36]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
+7.2.5.  Inter-Domain Trust
 
    When a bundle carrying a CPB crosses an administrative boundary, the
    receiving domain has no a priori basis for trusting the CPB's
@@ -2011,13 +2034,6 @@ Internet-Draft                   DTN CPB                  September 2026
       (optionally) appends a domain-native CPB expressing the gateway's
       translated assessment
 
-
-
-Perry                     Expires 11 March 2027                [Page 36]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    *  A policy of discarding all CPBs at the domain boundary, with the
       receiving domain regenerating CPBs internally from its own
       observations
@@ -2026,7 +2042,7 @@ Internet-Draft                   DTN CPB                  September 2026
    Deployments SHOULD document their inter-domain CPB policy explicitly.
    This remains an open question.
 
-8.2.6.  Replay Resistance
+7.2.6.  Replay Resistance
 
    The timestamp (field 2) and validity duration (field 4), combined
    with the skew tolerances defined in Section 4.1, bound the staleness
@@ -2034,7 +2050,7 @@ Internet-Draft                   DTN CPB                  September 2026
    reuse within an accepted time window.  BIB protection covers all CPB
    data, including its timestamp and validity fields, and authenticated
    routing use MUST also bind the CPB to the containing bundle and its
-   destination as specified in Section 8.3.  Merely listing the CPB as a
+   destination as specified in Section 7.3.  Merely listing the CPB as a
    BIB target does not establish that association: a context omitting
    bundle information can allow an unchanged CPB and BIB to be
    transplanted to a bundle with a different destination.  Bundle
@@ -2043,13 +2059,28 @@ Internet-Draft                   DTN CPB                  September 2026
    replays SHOULD combine their freshness policy with duplicate-bundle
    detection.
 
-8.3.  Integrity Protection
+
+
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 37]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
+7.3.  Integrity Protection
 
    For deployments in untrusted networks or where source authentication
    is required, the CPB MUST be protected using Block Integrity Blocks
    (BIBs) as defined in [RFC9172] (BPSec), using a context that provides
    cryptographic source authentication with a MAC or digital signature.
-   A receiver MUST verify that protection and apply Section 8.2.1 before
+   A receiver MUST verify that protection and apply Section 7.2.1 before
    using a CPB under such a policy.  An absent or unacceptable CPB
    supplies no routing estimate; local routing state remains available.
    CPB does not require security operations on a bundle that carries no
@@ -2066,19 +2097,11 @@ Internet-Draft                   DTN CPB                  September 2026
    CPB data.  Receivers MUST check that scope before accepting the CPB
    for authenticated routing, even when its MAC verifies.  Other BIB
    contexts MUST provide equivalent authentication of the CPB data,
-
-
-
-Perry                     Expires 11 March 2027                [Page 37]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    containing bundle, and block identities and processing flags.  This
    coverage requirement is additional to identifying the CPB as a BIB
    target and is subject to the fragment handling in Section 3.2.1.
 
-8.3.1.  Source CPB with Append-Only Intermediates
+7.3.1.  Source CPB with Append-Only Intermediates
 
    For a nonfragment bundle, the source creates a CPB and attaches a BIB
    naming that CPB's block number as its target and providing the
@@ -2090,7 +2113,7 @@ Internet-Draft                   DTN CPB                  September 2026
    Section 5.1.2.  Fragments follow Section 3.2.1 instead of this update
    procedure.
 
-8.3.2.  Strip-and-Replace Model
+7.3.2.  Strip-and-Replace Model
 
    As an alternative on a nonfragment bundle, a forwarder configured as
    the security acceptor for the affected upstream BIB operation MAY use
@@ -2099,6 +2122,14 @@ Internet-Draft                   DTN CPB                  September 2026
    required by [RFC9172] Section 5.1.2, and removes the old CPB.  An
    emptied BIB MUST be removed; operations for unrelated targets MUST be
    preserved.  The node MUST NOT remove the CPB if doing so would
+
+
+
+Perry                     Expires 15 April 2027                [Page 38]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
    invalidate another security operation that it is not authorized to
    accept.  The forwarder then inserts a fresh CPB with its own estimate
    and producer attribution.  It protects the new CPB with its own BIB
@@ -2107,7 +2138,7 @@ Internet-Draft                   DTN CPB                  September 2026
    fragments.  Deployments SHOULD choose one model per administrative
    domain and document the acceptor and producer-authorization policy.
 
-8.3.3.  Prohibition on BCB Encryption
+7.3.3.  Prohibition on BCB Encryption
 
    Implementations MUST NOT encrypt the CPB using a Block
    Confidentiality Block (BCB).  Encrypting a routing-critical extension
@@ -2115,27 +2146,19 @@ Internet-Draft                   DTN CPB                  September 2026
    Integrity protection (BIB) is appropriate; confidentiality protection
    (BCB) is not.
 
-8.4.  Mitigations
+7.4.  Mitigations
 
    *  MAC or signature verification, bundle-binding checks, and producer
       authorization before authenticated routing use
 
    *  Timestamp validation (discard old or future-dated CPBs)
 
-
-
-
-Perry                     Expires 11 March 2027                [Page 38]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    *  Secondary validation against compatible local evidence under the
       applicable metric profile
 
    *  Conservative thresholds for critical payloads
 
-8.5.  Privacy Considerations
+7.5.  Privacy Considerations
 
    CPB metadata may reveal information about network topology and
    operational patterns.  Per-path probability entries expose which
@@ -2144,12 +2167,24 @@ Internet-Draft                   DTN CPB                  September 2026
    environments SHOULD consider omitting the source PCE identifier when
    source attribution is not required.
 
-9.  IANA Considerations
+8.  IANA Considerations
 
    This document requests IANA to assign a code point from the Bundle
    Block Types registry ([RFC9171] Section 9.1) under the Specification
    Required policy ([RFC8126]).  This document does not request a
    specific numeric value.
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 39]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
            +=======+===========================+===============+
            | Value | Description               | Reference     |
@@ -2177,15 +2212,6 @@ Internet-Draft                   DTN CPB                  September 2026
    18446744073709551615 are Unassigned (Specification Required).  The
    registry records the Value, Description, and Reference shown below.
 
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 39]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
         +=======+=================================+===============+
         | Value | Description                     | Reference     |
         +=======+=================================+===============+
@@ -2202,7 +2228,21 @@ Internet-Draft                   DTN CPB                  September 2026
 
               Table 3: Initial CPB Metric Types registrations
 
-9.1.  Guidance for Designated Experts
+
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 40]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
+8.1.  Guidance for Designated Experts
 
    A registration request MUST provide a short metric description, a
    stable public specification, and contact information for the
@@ -2223,30 +2263,40 @@ Internet-Draft                   DTN CPB                  September 2026
    policy.  Registration does not endorse the accuracy of an estimator
    or establish routing-performance benefits.
 
-10.  Overhead Analysis
+9.  Overhead Analysis
 
    CPB size depends on the chosen fields and their encoded lengths.
    Table 4 gives reproducible examples using binary16 probabilities,
    block type 200, block number 2, processing flags 0x11, and CRC type
    0.  These counts exclude any BIB used for authentication under
-   Section 8.3.  The canonical-block column includes the array and BTSD
+   Section 7.3.  The canonical-block column includes the array and BTSD
    byte-string headers.  Adding a CRC-16 or CRC-32C value instead adds 3
    or 5 bytes, respectively, including the CRC byte-string header.
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 40]
-
-Internet-Draft                   DTN CPB                  September 2026
-
 
    Configuration A contains field 0 = 0.5.  B adds field 2 = 840000000,
    field 4 = 3600, and field 5 = 1.  C also includes eight field-1
    entries for uint next hops 100 through 107, each with probability
    0.5.  D includes all these fields and field 3 = the 17-byte string
    "producer-node-100", field 6 = 0.75, and field 7 = 1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 41]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
     +========================+===============+=======================+
     | Configuration          | CPB map bytes | Canonical-block bytes |
@@ -2289,22 +2339,21 @@ Internet-Draft                   DTN CPB                  September 2026
    more path entries increase these costs.  There is no universal
    32-byte upper bound or payload-independent overhead percentage.
 
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 41]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
-10.1.  Computational and Storage Overhead
+9.1.  Computational and Storage Overhead
 
    The table above quantifies only wire-byte overhead.  CPB consumption
    imposes additional costs on forwarders that SHOULD be considered when
    sizing a CPB-enabled deployment, particularly on constrained nodes:
 
    CBOR decode cost  Decoding costs depend on the number of entries,
+
+
+
+Perry                     Expires 15 April 2027                [Page 42]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
       identifier lengths, decoder implementation, and floating-point
       support.  The example maps above contain 5-92 bytes; extension
       values or longer identifiers can require more.  This document does
@@ -2332,12 +2381,12 @@ Internet-Draft                   DTN CPB                  September 2026
       Section 4.4 bound the recomputation rate.
 
    Memory pressure from multi-CPB accumulation  If the strip-and-replace
-      model (Section 8.3.2) is not used, bundles can accumulate multiple
+      model (Section 7.3.2) is not used, bundles can accumulate multiple
       CPBs across hops.  Each contributes its actual encoded length plus
       any associated BIB and implementation bookkeeping.  Bundle store
       memory pressure SHOULD be considered when designing CPB production
       policy.  Removal of earlier instances is subject to the
-      authorization and security-operation handling in Section 8.3.2.
+      authorization and security-operation handling in Section 7.3.2.
 
    Freshness and expiry checks  Cached estimates require freshness and
       expiry checks under Section 4.1 before use.  A block's timestamp
@@ -2346,14 +2395,6 @@ Internet-Draft                   DTN CPB                  September 2026
       follows the metric's deployment profile.  The cache SHOULD have a
       bounded size.
 
-
-
-
-Perry                     Expires 11 March 2027                [Page 42]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    On constrained DTN nodes, CPU and storage costs frequently exceed
    wire-byte costs in their operational impact.  Concrete profiling
    numbers depend on the BP implementation, the cryptographic algorithms
@@ -2361,189 +2402,85 @@ Internet-Draft                   DTN CPB                  September 2026
    document.  Implementations SHOULD publish their measured overhead
    alongside interoperability reports per [RFC7942].
 
-11.  Implementation Status
+
+
+
+Perry                     Expires 15 April 2027                [Page 43]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
+10.  Implementation Status
 
    This section is to be removed before publishing as an RFC.
 
-   _[Note to RFC Editor: per [RFC7942], this section may be removed
-   before publication.]_
-
-   This section records the status of implementations of the Contact
-   Probability Block at the time of writing, in accordance with
+   This section records the status of known implementations of the
+   Contact Probability Block at the time of writing, in accordance with
    [RFC7942].
 
-   Reference Python Implementation
-      *  *Organization:* Independent (N.  Perry)
+   A reference CPB encoder/decoder in Python, covering the block-type-
+   specific data defined in Section 3, is available under the MIT
+   License at https://github.com/luckyseoul/draft-perry-dtn-cpb.  It
+   does not implement routing policy, full BPv7 block processing, or
+   BPSec.  Contact: nick@perrybrandsllc.com.  No other implementations
+   are known to the author.
 
-      *  *Repository:* https://github.com/luckyseoul/draft-perry-dtn-cpb
-         (https://github.com/luckyseoul/draft-perry-dtn-cpb)
+11.  Experiment Description
 
-      *  *License:* MIT License
+   The experiment associated with this Experimental specification
+   evaluates whether carrying contact-probability estimates in an
+   extension block is useful and safe for DTN forwarding.  No results
+   are reported in this document and no performance benefit is asserted.
 
-      *  *Modules:* cpb.py (encoder/decoder), test_cpb.py (wire-format
-         checks), and config1_sim.py (a deterministic local policy-test
-         harness).
-
-      *  *Scope:* Encoding and decoding CPB block-type-specific data.
-         Full routing policy, BPv7 block processing, and BPSec
-         integration remain outside this codec.
-
-      *  *Maturity:* Reference encoder/decoder and local development
-         helpers.  Experimental evaluation is planned as described in
-         Section 12.
-
-      *  *Contact:* nick@perrybrandsllc.com
-
-   Experimental Scaffolding  The repository's impl directory retains a
-      local cost helper and an experiment plan for possible future
-      evaluation.  No experimental findings are reported here.
-
-   No other implementations are known to the author at the time of
-   writing.  Reports of new implementations are encouraged.
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 43]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
-12.  Planned Experimental Evaluation
-
-   This Experimental draft proposes the following evaluation plan.
-   These experiments have not been carried out for this draft; no
-   results or performance benefits are asserted.
-
-   Routing behavior  Compare the same routing implementation with and
-      without CPB consumption under identical contact plans, traffic,
-      resource limits, and random seeds.  Include scheduled and
-      uncertain contacts, congestion, and partial CPB deployment.
-      Record delivery ratio, delivery delay, transmission volume, and
-      resource use.
-
-   Estimate quality and stability  Vary estimate error, age,
-      availability, and update frequency.  Examine route changes and
-      fallback behavior with stale, missing, inconsistent, or
-      deliberately misleading estimates.  Keep metric applicability and
-      normalization profiles explicit.
-
-   Interoperability and security processing  Plan exchanges between
-      independent BPv7 implementations covering CPB encoding, unknown
+   What is evaluated  The same routing implementation with and without
+      CPB consumption, under identical contact plans, traffic, resource
+      limits, and random seeds, including scheduled and uncertain
+      contacts, congestion, and partial CPB deployment.  Estimate
+      quality is varied in error, age, availability, and update
+      frequency, including stale, missing, inconsistent, and
+      deliberately misleading estimates.  Interoperability is evaluated
+      between independent BPv7 implementations for CPB encoding, unknown
       fields, multiple blocks, legacy nodes, authentication, authorized
       updates, and fragmentation.
 
-   Method and reporting  Specify scenarios, baselines, sample sizes,
-      analysis methods, and acceptance criteria before execution.
-      Publish configurations, implementation versions, data,
-      uncertainty, and unsuccessful outcomes with any later results.
+   Metrics  Delivery ratio, delivery delay, transmission volume, storage
+      and processing use, route-change frequency, fallback behavior
+      under degraded estimates, and the rate of correct decode and
+      discard behavior across implementations.
 
-   Execution and reporting belong to later work.  The reference codec
-   and development checks do not establish the outcomes of this plan.
-
-13.  Reference Implementation
-
-   The reference implementation supporting this specification consists
-   of the following Python modules under impl/:
-
-   *  *cpb.py* - CBOR encoder/decoder, implementing the CDDL schema in
-      Section 3.2 and the encoding rules in Section 3.4.
-
-   *  *test_cpb.py* - wire-format conformance suite (encode/decode, hex
-      tables, invalid floats, path-array SHOULD).
-
-   *  *config1_sim.py* - a deterministic local policy-test harness.
-
-   *  *test_config1_policies.py* - unit tests for the confidence-
-      weighted cost formula.
+   Success criteria  The experiment is considered successful if (1)
 
 
 
 
-Perry                     Expires 11 March 2027                [Page 44]
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 44]
 
-Internet-Draft                   DTN CPB                  September 2026
+Internet-Draft                   DTN CPB                    October 2026
 
 
-   *  *test_sim_cpb_bridge.py* - bridge tests showing Configuration 1
-      confidences encode/decode as metric-type 1 CPB maps without
-      changing confidence-weighted route cost ranking.
+      independent implementations interoperate on the wire format and
+      processing rules of Section 3; (2) nodes that do not implement CPB
+      are unaffected; (3) CPB consumption does not degrade delivery
+      ratio or delay relative to the same algorithm without CPB when
+      estimates are stale, missing, or adversarial and authentication is
+      applied as in Section 7; and (4) CPB consumption improves at least
+      one of delivery ratio, delay, or transmission volume in scenarios
+      with uncertain contacts.  Scenarios, baselines, sample sizes, and
+      analysis methods are fixed before execution, and configurations,
+      data, uncertainty, and unsuccessful outcomes are published with
+      the results.
 
-   *  *test_draft_consistency.py* - structural checks that draft and
-      documentation claims stay aligned with shipped code.
+12.  References
 
-13.1.  Repository
-
-   Source code is published under the MIT License at:
-
-   https://github.com/luckyseoul/draft-perry-dtn-cpb
-   (https://github.com/luckyseoul/draft-perry-dtn-cpb)
-
-13.2.  Reference Implementation Development Checks
-
-   <CODE BEGINS>
-   git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
-   cd draft-perry-dtn-cpb
-   python3 -m pip install -r impl/requirements.txt
-
-   python3 impl/test_cpb.py
-   python3 impl/test_cpb_validation.py
-   python3 impl/test_config1_policies.py
-   python3 impl/test_sim_cpb_bridge.py
-   python3 impl/test_draft_consistency.py
-   cddl compile-cddl --cddl impl/cpb.cddl
-   <CODE ENDS>
-
-                    Figure 8: Development Check Commands
-
-   These commands are provided for reference-code development.  They do
-   not execute the experimental plan in Section 12.
-
-13.3.  Relationship to Updates of BPv7
-
-   [RFC9171] (BPv7) has been updated by [RFC9713] (administrative record
-   types registry, January 2025) and [RFC9758] (ipn URI scheme updates,
-   May 2025) since this CPB work began.  Neither update affects the wire
-   format defined in Section 3:
-
-   *  [RFC9713] concerns administrative record types; CPB is an
-      extension block, not an administrative record, so RFC 9713 does
-      not apply directly.
-
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 45]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
-   *  [RFC9758] updates the "ipn" URI scheme.  CPB implementations MUST
-      encode and decode ipn EIDs per RFC 9758, including Default
-      Allocator FQNNs.  The LocalNode ipn URI form (Allocator=0,
-      NodeNumber=2^32 - 1) has no meaning off-node and MUST NOT appear
-      in CPB path-entries transmitted to other nodes.
-
-   *  RFC 9171 erratum 8376 (https://www.rfc-editor.org/errata/eid8376)
-      records concerns about extension-block placement during
-      fragmentation.  It is Held for Document Update and does not
-      replace the published fragmentation rules.  CPB's handling under
-      those rules is defined in Section 3.2.1.
-
-   Related security work includes the BPSec COSE context
-   [I-D.ietf-dtn-bpsec-cose] (work in progress) and ACME DTN Node ID
-   validation [RFC9891].  These address security contexts and credential
-   provisioning, respectively.  Neither independently establishes a
-   credential's authority over a CPB producer identifier or supplies the
-   CPB applicability and bundle-association policy required here.
-
-14.  References
-
-14.1.  Normative References
+12.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -2567,17 +2504,6 @@ Internet-Draft                   DTN CPB                  September 2026
               DOI 10.17487/RFC9173, January 2022,
               <https://www.rfc-editor.org/info/rfc9173>.
 
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 46]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    [RFC8949]  Bormann, C. and P. Hoffman, "Concise Binary Object
               Representation (CBOR)", STD 94, RFC 8949,
               DOI 10.17487/RFC8949, December 2020,
@@ -2588,6 +2514,13 @@ Internet-Draft                   DTN CPB                  September 2026
               Express Concise Binary Object Representation (CBOR) and
               JSON Data Structures", RFC 8610, DOI 10.17487/RFC8610,
               June 2019, <https://www.rfc-editor.org/info/rfc8610>.
+
+
+
+Perry                     Expires 15 April 2027                [Page 45]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -2603,7 +2536,7 @@ Internet-Draft                   DTN CPB                  September 2026
               Connected Networks", RFC 6693, DOI 10.17487/RFC6693,
               August 2012, <https://www.rfc-editor.org/info/rfc6693>.
 
-14.2.  Informative References
+12.2.  Informative References
 
    [IPNSIG2023]
               Kaneko, Y., Cerf, V., Tabunshchyk, H., Burleigh, S.,
@@ -2623,17 +2556,6 @@ Internet-Draft                   DTN CPB                  September 2026
               Record Types Registry", RFC 9713, DOI 10.17487/RFC9713,
               January 2025, <https://www.rfc-editor.org/info/rfc9713>.
 
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 47]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    [RFC9891]  Sipos, B., "Automated Certificate Management Environment
               (ACME) Delay-Tolerant Networking (DTN) Node ID Validation
               Extension", RFC 9891, DOI 10.17487/RFC9891, November 2025,
@@ -2648,6 +2570,14 @@ Internet-Draft                   DTN CPB                  September 2026
               Raverta, F. D., Fraire, J. A., Madoery, P. G., Demasi, R.
               A., Finochietto, J. M., and P. R. D'Argenio, "Routing in
               Delay-Tolerant Networks under uncertain contact plans", Ad
+
+
+
+Perry                     Expires 15 April 2027                [Page 46]
+
+Internet-Draft                   DTN CPB                    October 2026
+
+
               Hoc Networks, Volume 123, Article 102663,
               DOI 10.1016/j.adhoc.2021.102663, 2021,
               <https://doi.org/10.1016/j.adhoc.2021.102663>.
@@ -2683,19 +2613,26 @@ Internet-Draft                   DTN CPB                  September 2026
               <https://datatracker.ietf.org/doc/html/draft-ietf-dtn-
               bpsec-cose-17>.
 
-
-
-Perry                     Expires 11 March 2027                [Page 48]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    [I-D.ietf-dtn-bp-sand]
               Sipos, B. and J. Deaton, "Bundle Protocol (BP) Secure
               Advertisement and Neighborhood Discovery (SAND)", Work in
-              Progress, Internet-Draft, draft-ietf-dtn-bp-sand-03, July
-              2026, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              dtn-bp-sand>.
+              Progress, Internet-Draft, draft-ietf-dtn-bp-sand-05,
+              October 2026, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-dtn-bp-sand>.
+
+
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 47]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
    [I-D.ietf-tvr-schedule-yang]
               Qu, Y., Lindem, A., Kinzie, E., Fedyk, D., and M.
@@ -2735,21 +2672,23 @@ Appendix A.  Mars Mission Scenario
        a selected CPB supplies values whose applicability profile covers
        their routing operation, after eligibility and trust/BIB checks.
 
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 49]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
    If the first CPB (P=0.6, validity 3600 s) is delayed 10 hours, field
    4 has expired.  Per Section 4.1, receivers MUST ignore that CPB for
    routing.  This document does not define a residual decay formula
    after expiry.
+
+
+
+
+
+
+
+
+
+Perry                     Expires 15 April 2027                [Page 48]
+
+Internet-Draft                   DTN CPB                    October 2026
+
 
 Appendix B.  Acknowledgements
 
@@ -2757,66 +2696,29 @@ Appendix B.  Acknowledgements
    fragmentation pruning, identical-timestamp tie-breaking, the per-path
    array size limit, scheme-mismatch logging, future-dated timestamp
    discard, and IANA considerations.  Those comments improved this
-   draft.  Remaining errors are the author's.
+   document.  Remaining errors are the author's.
 
 Appendix C.  Change Log
 
    This section is to be removed before publishing as an RFC.
 
-   _[RFC Editor Note: Please remove this entire section before
-   publication.]_
+C.1.  draft-perry-dtn-cpb-00
 
-C.1.  September 2026
+   *  Contact Probability Block wire format with CBOR float16 encoding,
+      deterministic encoding rules, and format version field (key 7).
 
-   *  Initial Experimental Internet-Draft: Contact Probability Block
-      wire format, metric-type registry, operational and security
-      considerations, and IANA requests.
-
-   *  CBOR float16 encoding with deterministic encoding rules; format
-      version field (key 7); per-path array size guidance as SHOULD with
-      local enforcement on constrained links.
+   *  CPB Metric Types registry with private-use range 192-255; metric
+      applicability, lifetime, and precedence rules.
 
    *  BPSec integrity models (append-only and strip-and-replace); BCB
-      encryption of CPB prohibited for routing use.
+      encryption of CPB prohibited for routing use; authenticated bundle
+      and producer binding.
 
-   *  Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR, and
-      DTNMA; IPNSIG Section 4.2 problem framing.
+   *  Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
+      DTNMA, SAND, and BPv7 updates (RFC 9713, RFC 9758).
 
-   *  Planned experimental evaluation; no experimental results or
-      demonstrated routing-performance improvement.
-
-   *  Reference implementation and development check commands
-      (Section 13).
-
-   *  Uses the published BPv7 and BPSec fragmentation rules; cites
-      [RFC9713] and [RFC9758] as updates related to BPv7 administration
-      and the ipn scheme.
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 50]
-
-Internet-Draft                   DTN CPB                  September 2026
-
-
-   *  Explicit metric applicability, lifetime and precedence rules;
-      authenticated bundle and producer binding; fragment-safe fallback;
-      strict codec validation and corrected wire examples, size
-      accounting, references, and registry review guidance.
-
-   *  Review fixes: finite-float reject policy; trust-before-timestamp
-      precedence for authenticated use; next-hop scheme independent of
-      destination EID; Independent workgroup line; MaxProp delivery
-      likelihood naming; Metric Types private-use range 192-255.
-
-   *  Valid BCP 14 wording for path-entry schemes; IANA MaxProp
-      description aligned with delivery-likelihood; Intro/Motivation
-      claim hygiene; RFC6693 normative for metric-type 0 aging;
-      terminology/notation cleanup; reproduce listing includes
-      validation tests; Fig2 hex wrap; CDDL comment sync.
+   *  Experiment description with evaluation metrics and success
+      criteria.
 
 Author's Address
 
@@ -2839,18 +2741,4 @@ Author's Address
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Perry                     Expires 11 March 2027                [Page 51]
+Perry                     Expires 15 April 2027                [Page 49]

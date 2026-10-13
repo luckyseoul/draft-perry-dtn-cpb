@@ -19,7 +19,7 @@ CDDL = ROOT / "impl" / "cpb.cddl"
 
 def test_retains_the_architectural_and_cbor_material():
     text = XML.read_text(encoding="utf-8")
-    assert "Why NOT URI Query Parameters" in text
+    assert "Why Not URI Query Parameters" in text
     assert "CPB Extension Block Binding" in text
     assert "CPB Data Structure" in text
     assert "CBOR Encoding: Major Type 7" in text
@@ -28,7 +28,7 @@ def test_retains_the_architectural_and_cbor_material():
 
 def test_validation_scope_has_no_performance_or_real_stack_claims():
     text = XML.read_text(encoding="utf-8")
-    assert "Planned Experimental Evaluation" in text
+    assert "Experiment Description" in text
     for stale in (
         "exp-real-validation",
         "real-pwg-deployment",
