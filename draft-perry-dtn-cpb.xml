@@ -6,12 +6,12 @@
 <!ENTITY nbhy "&#8209;">
 <!ENTITY wj "&#8288;">
 ]>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902" docName="draft-perry-dtn-cpb-latest" category="exp" submissionType="IETF" consensus="false" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="false" version="3">
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902" docName="draft-perry-dtn-cpb-00" category="exp" submissionType="independent" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="false" version="3">
   <front>
     <title abbrev="DTN CPB">
       Probabilistic Contact Metadata for DTN Bundle Routing
     </title>
-    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-latest"/>
+    <seriesInfo name="Internet-Draft" value="draft-perry-dtn-cpb-00"/>
     <author fullname="Nicholas Perry" initials="N." surname="Perry">
       <organization>Independent</organization>
       <address>
@@ -23,7 +23,7 @@
         <email>nick@perrybrandsllc.com</email>
       </address>
     </author>
-    <date year="2026" month="September" day="7"/>
+    <date year="2026" month="October" day="12"/>
         <workgroup>Independent</workgroup>
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
@@ -50,12 +50,6 @@
         shared applicability context distinguish estimates; cross-metric
         arithmetic is prohibited.
       </t>
-      <t>
-        This Experimental draft outlines a plan to evaluate routing behavior,
-        robustness to noisy or adversarial estimates, and interoperability
-        across independent BPv7 implementations. It reports no experimental
-        results or demonstrated routing-performance improvement.
-      </t>
     </abstract>
   </front>
   <middle>
@@ -79,12 +73,20 @@
         as space exploration communications. It does not report experimental
         results or claim demonstrated routing-performance improvement.
       </t>
+      <t>
+        CPB is an experimental extension block. It does not modify the
+        bundle processing defined in <xref target="RFC9171"/>, the security
+        processing defined in <xref target="RFC9172"/>, or the default
+        security contexts defined in <xref target="RFC9173"/>; nodes that
+        do not implement CPB process bundles carrying it exactly as those
+        specifications require for an unrecognized extension block.
+      </t>
       <section anchor="problem-statement">
-        <name>Problem Statement (IPNSIG SSI Architecture, Section 4.2)</name>
+        <name>Problem Statement</name>
         <t>
           The Interplanetary Networking Special Interest Group (IPNSIG), the
           Interplanetary Chapter of the Internet Society, published "Solar
-          System Internet Architecture and Governance — from the Moon to
+          System Internet Architecture and Governance -- from the Moon to
           Mars and beyond" in September 2023 <xref target="IPNSIG2023"/>.
           Section 4.2 ("Routing and Forwarding") of that document frames the
           routing problem this specification addresses:
@@ -182,7 +184,7 @@
           "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>",
           "<bcp14>NOT RECOMMENDED</bcp14>", "<bcp14>MAY</bcp14>", and
           "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
-          described in BCP 14 <xref target="RFC2119"/>
+          described in BCP 14 <xref target="RFC2119"/>
           <xref target="RFC8174"/> when, and only when, they appear in all
           capitals, as shown here.
         </t>
@@ -265,7 +267,7 @@
         routing metadata.
       </t>
       <section anchor="why-not-uri-query">
-        <name>Why NOT URI Query Parameters</name>
+        <name>Why Not URI Query Parameters</name>
         <t>
           An earlier design considered encoding probability as a URI query
           parameter in the destination EID:
@@ -756,6 +758,16 @@ metric-type = &(
             <li>There is no BPv7 flag meaning "remove if can't process"
                 (that language is from BPv6). Do not invent one.</li>
           </ol>
+          <t>Consequently:</t>
+          <ul>
+            <li>The bundle's destination, source, and other primary block
+                fields are unaffected by the CPB.</li>
+            <li>Routing protocols that do not consume CPB (CGR, PRoPHET,
+                MaxProp, RAPID, Spray-and-Wait) continue to function without
+                it.</li>
+            <li>The CPB is optional; bundles without it use standard routing
+                behavior.</li>
+          </ul>
         </section>
       </section>
       <section anchor="cbor-encoding">
@@ -1442,7 +1454,7 @@ A3                   ; map with 3 entries
           dictionary, Hello / anti-entropy session state, bundle offer and
           response TLVs, custody policy, and named forwarding/queueing
           strategies. CPB does not replace the PRoPHET control plane in
-          RFC 6693 Sections 3–5.
+          RFC 6693 Sections 3-5.
         </t>
       </section>
       <section anchor="rel-maxprop">
@@ -1521,7 +1533,7 @@ A3                   ; map with 3 entries
           volume. CGR-UCoP <xref target="Raverta21"/> extends CGR using
           route delivery probabilities derived from Routing under Uncertain
           Contact Plans (RUCoP). Its decision model is distinct from the
-          illustrative latency/confidence helper shipped with this draft.
+          illustrative latency/confidence cost model used in this document.
         </t>
         <t><strong>What CPB carries:</strong> metric-type 1 confidences for
           default or per-next-hop edges whose transmitter and contact
@@ -1592,6 +1604,41 @@ A3                   ; map with 3 entries
           define the CPB extension block.
         </t>
       </section>
+      <section anchor="bpv7-updates">
+        <name>Relationship to Updates of BPv7</name>
+        <t><xref target="RFC9171"/> (BPv7) has been updated by
+          <xref target="RFC9713"/> (administrative record types registry,
+          January 2025) and <xref target="RFC9758"/> (ipn URI scheme updates,
+          May 2025). Neither update affects the
+          wire format defined in <xref target="cpb"/>:
+        </t>
+        <ul>
+          <li><xref target="RFC9713"/> concerns administrative record types;
+              CPB is an extension block, not an administrative record, so
+              RFC 9713 does not apply directly.</li>
+          <li><xref target="RFC9758"/> updates the "ipn" URI scheme. CPB
+              implementations <bcp14>MUST</bcp14> encode and decode ipn EIDs
+              per RFC 9758, including Default Allocator FQNNs. The LocalNode
+              ipn URI form (Allocator=0, NodeNumber=2^32 - 1) has no meaning
+              off-node and <bcp14>MUST NOT</bcp14> appear in CPB path-entries
+              transmitted to other nodes.</li>
+          <li><eref target="https://www.rfc-editor.org/errata/eid8376">RFC
+              9171 erratum 8376</eref> records concerns about extension-block
+              placement during fragmentation. It is Held for Document
+              Update and does not replace the published fragmentation
+              rules. CPB's handling under those rules is defined in
+              <xref target="block-processing-flags"/>.</li>
+        </ul>
+        <t>
+          Related security work includes the BPSec COSE context
+          <xref target="I-D.ietf-dtn-bpsec-cose"/> (work in progress) and
+          ACME DTN Node ID validation <xref target="RFC9891"/>.
+          These address security contexts and credential provisioning,
+          respectively. Neither independently establishes a credential's
+          authority over a CPB producer identifier or supplies the CPB
+          applicability and bundle-association policy required here.
+        </t>
+      </section>
       <section anchor="rel-summary">
         <name>Summary: CPB as Cross-Cutting Metadata</name>
         <t>
@@ -1617,23 +1664,6 @@ A3                   ; map with 3 entries
       </section>
     </section>
     <!-- =================================================================== -->
-    <!-- 6. BACKWARDS COMPATIBILITY                                          -->
-    <!-- =================================================================== -->
-    <section anchor="backwards-compatibility">
-      <name>Backwards Compatibility</name>
-      <ul>
-        <li>Nodes that do not recognize the CPB block type discard it under
-            the required block processing flags and continue processing
-            the bundle as specified in <xref target="backwards-compat"/></li>
-        <li>The bundle's destination, source, and other standard fields are
-            unaffected by the CPB</li>
-        <li>Legacy routing protocols (CGR, PRoPHET, MaxProp, RAPID,
-            Spray-and-Wait) continue to function without the CPB</li>
-        <li>The CPB is optional; bundles without it use standard routing
-            behavior</li>
-      </ul>
-    </section>
-    <!-- =================================================================== -->
     <!-- 7. OPERATIONAL CONSIDERATIONS                                       -->
     <!-- =================================================================== -->
     <section anchor="operational-considerations">
@@ -1643,7 +1673,7 @@ A3                   ; map with 3 entries
         for CPB.  It draws from the processing rules in
         <xref target="operational-semantics"/>, the overhead analysis in
         <xref target="overhead-analysis"/>, and the backwards-compatibility
-        rules in <xref target="backwards-compatibility"/>.
+        rules in <xref target="backwards-compat"/>.
       </t>
       <section anchor="op-production">
         <name>When and Where to Emit CPBs</name>
@@ -1735,7 +1765,7 @@ A3                   ; map with 3 entries
           CPB is designed for incremental deployment.  Nodes that do not
           recognize the block type discard the CPB under its required
           processing flags and continue forwarding the bundle (see
-          <xref target="backwards-compatibility"/>). CPB metadata therefore
+          <xref target="backwards-compat"/>). CPB metadata therefore
           does not cross a legacy node unchanged. Deployments
           <bcp14>SHOULD</bcp14> monitor the
           fraction of CPB-aware nodes and may choose to emit CPBs only
@@ -1811,7 +1841,7 @@ A3                   ; map with 3 entries
         <name>Trust Model</name>
         <t>
           This document does not mandate a single trust model because DTN
-          deployments span a wide range of administrative scenarios —
+          deployments span a wide range of administrative scenarios --
           from a single-operator interplanetary relay network to multi-party
           terrestrial mesh deployments. Instead, this subsection identifies
           the trust questions every CPB deployment <bcp14>MUST</bcp14>
@@ -2381,178 +2411,63 @@ A3                   ; map with 3 entries
     <section anchor="implementation-status" removeInRFC="true">
       <name>Implementation Status</name>
       <t>
-        <em>[Note to RFC Editor: per <xref target="RFC7942"/>, this section
-        may be removed before publication.]</em>
-      </t>
-      <t>
-        This section records the status of implementations of the Contact
-        Probability Block at the time of writing, in accordance with
+        This section records the status of known implementations of the
+        Contact Probability Block at the time of writing, in accordance with
         <xref target="RFC7942"/>.
       </t>
-      <dl>
-        <dt>Reference Python Implementation</dt>
-        <dd>
-          <ul>
-            <li><strong>Organization:</strong> Independent (N. Perry)</li>
-            <li>
-              <strong>Repository:</strong>
-              <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
-                https://github.com/luckyseoul/draft-perry-dtn-cpb</eref>
-            </li>
-            <li><strong>License:</strong> MIT License</li>
-            <li><strong>Modules:</strong> cpb.py (encoder/decoder),
-                test_cpb.py (wire-format checks), and
-                config1_sim.py (a deterministic local policy-test harness).</li>
-            <li><strong>Scope:</strong> Encoding and decoding CPB
-                block-type-specific data. Full routing policy, BPv7 block
-                processing, and BPSec integration remain outside this codec.</li>
-            <li><strong>Maturity:</strong> Reference encoder/decoder and local
-                development helpers. Experimental evaluation is planned as
-                described in <xref target="experiment"/>.</li>
-            <li><strong>Contact:</strong> nick@perrybrandsllc.com</li>
-          </ul>
-        </dd>
-        <dt>Experimental Scaffolding</dt>
-        <dd>
-          The repository's impl directory retains a local cost helper and
-          an experiment plan for possible future evaluation. No experimental
-          findings are reported here.
-        </dd>
-      </dl>
       <t>
-        No other implementations are known to the author at the time of
-        writing. Reports of new implementations are encouraged.
+        A reference CPB encoder/decoder in Python, covering the
+        block-type-specific data defined in <xref target="cpb"/>, is
+        available under the MIT License at
+        <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb"/>.
+        It does not implement routing policy, full BPv7 block processing,
+        or BPSec. Contact: nick@perrybrandsllc.com. No other
+        implementations are known to the author.
       </t>
     </section>
     <!-- =================================================================== -->
-    <!-- 11. PLANNED EXPERIMENTAL EVALUATION                                  -->
+    <!-- 11. EXPERIMENT DESCRIPTION                                         -->
     <!-- =================================================================== -->
     <section anchor="experiment">
-      <name>Planned Experimental Evaluation</name>
+      <name>Experiment Description</name>
       <t>
-        This Experimental draft proposes the following evaluation
-        plan. These experiments have not been carried out for this draft;
-        no results or performance benefits are asserted.
+        The experiment associated with this Experimental specification
+        evaluates whether carrying contact-probability estimates in an
+        extension block is useful and safe for DTN forwarding. No results
+        are reported in this document and no performance benefit is
+        asserted.
       </t>
       <dl>
-        <dt>Routing behavior</dt>
-        <dd>Compare the same routing implementation with and without CPB
-          consumption under identical contact plans, traffic, resource
-          limits, and random seeds. Include scheduled and uncertain contacts,
-          congestion, and partial CPB deployment. Record delivery ratio,
-          delivery delay, transmission volume, and resource use.</dd>
-        <dt>Estimate quality and stability</dt>
-        <dd>Vary estimate error, age, availability, and update frequency.
-          Examine route changes and fallback behavior with stale, missing,
-          inconsistent, or deliberately misleading estimates. Keep metric
-          applicability and normalization profiles explicit.</dd>
-        <dt>Interoperability and security processing</dt>
-        <dd>Plan exchanges between independent BPv7 implementations covering
-          CPB encoding, unknown fields, multiple blocks, legacy nodes,
-          authentication, authorized updates, and fragmentation.</dd>
-        <dt>Method and reporting</dt>
-        <dd>Specify scenarios, baselines, sample sizes, analysis methods, and
-          acceptance criteria before execution. Publish configurations,
-          implementation versions, data, uncertainty, and unsuccessful
-          outcomes with any later results.</dd>
+        <dt>What is evaluated</dt>
+        <dd>The same routing implementation with and without CPB
+          consumption, under identical contact plans, traffic, resource
+          limits, and random seeds, including scheduled and uncertain
+          contacts, congestion, and partial CPB deployment. Estimate
+          quality is varied in error, age, availability, and update
+          frequency, including stale, missing, inconsistent, and
+          deliberately misleading estimates. Interoperability is evaluated
+          between independent BPv7 implementations for CPB encoding,
+          unknown fields, multiple blocks, legacy nodes, authentication,
+          authorized updates, and fragmentation.</dd>
+        <dt>Metrics</dt>
+        <dd>Delivery ratio, delivery delay, transmission volume, storage
+          and processing use, route-change frequency, fallback behavior
+          under degraded estimates, and the rate of correct decode and
+          discard behavior across implementations.</dd>
+        <dt>Success criteria</dt>
+        <dd>The experiment is considered successful if (1) independent
+          implementations interoperate on the wire format and processing
+          rules of <xref target="cpb"/>; (2) nodes that do not implement CPB
+          are unaffected; (3) CPB consumption does not degrade delivery
+          ratio or delay relative to the same algorithm without CPB when
+          estimates are stale, missing, or adversarial and authentication
+          is applied as in <xref target="security"/>; and (4) CPB
+          consumption improves at least one of delivery ratio, delay, or
+          transmission volume in scenarios with uncertain contacts.
+          Scenarios, baselines, sample sizes, and analysis methods are
+          fixed before execution, and configurations, data, uncertainty,
+          and unsuccessful outcomes are published with the results.</dd>
       </dl>
-      <t>
-        Execution and reporting belong to later work. The reference codec and
-        development checks do not establish the outcomes of this plan.
-      </t>
-    </section>
-    <!-- =================================================================== -->
-    <!-- =================================================================== -->
-    <!-- 12. REFERENCE IMPLEMENTATION                                        -->
-    <!-- =================================================================== -->
-    <section anchor="reference-implementation">
-      <name>Reference Implementation</name>
-      <t>
-        The reference implementation supporting this specification consists of
-        the following Python modules under <tt>impl/</tt>:
-      </t>
-      <ul>
-        <li><strong>cpb.py</strong> - CBOR encoder/decoder, implementing the
-            CDDL schema in <xref target="block-structure"/> and the encoding
-            rules in <xref target="cbor-encoding"/>.</li>
-        <li><strong>test_cpb.py</strong> - wire-format conformance suite
-            (encode/decode, hex tables, invalid floats, path-array <bcp14>SHOULD</bcp14>).</li>
-        <li><strong>config1_sim.py</strong> - a deterministic local
-            policy-test harness.</li>
-        <li><strong>test_config1_policies.py</strong> - unit tests for the
-            confidence-weighted cost formula.</li>
-        <li><strong>test_sim_cpb_bridge.py</strong> - bridge tests showing
-            Configuration 1 confidences encode/decode as metric-type 1 CPB
-            maps without changing confidence-weighted route cost ranking.</li>
-        <li><strong>test_draft_consistency.py</strong> - structural checks that
-            draft and documentation claims stay aligned with shipped code.</li>
-      </ul>
-      <section anchor="repo">
-        <name>Repository</name>
-        <t>Source code is published under the MIT License at:</t>
-        <t>
-          <eref target="https://github.com/luckyseoul/draft-perry-dtn-cpb">
-            https://github.com/luckyseoul/draft-perry-dtn-cpb
-          </eref>
-        </t>
-      </section>
-      <section anchor="reproduce">
-        <name>Reference Implementation Development Checks</name>
-        <figure anchor="fig-reproduce">
-          <name>Development Check Commands</name>
-          <sourcecode type="bash" markers="true"><![CDATA[
-git clone https://github.com/luckyseoul/draft-perry-dtn-cpb
-cd draft-perry-dtn-cpb
-python3 -m pip install -r impl/requirements.txt
-
-python3 impl/test_cpb.py
-python3 impl/test_cpb_validation.py
-python3 impl/test_config1_policies.py
-python3 impl/test_sim_cpb_bridge.py
-python3 impl/test_draft_consistency.py
-cddl compile-cddl --cddl impl/cpb.cddl
-]]></sourcecode>
-        </figure>
-        <t>
-          These commands are provided for reference-code development. They
-          do not execute the experimental plan in <xref target="experiment"/>.
-        </t>
-      </section>
-      <section anchor="bpv7-updates">
-        <name>Relationship to Updates of BPv7</name>
-        <t><xref target="RFC9171"/> (BPv7) has been updated by
-          <xref target="RFC9713"/> (administrative record types registry,
-          January 2025) and <xref target="RFC9758"/> (ipn URI scheme updates,
-          May 2025) since this CPB work began. Neither update affects the
-          wire format defined in <xref target="cpb"/>:
-        </t>
-        <ul>
-          <li><xref target="RFC9713"/> concerns administrative record types;
-              CPB is an extension block, not an administrative record, so
-              RFC 9713 does not apply directly.</li>
-          <li><xref target="RFC9758"/> updates the "ipn" URI scheme. CPB
-              implementations <bcp14>MUST</bcp14> encode and decode ipn EIDs
-              per RFC 9758, including Default Allocator FQNNs. The LocalNode
-              ipn URI form (Allocator=0, NodeNumber=2^32 - 1) has no meaning
-              off-node and <bcp14>MUST NOT</bcp14> appear in CPB path-entries
-              transmitted to other nodes.</li>
-          <li><eref target="https://www.rfc-editor.org/errata/eid8376">RFC
-              9171 erratum 8376</eref> records concerns about extension-block
-              placement during fragmentation. It is Held for Document
-              Update and does not replace the published fragmentation
-              rules. CPB's handling under those rules is defined in
-              <xref target="block-processing-flags"/>.</li>
-        </ul>
-        <t>
-          Related security work includes the BPSec COSE context
-          <xref target="I-D.ietf-dtn-bpsec-cose"/> (work in progress) and
-          ACME DTN Node ID validation <xref target="RFC9891"/>.
-          These address security contexts and credential provisioning,
-          respectively. Neither independently establishes a credential's
-          authority over a CPB producer identifier or supplies the CPB
-          applicability and bundle-association policy required here.
-        </t>
-      </section>
     </section>
   </middle>
   <back>
@@ -2803,9 +2718,9 @@ cddl compile-cddl --cddl impl/cpb.cddl
           <title>Bundle Protocol (BP) Secure Advertisement and Neighborhood Discovery (SAND)</title>
           <author initials="B." surname="Sipos" fullname="B. Sipos"/>
           <author initials="J." surname="Deaton" fullname="J. Deaton"/>
-          <date year="2026" month="July"/>
+          <date year="2026" month="October"/>
         </front>
-        <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bp-sand-03"/>
+        <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bp-sand-05"/>
       </reference>
       <reference anchor="I-D.ietf-tvr-schedule-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang">
         <front>
@@ -2872,7 +2787,7 @@ cddl compile-cddl --cddl impl/cpb.cddl
         fragmentation pruning, identical-timestamp tie-breaking, the
         per-path array size limit, scheme-mismatch logging, future-dated
         timestamp discard, and IANA considerations. Those comments
-        improved this draft. Remaining errors are the author's.
+        improved this document. Remaining errors are the author's.
       </t>
     </section>
     <!-- =================================================================== -->
@@ -2880,46 +2795,21 @@ cddl compile-cddl --cddl impl/cpb.cddl
     <!-- =================================================================== -->
     <section anchor="app-changelog" removeInRFC="true">
       <name>Change Log</name>
-      <t>
-        <em>[RFC Editor Note: Please remove this entire section before
-        publication.]</em>
-      </t>
       <section anchor="changelog-00">
-        <name>September 2026</name>
+        <name>draft-perry-dtn-cpb-00</name>
         <ul>
-          <li>Initial Experimental Internet-Draft: Contact Probability Block wire
-              format, metric-type registry, operational and security
-              considerations, and IANA requests.</li>
-          <li>CBOR float16 encoding with deterministic encoding rules;
-              format version field (key 7); per-path array size guidance
-              as <bcp14>SHOULD</bcp14> with local enforcement on constrained links.</li>
+          <li>Contact Probability Block wire format with CBOR float16
+              encoding, deterministic encoding rules, and format version
+              field (key 7).</li>
+          <li>CPB Metric Types registry with private-use range 192-255;
+              metric applicability, lifetime, and precedence rules.</li>
           <li>BPSec integrity models (append-only and strip-and-replace);
-              BCB encryption of CPB prohibited for routing use.</li>
+              BCB encryption of CPB prohibited for routing use;
+              authenticated bundle and producer binding.</li>
           <li>Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
-              and DTNMA; IPNSIG Section 4.2 problem framing.</li>
-          <li>Planned experimental evaluation; no experimental results
-              or demonstrated routing-performance improvement.</li>
-          <li>Reference implementation and development check commands
-              (<xref target="reference-implementation"/>).</li>
-          <li>Uses the published BPv7 and BPSec fragmentation rules;
-              cites <xref target="RFC9713"/> and
-              <xref target="RFC9758"/> as updates related to BPv7
-              administration and the ipn scheme.</li>
-          <li>Explicit metric applicability, lifetime and precedence rules;
-              authenticated bundle and producer binding; fragment-safe
-              fallback; strict codec validation and corrected wire examples,
-              size accounting, references, and registry review guidance.</li>
-          <li>
-            Review fixes: finite-float reject policy; trust-before-timestamp
-            precedence for authenticated use; next-hop scheme independent of
-            destination EID; Independent workgroup line; MaxProp delivery
-            likelihood naming; Metric Types private-use range 192-255.
-          </li>
-          <li>Valid BCP 14 wording for path-entry schemes; IANA MaxProp
-            description aligned with delivery-likelihood; Intro/Motivation
-            claim hygiene; RFC6693 normative for metric-type 0 aging;
-            terminology/notation cleanup; reproduce listing includes
-            validation tests; Fig2 hex wrap; CDDL comment sync.</li>
+              DTNMA, SAND, and BPv7 updates (RFC 9713, RFC 9758).</li>
+          <li>Experiment description with evaluation metrics and success
+              criteria.</li>
         </ul>
       </section>
     </section>
