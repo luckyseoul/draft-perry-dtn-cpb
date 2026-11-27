@@ -37,11 +37,13 @@
     <abstract>
       <t>
         This document defines the Contact Probability Block (CPB), a BPv7
-        extension block carrying probability metadata between forwarding
-        nodes in Delay/Disruption Tolerant Networks (DTNs). CPB provides a
-        common transport for estimates produced and consumed by routing
-        protocols such as PRoPHET, CGR, MaxProp, RAPID, and Spray-and-Wait.
-        Integration is optional and does not replace those algorithms.
+        extension block for holding probability metadata and carrying it
+        between forwarding nodes in Delay/Disruption Tolerant Networks
+        (DTNs). CPB standardizes that container and the rules for selecting
+        the applicable value. Routing protocols such as PRoPHET, CGR,
+        MaxProp, RAPID, and Spray-and-Wait may produce or consume the
+        selected value. CPB does not define their forwarding algorithms
+        or replace them.
       </t>
       <t>
         CPB uses CBOR floating-point encoding, recommends IEEE 754 binary16
@@ -114,28 +116,41 @@
           </t>
         </blockquote>
         <t>
-          The Contact Probability Block defined here is precisely such a
-          "scoring and/or preferential ranking" signal, carried in-bundle as
-          metadata for forwarding nodes to consult. The CPB design responds
-          directly to two of IPNSIG Section 4.2's four numbered Recommendations:
+          That question separates obtaining the information used to choose a
+          next hop from the procedure that makes the choice. The Contact
+          Probability Block is a container for a "scoring and/or preferential
+          ranking" value, carried in-bundle so a forwarding node can select
+          the applicable value and read it. CPB standardizes that container
+          and the selection and precedence rules. It does not standardize a
+          common forwarding algorithm, a route computation, or the mechanics
+          that produce the score.
+        </t>
+        <t>
+          Within that limit, the CPB design responds to two of IPNSIG
+          Section 4.2's four numbered Recommendations:
         </t>
         <dl>
           <dt>Recommendation 1 (Autonomy and Automation):</dt>
           <dd>
             "routing and forwarding technologies are needed that do not
             require continuous human intervention or management from Earth."
-            CPB enables autonomous, in-bundle probability annotation that each
-            forwarder consults locally, without round-trips to Earth.
+            CPB carries an in-bundle probability annotation that a forwarder
+            may read locally, without a round-trip to Earth. Any decision
+            that uses the selected value remains with the local routing
+            protocol.
           </dd>
           <dt>Recommendation 2 (Standards):</dt>
           <dd>
             "Autonomy, in turn, requires standard methods of: propagating
             whatever information is needed to support route computation;
             utilizing that information in common ways that assure coherent
-            forwarding." CPB standardizes both the wire format for propagating
-            probability information (<xref target="cbor-encoding"/>) and the
-            precedence and matching rules for utilizing it
-            (<xref target="multiple-cpbs"/>, <xref target="op-router-processing"/>).
+            forwarding." CPB standardizes propagation of the information:
+            the wire format (<xref target="cbor-encoding"/>) and the
+            precedence and matching rules that select which carried value
+            applies (<xref target="multiple-cpbs"/>,
+            <xref target="per-path-matching"/>,
+            <xref target="op-router-processing"/>). It does not standardize
+            a common method of utilizing that value to choose a next hop.
           </dd>
         </dl>
         <t><xref target="relationship-protocols"/> positions CPB relative to
@@ -145,8 +160,10 @@
           (SABR) <xref target="SABR"/>, Contact Graph Routing (CGR)
           <xref target="CGR"/>, and Opportunistic CGR with
           Uncertain Contact Plans (CGR-UCoP) <xref target="Raverta21"/>. CPB
-          is a cross-protocol metadata layer, not a replacement for any of
-          these algorithms; each can consume or produce CPB data.
+          is a cross-protocol metadata container. It is not a replacement
+          for any of these algorithms and not a shared forwarding procedure.
+          Each algorithm keeps its own mechanics and may consume or produce
+          CPB data.
         </t>
       </section>
       <section anchor="motivation">
@@ -440,7 +457,7 @@ ipn:100.1?prob=0.75
           <sourcecode type="cddl" markers="true"><![CDATA[
 ; Integration with RFC 9171 canonical block structure.
 ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
-; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 8.3.3).
+; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 7.3.3).
 ; Plain bstr alt = RFC 9171 embedded-cbor (opaque BTSD).
 
 ; 200 = experimental-range example used in this document
@@ -1321,8 +1338,9 @@ A3                   ; map with 3 entries
               rules in <xref target="multiple-cpbs"/>, then consult only
               the applicable default or per-path values under
               <xref target="per-path-matching"/>.</li>
-          <li><strong>Decide:</strong> Use the probability as an input to
-              routing decisions.</li>
+          <li><strong>Decide:</strong> Make the selected value available to
+              the local routing protocol. This specification does not define
+              the forwarding decision.</li>
           <li><strong>Update (optional):</strong> If the router has fresher
               probability data, it <bcp14>SHOULD</bcp14> append a new CPB
               block subject to the fragmentation and security-operation
@@ -1335,35 +1353,52 @@ A3                   ; map with 3 entries
       </section>
       <section anchor="op-routing-usage">
         <name>Usage in Routing Algorithms</name>
-        <t>Routing algorithms <bcp14>MAY</bcp14> use the CPB in several ways:</t>
+        <t>
+          A routing algorithm may consult a value selected under
+          <xref target="multiple-cpbs"/> and
+          <xref target="per-path-matching"/>. CPB does not specify a
+          forwarding algorithm, a next-hop selection procedure, or a
+          replication policy. It does not encode a remaining copy count
+          and <bcp14>MUST NOT</bcp14> be read as defining fanout as
+          ceil(1/prob) (see <xref target="rel-spray"/>).
+        </t>
+        <t>
+          The following are non-normative examples of local policies that
+          may consult a selected value. None of them is required, and
+          none is part of the processing rules in
+          <xref target="op-router-processing"/>.
+        </t>
         <ul>
-          <li><strong>Local state preference:</strong> Nodes that maintain
-              native protocol state (PRoPHET RIB, CGR contact plan, MaxProp
-              tables) <bcp14>SHOULD</bcp14> prefer that local state over
-              foreign CPB values unless local policy explicitly imports CPB
-              as authoritative for a domain or metric-type.</li>
-          <li><strong>Threshold-based:</strong> Forward if prob &gt; threshold</li>
-          <li><strong>Weighted selection:</strong> Choose proportionally to
-              probability</li>
+          <li><strong>Local state preference:</strong> A node that
+              maintains native protocol state (PRoPHET RIB, CGR contact
+              plan, MaxProp tables) may prefer that local state over a
+              foreign CPB value unless local policy explicitly imports
+              CPB as authoritative for a domain or metric-type.</li>
+          <li><strong>Threshold-based:</strong> Forward if the selected
+              probability exceeds a locally configured threshold.</li>
+          <li><strong>Weighted selection:</strong> Choose among next hops
+              in proportion to their selected probabilities.</li>
           <li><strong>Replication target ranking:</strong> When a local
-              spray/epidemic policy already owns a remaining copy count L,
-              CPB probabilities <bcp14>MAY</bcp14> rank candidate relays.
-              CPB does not encode L and <bcp14>MUST NOT</bcp14> be read as
-              defining fanout as ceil(1/prob) (see <xref target="rel-spray"/>).</li>
-          <li><strong>Priority:</strong> Prioritize higher-probability bundles
-              during congestion</li>
-          <li><strong>Risk-aware:</strong> Weight decisions by both probability
-              and confidence (field 6)</li>
+              spray or epidemic policy already owns a remaining copy
+              count, selected probabilities may rank candidate relays.</li>
+          <li><strong>Priority:</strong> Order bundles by selected
+              probability during congestion.</li>
+          <li><strong>Risk-aware:</strong> Weight a local decision by both
+              the selected probability and confidence (field 6).</li>
         </ul>
       </section>
       <section anchor="stability-considerations">
         <name>Stability Considerations and Feedback Dynamics</name>
         <t>
-          Probability-aware forwarding creates feedback between routing
-          decisions and observed network behavior. Naive use of CPB data can
-          produce instability that confidence-blind routing avoids. Three
-          dynamics are particularly relevant:
+          When a local routing algorithm uses a selected CPB value, routing
+          decisions and later observations can feed back on each other.
+          Naive use can produce instability that confidence-blind routing
+          avoids. This section describes those dynamics. It does not specify
+          routing mechanics and does not require a mitigation. Illustrative
+          parameters an experiment may vary are in
+          <xref target="experiment-stability-examples"/>.
         </t>
+        <t>Three dynamics are particularly relevant:</t>
         <dl>
           <dt>Herding</dt>
           <dd>
@@ -1390,39 +1425,13 @@ A3                   ; map with 3 entries
           </dd>
         </dl>
         <t>
-          Implementations <bcp14>SHOULD</bcp14> mitigate these dynamics. The
-          following techniques are <bcp14>RECOMMENDED</bcp14>:
-        </t>
-        <ul>
-          <li><strong>Hysteresis:</strong> Use distinct enter and exit
-              thresholds (e.g., switch <em>to</em> a route at p &gt; 0.75,
-              switch <em>away</em> only at p &lt; 0.60). Avoids
-              threshold-crossing chatter on small fluctuations.</li>
-          <li><strong>Rate limiting:</strong> Cap the frequency of routing
-              preference changes per (source, destination) pair (e.g., at
-              most one switch per contact opportunity, not per bundle).</li>
-          <li><strong>Randomized tie-breaking:</strong> When multiple routes
-              have CPB probabilities within a configurable epsilon (default:
-              0.05), select randomly rather than deterministically by lowest
-              EID. Breaks herding without sacrificing the high-probability
-              choice.</li>
-          <li><strong>Probability decay under load:</strong> Maintain a local
-              estimate of congestion on each next-hop and apply a load-aware
-              discount to the received CPB probability before using it in
-              routing decisions. Closes the feedback loop locally rather than
-              waiting for upstream CPB refresh.</li>
-          <li><strong>Bounded credulity:</strong> Cap how heavily any single
-              CPB can influence the local routing decision relative to the
-              router's own observations. Specific weights are
-              deployment-dependent.</li>
-        </ul>
-        <t>
-          A formal control-theoretic stability analysis of CPB-driven feedback
-          dynamics is not provided in this document; this remains an open
+          Local policies sometimes limit how often a preference changes,
+          separate the threshold for adopting a route from the threshold for
+          leaving it, or cap how far one CPB can move a decision relative to
+          local observations. Those choices belong to the routing protocol.
+          A formal control-theoretic stability analysis of CPB-driven
+          feedback is not provided in this document and remains an open
           research question.
-          Implementations that omit all of the above mitigations
-          <bcp14>SHOULD NOT</bcp14> be deployed in production DTNs where
-          congestion or herding could degrade service.
         </t>
       </section>
     </section>
@@ -1515,7 +1524,8 @@ A3                   ; map with 3 entries
           integer L remaining-copy counter and spray-phase state. Those
           are replication-control metadata, not probabilities; they need a
           different extension or local header if standardized later. CPB
-          does not encode L.
+          does not encode L. Consumers <bcp14>MUST NOT</bcp14> derive a
+          fanout such as ceil(1/prob) from a CPB probability.
         </t>
       </section>
       <section anchor="rel-epidemic">
@@ -1735,9 +1745,12 @@ A3                   ; map with 3 entries
           <xref target="computational-overhead"/>.
         </t>
         <t>
-          Route recomputation triggered by new CPB observations can be
-          bounded by the hysteresis and rate-limiting techniques
-          described in <xref target="stability-considerations"/>.
+          Whether a new CPB observation triggers route recomputation, and
+          any bound on that work, is a local routing-policy choice.
+          <xref target="stability-considerations"/> describes the feedback
+          that motivates such a bound.
+          <xref target="experiment-stability-examples"/> lists illustrative
+          parameters; this specification does not require them.
         </t>
         <t>
           Implementations <bcp14>SHOULD</bcp14> publish concrete
@@ -1787,13 +1800,12 @@ A3                   ; map with 3 entries
           intermediate nodes.
         </t>
         <t>
-          The mitigations in <xref target="stability-considerations"/> (hysteresis on
-          route changes, minimum interval between CPB-triggered
-          recomputations, and explicit rate limiting) are
-          <bcp14>RECOMMENDED</bcp14>.  Operators <bcp14>SHOULD</bcp14>
-          monitor queue depths and delivery ratios on high-confidence
-          routes and be prepared to fall back to confidence-blind
-          policies or to reduce CPB production rate during overload.
+          How a deployment responds is local policy.
+          <xref target="stability-considerations"/> describes the feedback,
+          and <xref target="experiment-stability-examples"/> lists
+          illustrative parameters an experiment may vary. Those parameters
+          are not required. Operators <bcp14>SHOULD</bcp14> monitor queue
+          depths and delivery ratios on high-confidence routes.
         </t>
       </section>
       <section anchor="op-clocks">
@@ -2374,9 +2386,9 @@ A3                   ; map with 3 entries
             size. A local confidence-weighted cost helper is included for
             deterministic policy tests; its formula and complexity are not
             asserted to implement the published CGR-UCoP algorithm.
-            The hysteresis and rate-limiting
-            techniques of <xref target="stability-considerations"/> bound the
-            recomputation rate.
+            Any bound on that rate is local policy
+            (<xref target="stability-considerations"/>,
+            <xref target="experiment-stability-examples"/>).
           </dd>
           <dt>Memory pressure from multi-CPB accumulation</dt>
           <dd>
@@ -2474,6 +2486,32 @@ A3                   ; map with 3 entries
           fixed before execution, and configurations, data, uncertainty,
           and unsuccessful outcomes are published with the results.</dd>
       </dl>
+      <section anchor="experiment-stability-examples">
+        <name>Illustrative Stability Parameters</name>
+        <t>
+          The following are non-normative examples of local policy
+          parameters an experiment may vary when studying the feedback
+          dynamics in <xref target="stability-considerations"/>. They are
+          not requirements, defaults, or CPB processing rules.
+        </t>
+        <ul>
+          <li><strong>Hysteresis:</strong> distinct thresholds for adopting
+              and leaving a route, for example switch <em>to</em> a route
+              at p &gt; 0.75 and switch <em>away</em> only at p &lt; 0.60.</li>
+          <li><strong>Rate limiting:</strong> at most one routing-preference
+              change per (source, destination) pair per contact opportunity,
+              rather than per bundle.</li>
+          <li><strong>Randomized tie-breaking:</strong> when selected
+              probabilities differ by less than an epsilon of 0.05, choose
+              at random rather than by lowest endpoint identifier.</li>
+          <li><strong>Load discount:</strong> a local congestion estimate
+              applied to the selected value before the local algorithm
+              uses it.</li>
+          <li><strong>Bounded credulity:</strong> a cap on how heavily any
+              single CPB shifts the local decision relative to the router's
+              own observations. Weights are deployment-dependent.</li>
+        </ul>
+      </section>
     </section>
   </middle>
   <back>
@@ -2719,7 +2757,7 @@ A3                   ; map with 3 entries
         <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bpsec-cose-19"/>
         <refcontent>Work in Progress</refcontent>
       </reference>
-      <reference anchor="I-D.ietf-dtn-bp-sand" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand">
+      <reference anchor="I-D.ietf-dtn-bp-sand" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand-05">
         <front>
           <title>Bundle Protocol (BP) Secure Advertisement and Neighborhood Discovery (SAND)</title>
           <author initials="B." surname="Sipos" fullname="B. Sipos"/>
@@ -2728,7 +2766,7 @@ A3                   ; map with 3 entries
         </front>
         <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bp-sand-05"/>
       </reference>
-      <reference anchor="I-D.ietf-tvr-schedule-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang">
+      <reference anchor="I-D.ietf-tvr-schedule-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang-12">
         <front>
           <title>A YANG Data Model for Scheduled Attributes</title>
           <author initials="Y." surname="Qu" fullname="Y. Qu"/>
@@ -2740,7 +2778,7 @@ A3                   ; map with 3 entries
         </front>
         <seriesInfo name="Internet-Draft" value="draft-ietf-tvr-schedule-yang-12"/>
       </reference>
-      <reference anchor="I-D.taylor-dtn-dpp" target="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp">
+      <reference anchor="I-D.taylor-dtn-dpp" target="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp-02">
         <front>
           <title>DTN Peering Protocol</title>
           <author initials="R." surname="Taylor" fullname="R. Taylor"/>
@@ -2815,7 +2853,13 @@ A3                   ; map with 3 entries
           <li>Relationship to PRoPHET, MaxProp, RAPID, Spray-and-Wait, CGR,
               DTNMA, SAND, and BPv7 updates (RFC 9713, RFC 9758).</li>
           <li>Experiment description with evaluation metrics and success
-              criteria.</li>
+              criteria. Illustrative stability parameters (hysteresis
+              thresholds, a tie-breaking epsilon, and a per-contact switch
+              limit) are examples for that experiment, not processing
+              requirements.</li>
+          <li>Normative scope is the metadata container and selection of
+              the applicable value. Forwarding algorithms stay with the
+              consuming routing protocol.</li>
         </ul>
       </section>
     </section>

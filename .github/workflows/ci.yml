@@ -57,7 +57,7 @@ jobs:
       - name: Install xml2rfc
         run: |
           python -m pip install --upgrade pip
-          pip install 'xml2rfc>=3.23.0'
+          pip install 'xml2rfc==3.35.0'
 
       - name: Install and run CDDL validator
         run: |
@@ -77,6 +77,39 @@ jobs:
           xml2rfc --text draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.txt
           xml2rfc --html draft-perry-dtn-cpb.xml -o /tmp/draft-perry-dtn-cpb.html
           grep -q 'Probabilistic Contact Metadata for DTN Bundle Routing' /tmp/draft-perry-dtn-cpb.txt
+
+      # txt from xml2rfc 3.35.0 is byte-stable. HTML differs only in the
+      # generator comment, which records the interpreter and library versions.
+      - name: Check committed text and HTML match the XML
+        run: |
+          set -euo pipefail
+          diff -u draft-perry-dtn-cpb.txt /tmp/draft-perry-dtn-cpb.txt
+          python3 - <<'PY'
+          import difflib
+          import re
+          from pathlib import Path
+
+          def norm(path):
+              text = Path(path).read_text(encoding="utf-8")
+              return re.sub(
+                  r"<!-- Generator version information:.*?-->",
+                  "<!-- Generator version information: omitted -->",
+                  text,
+                  count=1,
+                  flags=re.S,
+              )
+
+          committed = norm("draft-perry-dtn-cpb.html")
+          built = norm("/tmp/draft-perry-dtn-cpb.html")
+          if committed != built:
+              diff = "".join(difflib.unified_diff(
+                  committed.splitlines(True),
+                  built.splitlines(True),
+                  fromfile="draft-perry-dtn-cpb.html",
+                  tofile="/tmp/draft-perry-dtn-cpb.html",
+              ))
+              raise SystemExit(diff[:8000] or "HTML differs from the XML rebuild")
+          PY
 
       - name: Upload built draft artifacts
         uses: actions/upload-artifact@v7
