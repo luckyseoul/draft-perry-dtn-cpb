@@ -86,7 +86,69 @@ def test_internal_references_resolve():
 
 
 def test_repository_link_is_present():
-    assert "draft-perry-dtn-cpb.xml" in README.read_text(encoding="utf-8")
+    readme = README.read_text(encoding="utf-8")
+    assert "draft-perry-dtn-cpb.xml" in readme
+    assert "draft-perry-dtn-cpb-00" in readme
+    assert "-latest" not in readme
+
+
+def _bcp14(section):
+    return ["".join(el.itertext()) for el in section.iter("bcp14")]
+
+
+def _flat(node):
+    return re.sub(r"\s+", " ", "".join(node.itertext()))
+
+
+def test_normative_scope_is_container_and_selection():
+    doc = ET.parse(XML)
+    problem = _flat(doc.find('.//section[@anchor="problem-statement"]'))
+    assert "does not standardize a common forwarding algorithm" in problem
+    assert "select which carried value applies" in problem
+
+    usage = doc.find('.//section[@anchor="op-routing-usage"]')
+    assert _bcp14(usage) == ["MUST NOT"]
+    assert "non-normative examples" in _flat(usage)
+
+    stability = doc.find('.//section[@anchor="stability-considerations"]')
+    assert _bcp14(stability) == []
+    stability_text = _flat(stability)
+    for knob in ("0.75", "0.60", "0.05"):
+        assert knob not in stability_text, knob
+
+    examples = doc.find('.//section[@anchor="experiment-stability-examples"]')
+    assert examples is not None
+    assert examples.find("name").text == "Illustrative Stability Parameters"
+    assert _bcp14(examples) == []
+    example_text = _flat(examples)
+    assert "non-normative" in example_text
+    for knob in ("0.75", "0.60", "0.05"):
+        assert knob in example_text, knob
+
+    congestion = doc.find('.//section[@anchor="op-congestion"]')
+    assert "RECOMMENDED" not in _bcp14(congestion)
+
+    binding = doc.find('.//figure[@anchor="fig-listing-3"]/sourcecode').text
+    assert "Sec 7.3.3" in binding
+    assert "Sec 8.3.3" not in binding
+
+
+def test_repository_docs_match_published_draft():
+    quick = (ROOT / "docs" / "CPB-QUICK-REFERENCE.md").read_text(encoding="utf-8")
+    lowered = quick.lower()
+    assert "unsubmitted" not in lowered
+    assert "pre-submission" not in lowered
+    assert "draft §7" in quick
+    assert "draft §8" not in quick
+
+    impl_readme = (ROOT / "impl" / "README.md").read_text(encoding="utf-8")
+    assert "clamps to [0,1]" not in impl_readme
+    assert "values outside [0,1]" in impl_readme
+
+    plan = (ROOT / "impl" / "EXPERIMENT-PLAN.md").read_text(encoding="utf-8")
+    assert "presubmission" not in plan.lower()
+    assert "excluded from automatic CI" not in plan
+    assert "`make test`" in plan
 
 
 if __name__ == "__main__":
@@ -96,4 +158,6 @@ if __name__ == "__main__":
     test_documented_wire_sizes()
     test_internal_references_resolve()
     test_repository_link_is_present()
+    test_normative_scope_is_container_and_selection()
+    test_repository_docs_match_published_draft()
     print("All draft consistency tests passed.")

@@ -9,11 +9,13 @@
 <meta content="
        
         This document defines the Contact Probability Block (CPB), a BPv7
-        extension block carrying probability metadata between forwarding
-        nodes in Delay/Disruption Tolerant Networks (DTNs). CPB provides a
-        common transport for estimates produced and consumed by routing
-        protocols such as PRoPHET, CGR, MaxProp, RAPID, and Spray-and-Wait.
-        Integration is optional and does not replace those algorithms.
+        extension block for holding probability metadata and carrying it
+        between forwarding nodes in Delay/Disruption Tolerant Networks
+        (DTNs). CPB standardizes that container and the rules for selecting
+        the applicable value. Routing protocols such as PRoPHET, CGR,
+        MaxProp, RAPID, and Spray-and-Wait may produce or consume the
+        selected value. CPB does not define their forwarding algorithms
+        or replace them.
        
        
         CPB uses CBOR floating-point encoding, recommends IEEE 754 binary16
@@ -36,16 +38,16 @@
 <meta content="draft-perry-dtn-cpb-00" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.35.0
-    Python 3.13.18
+    Python 3.12.3
     ConfigArgParse 1.10.2
     google-i18n-address 3.1.1
     intervaltree 3.2.1
-    Jinja2 3.1.6
+    Jinja2 3.1.2
     lxml 6.1.3
     natsort 8.4.0
     platformdirs 4.14.8
     pycountry 26.2.16
-    PyYAML 6.0.4
+    PyYAML 6.0.1
     requests 2.34.2
     wcwidth 0.9.5
 -->
@@ -1282,11 +1284,13 @@ li > p:last-of-type:only-child {
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">
         This document defines the Contact Probability Block (CPB), a BPv7
-        extension block carrying probability metadata between forwarding
-        nodes in Delay/Disruption Tolerant Networks (DTNs). CPB provides a
-        common transport for estimates produced and consumed by routing
-        protocols such as PRoPHET, CGR, MaxProp, RAPID, and Spray-and-Wait.
-        Integration is optional and does not replace those algorithms.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+        extension block for holding probability metadata and carrying it
+        between forwarding nodes in Delay/Disruption Tolerant Networks
+        (DTNs). CPB standardizes that container and the rules for selecting
+        the applicable value. Routing protocols such as PRoPHET, CGR,
+        MaxProp, RAPID, and Spray-and-Wait may produce or consume the
+        selected value. CPB does not define their forwarding algorithms
+        or replace them.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <p id="section-abstract-2">
         CPB uses CBOR floating-point encoding, recommends IEEE 754 binary16
         for bandwidth efficiency, preserves endpoint identifiers, and defines
@@ -1592,6 +1596,11 @@ li > p:last-of-type:only-child {
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
             <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-experiment-description" class="internal xref">Experiment Description</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-illustrative-stability-para" class="internal xref">Illustrative Stability Parameters</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
             <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-references" class="internal xref">References</a></p>
@@ -1682,40 +1691,54 @@ li > p:last-of-type:only-child {
             way?<a href="#section-1.1-4.1" class="pilcrow">¶</a></p>
 </blockquote>
 <p id="section-1.1-5">
-          The Contact Probability Block defined here is precisely such a
-          "scoring and/or preferential ranking" signal, carried in-bundle as
-          metadata for forwarding nodes to consult. The CPB design responds
-          directly to two of IPNSIG Section 4.2's four numbered Recommendations:<a href="#section-1.1-5" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-1.1-6">
-          <dt id="section-1.1-6.1">Recommendation 1 (Autonomy and Automation):</dt>
-          <dd style="margin-left: 1.5em" id="section-1.1-6.2">
+          That question separates obtaining the information used to choose a
+          next hop from the procedure that makes the choice. The Contact
+          Probability Block is a container for a "scoring and/or preferential
+          ranking" value, carried in-bundle so a forwarding node can select
+          the applicable value and read it. CPB standardizes that container
+          and the selection and precedence rules. It does not standardize a
+          common forwarding algorithm, a route computation, or the mechanics
+          that produce the score.<a href="#section-1.1-5" class="pilcrow">¶</a></p>
+<p id="section-1.1-6">
+          Within that limit, the CPB design responds to two of IPNSIG
+          Section 4.2's four numbered Recommendations:<a href="#section-1.1-6" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-1.1-7">
+          <dt id="section-1.1-7.1">Recommendation 1 (Autonomy and Automation):</dt>
+          <dd style="margin-left: 1.5em" id="section-1.1-7.2">
             "routing and forwarding technologies are needed that do not
             require continuous human intervention or management from Earth."
-            CPB enables autonomous, in-bundle probability annotation that each
-            forwarder consults locally, without round-trips to Earth.<a href="#section-1.1-6.2" class="pilcrow">¶</a>
+            CPB carries an in-bundle probability annotation that a forwarder
+            may read locally, without a round-trip to Earth. Any decision
+            that uses the selected value remains with the local routing
+            protocol.<a href="#section-1.1-7.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.1-6.3">Recommendation 2 (Standards):</dt>
-          <dd style="margin-left: 1.5em" id="section-1.1-6.4">
+<dt id="section-1.1-7.3">Recommendation 2 (Standards):</dt>
+          <dd style="margin-left: 1.5em" id="section-1.1-7.4">
             "Autonomy, in turn, requires standard methods of: propagating
             whatever information is needed to support route computation;
             utilizing that information in common ways that assure coherent
-            forwarding." CPB standardizes both the wire format for propagating
-            probability information (<a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>) and the
-            precedence and matching rules for utilizing it
-            (<a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a>, <a href="#op-router-processing" class="auto internal xref">Section 4.2</a>).<a href="#section-1.1-6.4" class="pilcrow">¶</a>
+            forwarding." CPB standardizes propagation of the information:
+            the wire format (<a href="#cbor-encoding" class="auto internal xref">Section 3.4</a>) and the
+            precedence and matching rules that select which carried value
+            applies (<a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a>,
+            <a href="#per-path-matching" class="auto internal xref">Section 3.6.1</a>,
+            <a href="#op-router-processing" class="auto internal xref">Section 4.2</a>). It does not standardize
+            a common method of utilizing that value to choose a next hop.<a href="#section-1.1-7.4" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-1.1-7"><a href="#relationship-protocols" class="auto internal xref">Section 5</a> positions CPB relative to
+<p id="section-1.1-8"><a href="#relationship-protocols" class="auto internal xref">Section 5</a> positions CPB relative to
           the routing-protocol families catalogued in IPNSIG Section 4.2 and
           its Appendix A: PRoPHET <span>[<a href="#RFC6693" class="cite xref">RFC6693</a>]</span>, Spray and Wait
           <span>[<a href="#Spyropoulos05" class="cite xref">Spyropoulos05</a>]</span>, Schedule-Aware Bundle Routing
           (SABR) <span>[<a href="#SABR" class="cite xref">SABR</a>]</span>, Contact Graph Routing (CGR)
           <span>[<a href="#CGR" class="cite xref">CGR</a>]</span>, and Opportunistic CGR with
           Uncertain Contact Plans (CGR-UCoP) <span>[<a href="#Raverta21" class="cite xref">Raverta21</a>]</span>. CPB
-          is a cross-protocol metadata layer, not a replacement for any of
-          these algorithms; each can consume or produce CPB data.<a href="#section-1.1-7" class="pilcrow">¶</a></p>
+          is a cross-protocol metadata container. It is not a replacement
+          for any of these algorithms and not a shared forwarding procedure.
+          Each algorithm keeps its own mechanics and may consume or produce
+          CPB data.<a href="#section-1.1-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="motivation">
@@ -2083,7 +2106,7 @@ ipn:100.1?prob=0.75
 <pre>&lt;CODE BEGINS&gt;
 ; Integration with RFC 9171 canonical block structure.
 ; The BTSD is a bstr whose content is CBOR-encoded cpb-data.
-; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 8.3.3).
+; Hop-by-hop CPB MUST stay readable; do not BCB-encrypt (Sec 7.3.3).
 ; Plain bstr alt = RFC 9171 embedded-cbor (opaque BTSD).
 
 ; 200 = experimental-range example used in this document
@@ -3094,8 +3117,9 @@ A3                   ; map with 3 entries
               <a href="#per-path-matching" class="auto internal xref">Section 3.6.1</a>.<a href="#section-4.2-2.1" class="pilcrow">¶</a>
 </li>
           <li id="section-4.2-2.2">
-            <strong>Decide:</strong> Use the probability as an input to
-              routing decisions.<a href="#section-4.2-2.2" class="pilcrow">¶</a>
+            <strong>Decide:</strong> Make the selected value available to
+              the local routing protocol. This specification does not define
+              the forwarding decision.<a href="#section-4.2-2.2" class="pilcrow">¶</a>
 </li>
           <li id="section-4.2-2.3">
             <strong>Update (optional):</strong> If the router has fresher
@@ -3117,36 +3141,47 @@ A3                   ; map with 3 entries
         <h3 id="name-usage-in-routing-algorithms">
 <a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-usage-in-routing-algorithms" class="section-name selfRef">Usage in Routing Algorithms</a>
         </h3>
-<p id="section-4.3-1">Routing algorithms <span class="bcp14">MAY</span> use the CPB in several ways:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-1">
+          A routing algorithm may consult a value selected under
+          <a href="#multiple-cpbs" class="auto internal xref">Section 3.6</a> and
+          <a href="#per-path-matching" class="auto internal xref">Section 3.6.1</a>. CPB does not specify a
+          forwarding algorithm, a next-hop selection procedure, or a
+          replication policy. It does not encode a remaining copy count
+          and <span class="bcp14">MUST NOT</span> be read as defining fanout as
+          ceil(1/prob) (see <a href="#rel-spray" class="auto internal xref">Section 5.4</a>).<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">
+          The following are non-normative examples of local policies that
+          may consult a selected value. None of them is required, and
+          none is part of the processing rules in
+          <a href="#op-router-processing" class="auto internal xref">Section 4.2</a>.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4.3-2.1">
-            <strong>Local state preference:</strong> Nodes that maintain
-              native protocol state (PRoPHET RIB, CGR contact plan, MaxProp
-              tables) <span class="bcp14">SHOULD</span> prefer that local state over
-              foreign CPB values unless local policy explicitly imports CPB
-              as authoritative for a domain or metric-type.<a href="#section-4.3-2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-4.3-3.1">
+            <strong>Local state preference:</strong> A node that
+              maintains native protocol state (PRoPHET RIB, CGR contact
+              plan, MaxProp tables) may prefer that local state over a
+              foreign CPB value unless local policy explicitly imports
+              CPB as authoritative for a domain or metric-type.<a href="#section-4.3-3.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-2.2">
-            <strong>Threshold-based:</strong> Forward if prob &gt; threshold<a href="#section-4.3-2.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-3.2">
+            <strong>Threshold-based:</strong> Forward if the selected
+              probability exceeds a locally configured threshold.<a href="#section-4.3-3.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-2.3">
-            <strong>Weighted selection:</strong> Choose proportionally to
-              probability<a href="#section-4.3-2.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-3.3">
+            <strong>Weighted selection:</strong> Choose among next hops
+              in proportion to their selected probabilities.<a href="#section-4.3-3.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-2.4">
+          <li class="normal" id="section-4.3-3.4">
             <strong>Replication target ranking:</strong> When a local
-              spray/epidemic policy already owns a remaining copy count L,
-              CPB probabilities <span class="bcp14">MAY</span> rank candidate relays.
-              CPB does not encode L and <span class="bcp14">MUST NOT</span> be read as
-              defining fanout as ceil(1/prob) (see <a href="#rel-spray" class="auto internal xref">Section 5.4</a>).<a href="#section-4.3-2.4" class="pilcrow">¶</a>
+              spray or epidemic policy already owns a remaining copy
+              count, selected probabilities may rank candidate relays.<a href="#section-4.3-3.4" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-2.5">
-            <strong>Priority:</strong> Prioritize higher-probability bundles
-              during congestion<a href="#section-4.3-2.5" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-3.5">
+            <strong>Priority:</strong> Order bundles by selected
+              probability during congestion.<a href="#section-4.3-3.5" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-2.6">
-            <strong>Risk-aware:</strong> Weight decisions by both probability
-              and confidence (field 6)<a href="#section-4.3-2.6" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-3.6">
+            <strong>Risk-aware:</strong> Weight a local decision by both
+              the selected probability and confidence (field 6).<a href="#section-4.3-3.6" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
@@ -3157,81 +3192,50 @@ A3                   ; map with 3 entries
 <a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-stability-considerations-an" class="section-name selfRef">Stability Considerations and Feedback Dynamics</a>
         </h3>
 <p id="section-4.4-1">
-          Probability-aware forwarding creates feedback between routing
-          decisions and observed network behavior. Naive use of CPB data can
-          produce instability that confidence-blind routing avoids. Three
-          dynamics are particularly relevant:<a href="#section-4.4-1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-4.4-2">
-          <dt id="section-4.4-2.1">Herding</dt>
-          <dd style="margin-left: 1.5em" id="section-4.4-2.2">
+          When a local routing algorithm uses a selected CPB value, routing
+          decisions and later observations can feed back on each other.
+          Naive use can produce instability that confidence-blind routing
+          avoids. This section describes those dynamics. It does not specify
+          routing mechanics and does not require a mitigation. Illustrative
+          parameters an experiment may vary are in
+          <a href="#experiment-stability-examples" class="auto internal xref">Section 11.1</a>.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">Three dynamics are particularly relevant:<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-4.4-3">
+          <dt id="section-4.4-3.1">Herding</dt>
+          <dd style="margin-left: 1.5em" id="section-4.4-3.2">
             When multiple sources receive identical high-confidence CPB
             advertisements for the same relay, they all forward to that relay
             simultaneously. The relay congests, its actual delivery
             probability drops, but in-flight CPBs continue advertising the
             stale high confidence. Traffic remains herded until updated CPBs
-            propagate, which in DTN timeframes can take hours.<a href="#section-4.4-2.2" class="pilcrow">¶</a>
+            propagate, which in DTN timeframes can take hours.<a href="#section-4.4-3.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-4.4-2.3">Route oscillation</dt>
-          <dd style="margin-left: 1.5em" id="section-4.4-2.4">
+<dt id="section-4.4-3.3">Route oscillation</dt>
+          <dd style="margin-left: 1.5em" id="section-4.4-3.4">
             If a router switches preferences whenever CPB values cross a
             threshold, small probability fluctuations near the threshold cause
             traffic to oscillate between routes. Each switch may itself
-            generate new CPB observations that further perturb the values.<a href="#section-4.4-2.4" class="pilcrow">¶</a>
+            generate new CPB observations that further perturb the values.<a href="#section-4.4-3.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-4.4-2.5">Synchronized congestion collapse</dt>
-          <dd style="margin-left: 1.5em" id="section-4.4-2.6">
+<dt id="section-4.4-3.5">Synchronized congestion collapse</dt>
+          <dd style="margin-left: 1.5em" id="section-4.4-3.6">
             In dense topologies, simultaneous reaction by many routers to the
             same CPB update can produce correlated congestion events. This is
             structurally similar to TCP synchronization in IP networks but
-            with much longer recovery cycles due to DTN propagation delays.<a href="#section-4.4-2.6" class="pilcrow">¶</a>
+            with much longer recovery cycles due to DTN propagation delays.<a href="#section-4.4-3.6" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-4.4-3">
-          Implementations <span class="bcp14">SHOULD</span> mitigate these dynamics. The
-          following techniques are <span class="bcp14">RECOMMENDED</span>:<a href="#section-4.4-3" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-4.4-4.1">
-            <strong>Hysteresis:</strong> Use distinct enter and exit
-              thresholds (e.g., switch <em>to</em> a route at p &gt; 0.75,
-              switch <em>away</em> only at p &lt; 0.60). Avoids
-              threshold-crossing chatter on small fluctuations.<a href="#section-4.4-4.1" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-4.4-4.2">
-            <strong>Rate limiting:</strong> Cap the frequency of routing
-              preference changes per (source, destination) pair (e.g., at
-              most one switch per contact opportunity, not per bundle).<a href="#section-4.4-4.2" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-4.4-4.3">
-            <strong>Randomized tie-breaking:</strong> When multiple routes
-              have CPB probabilities within a configurable epsilon (default:
-              0.05), select randomly rather than deterministically by lowest
-              EID. Breaks herding without sacrificing the high-probability
-              choice.<a href="#section-4.4-4.3" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-4.4-4.4">
-            <strong>Probability decay under load:</strong> Maintain a local
-              estimate of congestion on each next-hop and apply a load-aware
-              discount to the received CPB probability before using it in
-              routing decisions. Closes the feedback loop locally rather than
-              waiting for upstream CPB refresh.<a href="#section-4.4-4.4" class="pilcrow">¶</a>
-</li>
-          <li class="normal" id="section-4.4-4.5">
-            <strong>Bounded credulity:</strong> Cap how heavily any single
-              CPB can influence the local routing decision relative to the
-              router's own observations. Specific weights are
-              deployment-dependent.<a href="#section-4.4-4.5" class="pilcrow">¶</a>
-</li>
-        </ul>
-<p id="section-4.4-5">
-          A formal control-theoretic stability analysis of CPB-driven feedback
-          dynamics is not provided in this document; this remains an open
-          research question.
-          Implementations that omit all of the above mitigations
-          <span class="bcp14">SHOULD NOT</span> be deployed in production DTNs where
-          congestion or herding could degrade service.<a href="#section-4.4-5" class="pilcrow">¶</a></p>
+<p id="section-4.4-4">
+          Local policies sometimes limit how often a preference changes,
+          separate the threshold for adopting a route from the threshold for
+          leaving it, or cap how far one CPB can move a decision relative to
+          local observations. Those choices belong to the routing protocol.
+          A formal control-theoretic stability analysis of CPB-driven
+          feedback is not provided in this document and remains an open
+          research question.<a href="#section-4.4-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3329,7 +3333,8 @@ A3                   ; map with 3 entries
           integer L remaining-copy counter and spray-phase state. Those
           are replication-control metadata, not probabilities; they need a
           different extension or local header if standardized later. CPB
-          does not encode L.<a href="#section-5.4-3" class="pilcrow">¶</a></p>
+          does not encode L. Consumers <span class="bcp14">MUST NOT</span> derive a
+          fanout such as ceil(1/prob) from a CPB probability.<a href="#section-5.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="rel-epidemic">
@@ -3579,9 +3584,12 @@ A3                   ; map with 3 entries
           input and policy invalidation rules in
           <a href="#computational-overhead" class="auto internal xref">Section 9.1</a>.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
 <p id="section-6.3-3">
-          Route recomputation triggered by new CPB observations can be
-          bounded by the hysteresis and rate-limiting techniques
-          described in <a href="#stability-considerations" class="auto internal xref">Section 4.4</a>.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
+          Whether a new CPB observation triggers route recomputation, and
+          any bound on that work, is a local routing-policy choice.
+          <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> describes the feedback
+          that motivates such a bound.
+          <a href="#experiment-stability-examples" class="auto internal xref">Section 11.1</a> lists illustrative
+          parameters; this specification does not require them.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
 <p id="section-6.3-4">
           Implementations <span class="bcp14">SHOULD</span> publish concrete
           profiling numbers (CPU cycles per CPB, memory delta, etc.)
@@ -3637,13 +3645,12 @@ A3                   ; map with 3 entries
           congestion on preferred paths and storage pressure at
           intermediate nodes.<a href="#section-6.6-1" class="pilcrow">¶</a></p>
 <p id="section-6.6-2">
-          The mitigations in <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> (hysteresis on
-          route changes, minimum interval between CPB-triggered
-          recomputations, and explicit rate limiting) are
-          <span class="bcp14">RECOMMENDED</span>.  Operators <span class="bcp14">SHOULD</span>
-          monitor queue depths and delivery ratios on high-confidence
-          routes and be prepared to fall back to confidence-blind
-          policies or to reduce CPB production rate during overload.<a href="#section-6.6-2" class="pilcrow">¶</a></p>
+          How a deployment responds is local policy.
+          <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> describes the feedback,
+          and <a href="#experiment-stability-examples" class="auto internal xref">Section 11.1</a> lists
+          illustrative parameters an experiment may vary. Those parameters
+          are not required. Operators <span class="bcp14">SHOULD</span> monitor queue
+          depths and delivery ratios on high-confidence routes.<a href="#section-6.6-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="op-clocks">
@@ -4336,9 +4343,9 @@ A3                   ; map with 3 entries
             size. A local confidence-weighted cost helper is included for
             deterministic policy tests; its formula and complexity are not
             asserted to implement the published CGR-UCoP algorithm.
-            The hysteresis and rate-limiting
-            techniques of <a href="#stability-considerations" class="auto internal xref">Section 4.4</a> bound the
-            recomputation rate.<a href="#section-9.1-2.6" class="pilcrow">¶</a>
+            Any bound on that rate is local policy
+            (<a href="#stability-considerations" class="auto internal xref">Section 4.4</a>,
+            <a href="#experiment-stability-examples" class="auto internal xref">Section 11.1</a>).<a href="#section-9.1-2.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-9.1-2.7">Memory pressure from multi-CPB accumulation</dt>
@@ -4445,6 +4452,45 @@ A3                   ; map with 3 entries
 </dd>
       <dd class="break"></dd>
 </dl>
+<div id="experiment-stability-examples">
+<section id="section-11.1">
+        <h3 id="name-illustrative-stability-para">
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-illustrative-stability-para" class="section-name selfRef">Illustrative Stability Parameters</a>
+        </h3>
+<p id="section-11.1-1">
+          The following are non-normative examples of local policy
+          parameters an experiment may vary when studying the feedback
+          dynamics in <a href="#stability-considerations" class="auto internal xref">Section 4.4</a>. They are
+          not requirements, defaults, or CPB processing rules.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-11.1-2.1">
+            <strong>Hysteresis:</strong> distinct thresholds for adopting
+              and leaving a route, for example switch <em>to</em> a route
+              at p &gt; 0.75 and switch <em>away</em> only at p &lt; 0.60.<a href="#section-11.1-2.1" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-11.1-2.2">
+            <strong>Rate limiting:</strong> at most one routing-preference
+              change per (source, destination) pair per contact opportunity,
+              rather than per bundle.<a href="#section-11.1-2.2" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-11.1-2.3">
+            <strong>Randomized tie-breaking:</strong> when selected
+              probabilities differ by less than an epsilon of 0.05, choose
+              at random rather than by lowest endpoint identifier.<a href="#section-11.1-2.3" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-11.1-2.4">
+            <strong>Load discount:</strong> a local congestion estimate
+              applied to the selected value before the local algorithm
+              uses it.<a href="#section-11.1-2.4" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-11.1-2.5">
+            <strong>Bounded credulity:</strong> a cap on how heavily any
+              single CPB shifts the local decision relative to the router's
+              own observations. Weights are deployment-dependent.<a href="#section-11.1-2.5" class="pilcrow">¶</a>
+</li>
+        </ul>
+</section>
+</div>
 </section>
 </div>
 <section id="section-12">
@@ -4549,15 +4595,15 @@ A3                   ; map with 3 entries
 <dd class="break"></dd>
 <dt id="I-D.ietf-dtn-bp-sand">[I-D.ietf-dtn-bp-sand]</dt>
         <dd>
-<span class="refAuthor">Sipos, B.</span> and <span class="refAuthor">J. Deaton</span>, <span class="refTitle">"Bundle Protocol (BP) Secure Advertisement and Neighborhood Discovery (SAND)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dtn-bp-sand-05</span>, <time datetime="2026-10" class="refDate">October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand">https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand</a>&gt;</span>. </dd>
+<span class="refAuthor">Sipos, B.</span> and <span class="refAuthor">J. Deaton</span>, <span class="refTitle">"Bundle Protocol (BP) Secure Advertisement and Neighborhood Discovery (SAND)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dtn-bp-sand-05</span>, <time datetime="2026-10" class="refDate">October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand-05">https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand-05</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-tvr-schedule-yang">[I-D.ietf-tvr-schedule-yang]</dt>
         <dd>
-<span class="refAuthor">Qu, Y.</span>, <span class="refAuthor">Lindem, A.</span>, <span class="refAuthor">Kinzie, E.</span>, <span class="refAuthor">Fedyk, D.</span>, and <span class="refAuthor">M. Blanchet</span>, <span class="refTitle">"A YANG Data Model for Scheduled Attributes"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tvr-schedule-yang-12</span>, <time datetime="2026-06" class="refDate">June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang">https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang</a>&gt;</span>. </dd>
+<span class="refAuthor">Qu, Y.</span>, <span class="refAuthor">Lindem, A.</span>, <span class="refAuthor">Kinzie, E.</span>, <span class="refAuthor">Fedyk, D.</span>, and <span class="refAuthor">M. Blanchet</span>, <span class="refTitle">"A YANG Data Model for Scheduled Attributes"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tvr-schedule-yang-12</span>, <time datetime="2026-06" class="refDate">June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang-12">https://datatracker.ietf.org/doc/html/draft-ietf-tvr-schedule-yang-12</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.taylor-dtn-dpp">[I-D.taylor-dtn-dpp]</dt>
       <dd>
-<span class="refAuthor">Taylor, R.</span>, <span class="refTitle">"DTN Peering Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-taylor-dtn-dpp-02</span>, <time datetime="2026-10-23" class="refDate">23 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp">https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp</a>&gt;</span>. </dd>
+<span class="refAuthor">Taylor, R.</span>, <span class="refTitle">"DTN Peering Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-taylor-dtn-dpp-02</span>, <time datetime="2026-10-23" class="refDate">23 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp-02">https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -4645,7 +4691,14 @@ A3                   ; map with 3 entries
               DTNMA, SAND, and BPv7 updates (RFC 9713, RFC 9758).<a href="#appendix-C.1-1.4" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="appendix-C.1-1.5">Experiment description with evaluation metrics and success
-              criteria.<a href="#appendix-C.1-1.5" class="pilcrow">¶</a>
+              criteria. Illustrative stability parameters (hysteresis
+              thresholds, a tie-breaking epsilon, and a per-contact switch
+              limit) are examples for that experiment, not processing
+              requirements.<a href="#appendix-C.1-1.5" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="appendix-C.1-1.6">Normative scope is the metadata container and selection of
+              the applicable value. Forwarding algorithms stay with the
+              consuming routing protocol.<a href="#appendix-C.1-1.6" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
