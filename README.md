@@ -53,7 +53,8 @@ from the caller's environment. To select a separate environment, use
 `cbor2==5.9.0` because its deterministic encoder uses that version's Python
 backend; the draft rendering tools use their own template environment.
 
-The editor copy uses `-latest`. Numbered submission artifacts can be prepared
-locally without uploading them. The publishing workflow uploads to Datatracker
-when a `draft-*` tag is pushed or the workflow is dispatched; use those
-actions only when the author is ready to submit.
+The working copy is `draft-perry-dtn-cpb-00`
+(`draft-perry-dtn-cpb.xml` and the generated `.txt`, `.html`, and `.pdf`).
+The publishing workflow uploads to Datatracker when a `draft-*` tag is
+pushed or the workflow is dispatched; use those actions only when the
+author is ready to submit.

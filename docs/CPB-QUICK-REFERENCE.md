@@ -1,11 +1,10 @@
 # Contact Probability Block (CPB) — Quick Reference
 
-Short visual introduction to the unsubmitted CPB working draft
+Short visual introduction to `draft-perry-dtn-cpb-00`
 (*Probabilistic Contact Metadata for DTN Bundle Routing*): problem, wire
 format, lifecycle, experimental plan, and security defaults.
 
-See [`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml). Pre-submission
-review copy (not on the IETF Internet-Drafts repository).
+See [`draft-perry-dtn-cpb.xml`](../draft-perry-dtn-cpb.xml).
 
 ---
 
@@ -103,7 +102,7 @@ check commands are documented in the repository README.
 
 ---
 
-## 6. Security (draft §8)
+## 6. Security (draft §7)
 
 Threats include false probabilities (sinkhole / blackhole), stale CPBs,
 semi-trusted relays biasing routes, and inter-domain trust gaps.

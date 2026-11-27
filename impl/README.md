@@ -54,16 +54,17 @@ The reference encoder/decoder exercises:
 - packed IPN FQNN handling and deterministic ordering of extension maps
 
 Probability encoding rounds finite values in [0,1] to binary16. Decoding
-requires a CBOR float, rejects NaN/infinity, clamps to [0,1], and flushes
-positive values below 2^-14 to zero. Unknown extension fields remain available
-to the caller; this codec does not interpret their routing semantics.
+requires a CBOR float, rejects NaN, infinity, and values outside [0,1]
+(draft §3.4 and §3.4.1), and flushes positive values below 2^-14 to zero.
+Unknown extension fields remain available to the caller; this codec does not
+interpret their routing semantics.
 
 The codec rejects exact duplicate next-hop values. Scheme-specific EID
 validation, equivalent-identity normalization, bundle-scheme compatibility,
 and routing applicability require the consuming routing layer. Decoding a
 map successfully does not establish that it is eligible for a routing
 decision. Forwarding a protected upstream CPB preserves its received bytes;
-decoding, clamping, and re-encoding is not a BIB-preserving operation.
+decoding and re-encoding is not a BIB-preserving operation.
 
 Routing, multi-CPB precedence, per-path matching algorithms, and cross-metric arithmetic prohibition are specified in the draft prose and are not separate unit tests in this package.
 
