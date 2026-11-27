@@ -6,7 +6,7 @@
 <!ENTITY nbhy "&#8209;">
 <!ENTITY wj "&#8288;">
 ]>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902" docName="draft-perry-dtn-cpb-00" category="exp" submissionType="independent" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="false" version="3">
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" ipr="trust200902" docName="draft-perry-dtn-cpb-00" category="exp" submissionType="IETF" consensus="false" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="false" version="3">
   <front>
     <title abbrev="DTN CPB">
       Probabilistic Contact Metadata for DTN Bundle Routing
@@ -23,8 +23,8 @@
         <email>nick@perrybrandsllc.com</email>
       </address>
     </author>
-    <date year="2026" month="October" day="12"/>
-        <workgroup>Independent</workgroup>
+    <date year="2026" month="November" day="27"/>
+    <workgroup>Delay/Disruption Tolerant Networking</workgroup>
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
     <keyword>BPv7</keyword>
@@ -433,7 +433,7 @@ ipn:100.1?prob=0.75
           The CBOR data structure in the block-data field is defined as
           follows. The BTSD is byte-string-embedded per RFC 9171's canonical
           block structure, using the CDDL socket and generic rules from
-          RFC 9171 Section 4.3.2:
+          RFC 9171 Appendix B:
         </t>
         <figure anchor="fig-listing-3">
           <name>CPB Extension Block Binding (type: cddl)</name>
@@ -755,8 +755,13 @@ metric-type = &(
                 of the canonical block array, not a fixed octet offset).</li>
             <li>If bit 4 (0x10) is set, as this specification requires,
                 discard the unrecognized CPB and continue the bundle.</li>
-            <li>There is no BPv7 flag meaning "remove if can't process"
-                (that language is from BPv6). Do not invent one.</li>
+            <li>This is the flag that <xref target="RFC9171"/> Section 4.2.4
+                names "Discard block if it can't be processed" and that the
+                RFC 9171 Appendix B CDDL names
+                "block-must-be-removed-from-bundle-if-it-cannot-be-processed".
+                Both names refer to the same bit; where they differ in
+                wording, the Section 4.2.4 text governs, as Appendix B
+                itself states.</li>
           </ol>
           <t>Consequently:</t>
           <ul>
@@ -1234,7 +1239,8 @@ A3                   ; map with 3 entries
             bundle destination EID scheme. For an IPN next-hop, the
             reference <bcp14>MUST</bcp14> be a CBOR unsigned integer encoding
             the Fully Qualified Node Number (FQNN) defined in
-            <xref target="RFC9758"/> Section 6.1.1:
+            <xref target="RFC9758"/> Section 3.3.1, using the 64-bit
+            encoding of Section 6.1.1:
             <tt>(allocator_identifier &lt;&lt; 32) | node_number</tt>.
             Each component is in the range 0 through 2^32 - 1. The
             LocalNode value (allocator 0, node number 2^32 - 1)
@@ -2704,13 +2710,13 @@ A3                   ; map with 3 entries
         <seriesInfo name="Internet-Draft" value="draft-burleigh-dtnrg-cgr-01"/>
         <refcontent>Work in Progress (expired)</refcontent>
       </reference>
-      <reference anchor="I-D.ietf-dtn-bpsec-cose" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpsec-cose-17">
+      <reference anchor="I-D.ietf-dtn-bpsec-cose" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpsec-cose-19">
         <front>
           <title>Bundle Protocol Security (BPSec) COSE Context</title>
           <author initials="B." surname="Sipos" fullname="B. Sipos"/>
-          <date year="2026" month="August" day="3"/>
+          <date year="2026" month="November" day="19"/>
         </front>
-        <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bpsec-cose-17"/>
+        <seriesInfo name="Internet-Draft" value="draft-ietf-dtn-bpsec-cose-19"/>
         <refcontent>Work in Progress</refcontent>
       </reference>
       <reference anchor="I-D.ietf-dtn-bp-sand" target="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bp-sand">
@@ -2738,9 +2744,9 @@ A3                   ; map with 3 entries
         <front>
           <title>DTN Peering Protocol</title>
           <author initials="R." surname="Taylor" fullname="R. Taylor"/>
-          <date year="2026" month="July"/>
+          <date year="2026" month="October" day="23"/>
         </front>
-        <seriesInfo name="Internet-Draft" value="draft-taylor-dtn-dpp-01"/>
+        <seriesInfo name="Internet-Draft" value="draft-taylor-dtn-dpp-02"/>
       </reference>
     </references>
     </references>

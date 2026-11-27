@@ -23,7 +23,7 @@
         arithmetic is prohibited.
        
     " name="description">
-<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="xml2rfc 3.35.0" name="generator">
 <meta content="DTN" name="keyword">
 <meta content="Bundle Protocol" name="keyword">
 <meta content="BPv7" name="keyword">
@@ -35,19 +35,19 @@
 <meta content="interplanetary" name="keyword">
 <meta content="draft-perry-dtn-cpb-00" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.1
-    Python 3.13.5
-    ConfigArgParse 1.8.0
+  xml2rfc 3.35.0
+    Python 3.13.18
+    ConfigArgParse 1.10.2
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.3
     natsort 8.4.0
-    platformdirs 4.13.0
+    platformdirs 4.14.8
     pycountry 26.2.16
-    PyYAML 6.0.3
+    PyYAML 6.0.4
     requests 2.34.2
-    wcwidth 0.9.2
+    wcwidth 0.9.5
 -->
 <link href="draft-perry-dtn-cpb.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1245,11 +1245,11 @@ li > p:last-of-type:only-child {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">DTN CPB</td>
-<td class="right">October 2026</td>
+<td class="right">November 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Perry</td>
-<td class="center">Expires 15 April 2027</td>
+<td class="center">Expires 31 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1257,17 +1257,17 @@ li > p:last-of-type:only-child {
 <div id="internal-metadata" class="document-information">
 <dl id="identifiers">
 <dt class="label-workgroup">Workgroup:</dt>
-<dd class="workgroup">Independent</dd>
+<dd class="workgroup">Delay/Disruption Tolerant Networking</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
 <dd class="internet-draft">draft-perry-dtn-cpb-00</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-12" class="published">12 October 2026</time>
+<time datetime="2026-11-27" class="published">27 November 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Experimental</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-15">15 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-31">31 May 2027</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1313,7 +1313,7 @@ li > p:last-of-type:only-child {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 15 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 31 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1330,7 +1330,10 @@ li > p:last-of-type:only-child {
             (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
             publication of this document. Please review these documents
             carefully, as they describe your rights and restrictions with
-            respect to this document.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="toc">
@@ -2073,7 +2076,7 @@ ipn:100.1?prob=0.75
           The CBOR data structure in the block-data field is defined as
           follows. The BTSD is byte-string-embedded per RFC 9171's canonical
           block structure, using the CDDL socket and generic rules from
-          RFC 9171 Section 4.3.2:<a href="#section-3.2-6" class="pilcrow">¶</a></p>
+          RFC 9171 Appendix B:<a href="#section-3.2-6" class="pilcrow">¶</a></p>
 <span id="name-cpb-extension-block-binding"></span><div id="fig-listing-3">
 <figure id="figure-3">
           <div class="lang-cddl sourcecode" id="section-3.2-7.1">
@@ -2440,8 +2443,13 @@ metric-type = &amp;(
             <li id="section-3.3.2-2.2">If bit 4 (0x10) is set, as this specification requires,
                 discard the unrecognized CPB and continue the bundle.<a href="#section-3.3.2-2.2" class="pilcrow">¶</a>
 </li>
-            <li id="section-3.3.2-2.3">There is no BPv7 flag meaning "remove if can't process"
-                (that language is from BPv6). Do not invent one.<a href="#section-3.3.2-2.3" class="pilcrow">¶</a>
+            <li id="section-3.3.2-2.3">This is the flag that <span>[<a href="#RFC9171" class="cite xref">RFC9171</a>]</span> Section 4.2.4
+                names "Discard block if it can't be processed" and that the
+                RFC 9171 Appendix B CDDL names
+                "block-must-be-removed-from-bundle-if-it-cannot-be-processed".
+                Both names refer to the same bit; where they differ in
+                wording, the Section 4.2.4 text governs, as Appendix B
+                itself states.<a href="#section-3.3.2-2.3" class="pilcrow">¶</a>
 </li>
           </ol>
 <p id="section-3.3.2-3">Consequently:<a href="#section-3.3.2-3" class="pilcrow">¶</a></p>
@@ -2986,7 +2994,8 @@ A3                   ; map with 3 entries
             bundle destination EID scheme. For an IPN next-hop, the
             reference <span class="bcp14">MUST</span> be a CBOR unsigned integer encoding
             the Fully Qualified Node Number (FQNN) defined in
-            <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> Section 6.1.1:
+            <span>[<a href="#RFC9758" class="cite xref">RFC9758</a>]</span> Section 3.3.1, using the 64-bit
+            encoding of Section 6.1.1:
             <code>(allocator_identifier &lt;&lt; 32) | node_number</code>.
             Each component is in the range 0 through 2^32 - 1. The
             LocalNode value (allocator 0, node number 2^32 - 1)
@@ -4536,7 +4545,7 @@ A3                   ; map with 3 entries
 <dd class="break"></dd>
 <dt id="I-D.ietf-dtn-bpsec-cose">[I-D.ietf-dtn-bpsec-cose]</dt>
         <dd>
-<span class="refAuthor">Sipos, B.</span>, <span class="refTitle">"Bundle Protocol Security (BPSec) COSE Context"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dtn-bpsec-cose-17</span>, <time datetime="2026-08-03" class="refDate">3 August 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpsec-cose-17">https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpsec-cose-17</a>&gt;</span>. </dd>
+<span class="refAuthor">Sipos, B.</span>, <span class="refTitle">"Bundle Protocol Security (BPSec) COSE Context"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dtn-bpsec-cose-19</span>, <time datetime="2026-11-19" class="refDate">19 November 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpsec-cose-19">https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpsec-cose-19</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-dtn-bp-sand">[I-D.ietf-dtn-bp-sand]</dt>
         <dd>
@@ -4548,7 +4557,7 @@ A3                   ; map with 3 entries
 <dd class="break"></dd>
 <dt id="I-D.taylor-dtn-dpp">[I-D.taylor-dtn-dpp]</dt>
       <dd>
-<span class="refAuthor">Taylor, R.</span>, <span class="refTitle">"DTN Peering Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-taylor-dtn-dpp-01</span>, <time datetime="2026-07" class="refDate">July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp">https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp</a>&gt;</span>. </dd>
+<span class="refAuthor">Taylor, R.</span>, <span class="refTitle">"DTN Peering Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-taylor-dtn-dpp-02</span>, <time datetime="2026-10-23" class="refDate">23 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp">https://datatracker.ietf.org/doc/html/draft-taylor-dtn-dpp</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
