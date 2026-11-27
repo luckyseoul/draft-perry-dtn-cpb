@@ -24,6 +24,7 @@
       </address>
     </author>
     <date year="2026" month="November" day="27"/>
+    <area>Internet</area>
     <workgroup>Delay/Disruption Tolerant Networking</workgroup>
     <keyword>DTN</keyword>
     <keyword>Bundle Protocol</keyword>
@@ -36,20 +37,21 @@
     <keyword>interplanetary</keyword>
     <abstract>
       <t>
-        This document defines the Contact Probability Block (CPB), a BPv7
-        extension block for holding probability metadata and carrying it
-        between forwarding nodes in Delay/Disruption Tolerant Networks
-        (DTNs). CPB standardizes that container and the rules for selecting
-        the applicable value. Routing protocols such as PRoPHET, CGR,
-        MaxProp, RAPID, and Spray-and-Wait may produce or consume the
-        selected value. CPB does not define their forwarding algorithms
-        or replace them.
+        This document defines the Contact Probability Block (CPB), a Bundle
+        Protocol Version 7 (BPv7) extension block for holding probability
+        metadata and carrying it between forwarding nodes in
+        Delay/Disruption Tolerant Networks (DTNs). CPB standardizes that
+        container and the rules for selecting the applicable value. Routing
+        protocols such as PRoPHET, Contact Graph Routing (CGR), MaxProp,
+        RAPID, and Spray-and-Wait may produce or consume the selected value.
+        CPB does not define their forwarding algorithms or replace them.
       </t>
       <t>
-        CPB uses CBOR floating-point encoding, recommends IEEE 754 binary16
-        for bandwidth efficiency, preserves endpoint identifiers, and defines
-        BPSec protection for authenticated routing use. Metric-type tags and
-        shared applicability context distinguish estimates; cross-metric
+        CPB uses Concise Binary Object Representation (CBOR) floating-point
+        encoding, recommends IEEE 754 binary16 for bandwidth efficiency,
+        preserves endpoint identifiers, and defines Bundle Protocol Security
+        (BPSec) protection for authenticated routing use. Metric-type tags
+        and shared applicability context distinguish estimates; cross-metric
         arithmetic is prohibited.
       </t>
     </abstract>
@@ -61,9 +63,10 @@
     <section anchor="introduction">
       <name>Introduction</name>
       <t>
-        Delay-tolerant networks (DTNs) often face uncertain contact schedules,
-        such as during Mars mission disruptions, where standard BPv7 routing
-        like Contact Graph Routing (CGR) may delay delivery due to reliance on
+        Delay/Disruption Tolerant Networks (DTNs) often face uncertain
+        contact schedules, such as during Mars mission disruptions, where
+        standard Bundle Protocol Version 7 (BPv7) routing, such as Contact
+        Graph Routing (CGR), may delay delivery due to reliance on
         fixed contact plans. Probabilistic routing metadata enables adaptive
         forwarding decisions by communicating contact likelihood estimates
         between nodes.
@@ -257,7 +260,7 @@
             are labeled "type: cddl". CDDL defines the structural constraints
             that implementations <bcp14>MUST</bcp14> conform to.
           </dd>
-          <dt>CBOR Extended Diagnostic Notation (EDN)</dt>
+          <dt>Concise Binary Object Representation (CBOR) Extended Diagnostic Notation (EDN)</dt>
           <dd>
             Human-readable representations of CBOR data per
             <xref target="RFC8610"/> Appendix G. Listings are labeled
@@ -313,9 +316,9 @@ ipn:100.1?prob=0.75
                 endpoints</li>
             <li>Destination nodes would receive bundles with varying EID
                 formats depending on router processing</li>
-            <li>Security mechanisms binding bundles to specific EIDs (BPSec
-                <xref target="RFC9172"/>) would break if routers modified
-                destinations</li>
+            <li>Security mechanisms binding bundles to specific EIDs (Bundle
+                Protocol Security (BPSec) <xref target="RFC9172"/>) would
+                break if routers modified destinations</li>
             <li>EID-based duplicate detection would fail when the same
                 logical endpoint has multiple representations</li>
             <li>Bundle uniqueness and lifetime handling that depend on a stable destination EID would be disrupted</li>
@@ -748,12 +751,14 @@ metric-type = &(
           <name>IANA Registration</name>
           <t>
             This specification requests IANA to assign a permanent block type
-            code from the "Bundle Block Types" registry (created by
-            <xref target="RFC9171"/>). Until IANA assignment:
+            code for Bundle Protocol Version 7 from the "Bundle Block Types"
+            registry (<xref target="RFC9171"/>, Section 9.1), using an
+            Unassigned value in 16-191. Until IANA assignment:
           </t>
           <ul>
             <li>Implementations <bcp14>MAY</bcp14> use values in the 192-255
-                range for experimental/private use (<xref target="RFC9171"/>
+                range, which the registry reserves for Private and/or
+                Experimental Use (<xref target="RFC9171"/>
                 Section 4.3.2)</li>
             <li>The example hex dump uses code 200 (0xC8) for illustration</li>
             <li>Production deployments <bcp14>SHOULD</bcp14> use the
@@ -2152,16 +2157,18 @@ A3                   ; map with 3 entries
     <section anchor="iana-considerations">
       <name>IANA Considerations</name>
       <t>
-        This document requests IANA to assign a code point from the
-        Bundle Block Types registry (<xref target="RFC9171"/> Section 9.1)
-        under the Specification Required policy
-        (<xref target="RFC8126"/>). This document does not request a
-        specific numeric value.
+        This document requests that IANA assign one code point in the
+        "Bundle Block Types" registry
+        (<xref target="RFC9171"/>, Section 9.1) under the Specification
+        Required policy (<xref target="RFC8126"/>). The assignment is for
+        Bundle Protocol Version 7 and is taken from the Unassigned range
+        16-191. This document does not request a specific numeric value.
       </t>
       <table anchor="tab-iana-block-type">
         <name>Bundle Block Types registration request</name>
         <thead>
           <tr>
+            <th>Bundle Protocol Version</th>
             <th>Value</th>
             <th>Description</th>
             <th>Reference</th>
@@ -2169,6 +2176,7 @@ A3                   ; map with 3 entries
         </thead>
         <tbody>
           <tr>
+            <td>7</td>
             <td>TBD</td>
             <td>Contact Probability Block</td>
             <td>This document</td>
@@ -2177,22 +2185,25 @@ A3                   ; map with 3 entries
       </table>
       <t>
         Hex dumps and CDDL examples in this document use
-        block type 200 (0xC8). That value is in the RFC 9171 experimental
-        and private-use range (192-255) and is for illustration and
+        block type 200 (0xC8). That value is in the range 192-255, which
+        the "Bundle Block Types" registry reserves for Private and/or
+        Experimental Use, and is for illustration and
         laboratory interoperation with those examples only. After IANA
         assignment, implementations <bcp14>SHOULD</bcp14> parameterize the
         block-type code so the assigned value can replace 200.
       </t>
       <t>
-        This document also requests IANA to create a new "CPB Metric
-        Types" registry in the Bundle Protocol registries group (not a
-        sub-registry of Bundle Block Types). The registration policy is
-        Specification Required (<xref target="RFC8126"/>, Section 4.6).
-        The value space is CBOR unsigned integers, 0 through
-        18446744073709551615; this document assigns 0-4. Values 5-191
-        are Unassigned (Specification Required). Values 192-255 are
-        Reserved for Private or Experimental Use; private deployments
-        that mint local metric types <bcp14>MUST</bcp14> use this range.
+        This document also requests that IANA create a new registry
+        named "CPB Metric Types" in the "Bundle Protocol" registry
+        group. It is not a sub-registry of "Bundle Block Types". The
+        registration policy is Specification Required
+        (<xref target="RFC8126"/>, Section 4.6). The registry fields
+        are Value, Description, and Reference. The value space is CBOR
+        unsigned integers, 0 through 18446744073709551615; this document
+        assigns 0-4. Values 5-191 are Unassigned (Specification
+        Required). Values 192-255 are Reserved for Private and/or
+        Experimental Use; private deployments that mint local metric
+        types <bcp14>MUST</bcp14> use this range.
         Values 256 through 18446744073709551615 are Unassigned
         (Specification Required). The registry records the Value,
         Description, and Reference shown below.
@@ -2860,6 +2871,10 @@ A3                   ; map with 3 entries
           <li>Normative scope is the metadata container and selection of
               the applicable value. Forwarding algorithms stay with the
               consuming routing protocol.</li>
+          <li>The Bundle Block Types request is for Bundle Protocol
+              Version 7, from the Unassigned range 16-191, and the new
+              metric registry is "CPB Metric Types" in the "Bundle
+              Protocol" registry group.</li>
         </ul>
       </section>
     </section>
