@@ -54,17 +54,17 @@ def test_standalone_cddl_matches_the_document_schema():
 
 def test_documented_wire_sizes():
     doc = ET.parse(XML)
-    probability = {0: 0.5, 3: [2, [100, 0]]}
-    metadata = {**probability, 2: 840000000000, 4: 3600000, 5: 1}
-    paths = {**metadata, 1: [[[2, [101 + i, 0]], 0.5] for i in range(8)]}
-    complete = {**paths, 6: 0.75, 7: 1, 8: 1}
+    probability = {0: 0.5}
+    metadata = {**probability, 2: 840000000, 4: 3600, 5: 1}
+    paths = {**metadata, 1: [[100 + i, 0.5] for i in range(8)]}
+    complete = {**paths, 3: b"producer-node-100", 6: 0.75, 7: 1}
     configurations = [probability, metadata, paths, complete]
     rows = doc.findall('.//table[@anchor="tab-cpb-sizes"]/tbody/tr')
     assert len(rows) == len(configurations)
     block_sizes = []
     for data, row in zip(configurations, rows):
         wire = encode_cpb(data)
-        block = cbor2.dumps([200, 2, 0, 0, wire])
+        block = cbor2.dumps([200, 2, 17, 0, wire])
         cells = ["".join(cell.itertext()).strip() for cell in row.findall("td")]
         assert [int(cells[1]), int(cells[2])] == [len(wire), len(block)]
         block_sizes.append(len(block))

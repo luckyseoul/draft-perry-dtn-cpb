@@ -2,9 +2,8 @@
 test_cpb.py -- round-trip and conformance tests for cpb.py.
 
 Verifies:
-  - Figure 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, creation
-    time and validity (milliseconds), producer node ID -- inner CBOR map
-    matches expected wire bytes.
+  - Figure 2 (Section 3.2): full CPB with prob=0.75, 1 path entry, timestamp,
+    validity duration -- inner CBOR map matches expected wire bytes.
   - Figure 2 / Figure 7 hex and the Section 3.4.3 table.
   - Figure 7 (Section 3.6): wire encoding for the same -- byte-for-byte match.
   - Hex encoding table (Section 3.4.3): each (prob -> CBOR hex) row.
@@ -74,24 +73,20 @@ for prob, expected in table:
 
 
 # ---------------- Figure 2: minimal full CPB ----------------------------
-# Expected inner BTSD content (the 40-byte CBOR map after the bstr header):
-#   A5                          ; map(5)
-#   00 F93A00                   ; 0: 0.75
-#   01 81 82 82 02 82 1864 00 F93C00   ; 1: [[ipn:100.0, 1.0]]
-#   02 1B 000000C406A0EE00      ; 2: creation time 841924800000 ms
-#   03 82 02 82 18C8 00         ; 3: producer ipn:200.0
-#   04 1A 0036EE80              ; 4: validity 3600000 ms
-ORBITER = [2, [100, 0]]
-RELAY = [2, [300, 0]]
-ROVER = [2, [200, 0]]
+# Expected inner BTSD content (the 23-byte CBOR map after the bstr header):
+#   A4                  ; map(4)
+#   00 F93A00           ; 0: 0.75
+#   01 81               ; 1: array(1)
+#       82 1864 F93C00  ;    [100, 1.0]
+#   02 1A 00F73A80      ; 2: timestamp 0x322EC0C0 (841924800)
+#   04 19 0E10          ; 4: validity 3600
 
 print("\n== Figure 2 (Section 3.2): full CPB ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
-    cpb.F_PATH_ENTRIES: [[ORBITER, 1.0]],
-    cpb.F_TIMESTAMP: 841924800000,
-    cpb.F_PRODUCER: ROVER,
-    cpb.F_VALIDITY: 3600000,
+    cpb.F_PATH_ENTRIES: [[100, 1.0]],
+    cpb.F_TIMESTAMP: 0x322EC0C0,
+    cpb.F_VALIDITY: 3600,
 }
 figure2_wire = draft_hex("fig-listing-2")
 stream = io.BytesIO(figure2_wire)
@@ -99,10 +94,10 @@ figure2_block = cbor2.CBORDecoder(stream).decode()
 if stream.tell() != len(figure2_wire):
     fail("Figure 2 must contain exactly one complete CBOR item")
 if (not isinstance(figure2_block, list) or len(figure2_block) != 5
-        or figure2_block[:4] != [200, 2, 0, 0]
+        or figure2_block[:4] != [200, 2, 0x11, 0]
         or not isinstance(figure2_block[4], bytes)):
     fail("Figure 2 canonical-block structure", got=figure2_block)
-expected_block = cbor2.dumps([200, 2, 0, 0, cpb.encode_cpb(data)], canonical=True)
+expected_block = cbor2.dumps([200, 2, 0x11, 0, cpb.encode_cpb(data)], canonical=True)
 if figure2_wire != expected_block:
     fail("Figure 2 complete block mismatch", got=_hex(figure2_wire),
          expected=_hex(expected_block))
@@ -120,14 +115,18 @@ ok("decode(encode(L2)) == L2")
 
 
 # ---------------- Figure 7: per-path wire encoding ----------------------
-# Expected: map(4) with default 0.75, path entries [ipn:300.0, 0.5] and
-# [ipn:100.0, 1.0], producer ipn:200.0, metric type 1 (cgr-confidence).
+# Expected:
+#   A3                       ; map(3)
+#   00 F93A00                ; 0: 0.75
+#   01 82                    ; 1: array(2)
+#       82 19 012C F93800    ;   [300, 0.5]
+#       82 18 64 F93C00      ;   [100, 1.0]
+#   05 01                    ; 5: 1 (cgr-confidence)
 
 print("\n== Figure 7 (Section 3.6): per-path wire encoding ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
-    cpb.F_PATH_ENTRIES: [[RELAY, 0.5], [ORBITER, 1.0]],
-    cpb.F_PRODUCER: ROVER,
+    cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
     cpb.F_METRIC_TYPE: cpb.METRIC_CGR_CONFIDENCE,
 }
 figure7_wire = draft_hex("fig-listing-7")
@@ -148,16 +147,15 @@ ok("decode(literal XML Figure 7) == L7 with complete input consumption")
 print("\n== BTSD wrapping (Section 3.2: bstr .cbor cpb-data) ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
-    cpb.F_PATH_ENTRIES: [[ORBITER, 1.0]],
-    cpb.F_TIMESTAMP: 841924800000,
-    cpb.F_PRODUCER: ROVER,
-    cpb.F_VALIDITY: 3600000,
+    cpb.F_PATH_ENTRIES: [[100, 1.0]],
+    cpb.F_TIMESTAMP: 0x322EC0C0,
+    cpb.F_VALIDITY: 3600,
 }
 btsd = cpb.encode_btsd(data)
-# bstr major-type 2; 40 bytes -> header 0x58 0x28.
-if btsd[:2] != b"\x58\x28":
-    fail("BTSD bstr header", got=btsd[:2].hex(), expected="5828 (bstr len 40)")
-ok("BTSD bstr header 0x58 0x28 (length 40)")
+# bstr major-type 2; 23 bytes -> header byte 0x57 (= 0x40 | 23).
+if btsd[0] != 0x57:
+    fail("BTSD bstr header", got=hex(btsd[0]), expected="0x57 (bstr len 23)")
+ok(f"BTSD bstr header byte 0x{btsd[0]:02X} (length {btsd[0] & 0x1F})")
 
 decoded = cpb.decode_btsd(btsd)
 if decoded != data:
@@ -190,14 +188,14 @@ except ValueError:
     ok("encode 1.5 -> ValueError (encoder is strict)")
 
 # Decoder rejects out-of-range finite values (no clamp-to-certainty).
-blob_oversize = cbor2.dumps({0: 1.5, 3: ROVER}, canonical=True)
+blob_oversize = cbor2.dumps({0: 1.5}, canonical=True)
 try:
     cpb.decode_cpb(blob_oversize)
     fail("decode 1.5 should have raised")
 except ValueError:
     ok("decode 1.5 -> ValueError (rejected)")
 
-blob_neg = cbor2.dumps({0: -0.2, 3: ROVER}, canonical=True)
+blob_neg = cbor2.dumps({0: -0.2}, canonical=True)
 try:
     cpb.decode_cpb(blob_neg)
     fail("decode -0.2 should have raised")
@@ -222,8 +220,7 @@ ok(f"non-strict encode 0.123456789 -> {_hex(snapped)} (snapped to nearest binary
 # ---------------- DoS limit on path-entries (Section 3.4) ----------------
 
 print("\n== Section 3.4: per-path array limit (SHOULD 8 on constrained links) ==")
-data9 = {cpb.F_PRODUCER: ROVER,
-         cpb.F_PATH_ENTRIES: [[[2, [i + 1, 0]], 0.5] for i in range(9)]}
+data9 = {cpb.F_PATH_ENTRIES: [[i, 0.5] for i in range(9)]}
 try:
     cpb.encode_cpb(data9)
     ok("9 path entries accepted (SHOULD, not MUST; local enforcement recommended on constrained links)")
@@ -236,10 +233,9 @@ except ValueError as e:
 print("\n== round-trip byte stability ==")
 data = {
     cpb.F_DEFAULT_PROB: 0.75,
-    cpb.F_PATH_ENTRIES: [[RELAY, 0.5], [ORBITER, 1.0]],
-    cpb.F_TIMESTAMP: 841924800000,
-    cpb.F_PRODUCER: ROVER,
-    cpb.F_VALIDITY: 3600000,
+    cpb.F_PATH_ENTRIES: [[300, 0.5], [100, 1.0]],
+    cpb.F_TIMESTAMP: 841924800,
+    cpb.F_VALIDITY: 3600,
     cpb.F_METRIC_TYPE: 1,
     cpb.F_CONFIDENCE: 0.5,
 }

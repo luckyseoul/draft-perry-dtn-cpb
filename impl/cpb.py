@@ -1,16 +1,8 @@
 """
 cpb.py -- Contact Probability Block reference encoder/decoder.
 
-Implements the CPB draft's CDDL schema (block-structure section) and CBOR
-encoding rules using cbor2 for the underlying CBOR work.
-
-Wire format (draft-perry-dtn-cpb-00, this revision):
-  field 2 creation time and field 4 validity are in milliseconds (DTN time,
-  RFC 9171 Section 4.2.6); field 3 is the producer's node ID as an RFC 9171
-  eid array (mandatory); path-entry next hops are eid arrays matched on node
-  identity (RFC 9758 Sections 5.3 and 6.4); field 8 is a profile identifier.
-  A CPB whose version (field 7) is not 1 raises UnsupportedVersionError; keys
-  above 8 are accepted and ignored by the defined semantics.
+Implements the CPB working draft Section 3.2 (CDDL schema) and Section 3.4
+(CBOR encoding rules) using cbor2 for the underlying CBOR work.
 
 Per-path array (field 1) limit: the spec uses SHOULD (not MUST) for a
 maximum of 8 entries to mitigate DoS on low-bandwidth/constrained DTN
@@ -42,6 +34,7 @@ from __future__ import annotations
 
 import math
 import io
+import re
 import struct
 import cbor2
 from cbor2._encoder import CBOREncoder as _PythonCBOREncoder
@@ -52,13 +45,11 @@ CPB_BLOCK_TYPE_EXAMPLE = 200  # Spec uses 0xC8 in examples until IANA assigns
 F_DEFAULT_PROB = 0
 F_PATH_ENTRIES = 1
 F_TIMESTAMP = 2
-F_PRODUCER = 3
+F_SOURCE_PCE = 3
 F_VALIDITY = 4
 F_METRIC_TYPE = 5
 F_CONFIDENCE = 6
 F_VERSION = 7
-F_PROFILE = 8
-CPB_VERSION = 1
 
 METRIC_PROPHET_DP = 0
 METRIC_CGR_CONFIDENCE = 1
@@ -69,16 +60,9 @@ METRIC_RAPID_UTILITY = 3
 METRIC_GENERIC = 4
 
 UINT64_MAX = (1 << 64) - 1
-UINT32_MAX = (1 << 32) - 1
-IPN_LOCAL_NODE = UINT32_MAX  # node number of the LocalNode FQNN (allocator 0)
-URI_CODE_DTN = 1
-URI_CODE_IPN = 2
+IPN_LOCAL_NODE = (1 << 32) - 1
 MIN_NORMAL_BINARY16 = 2.0 ** -14
-_UINT_FIELDS = (F_TIMESTAMP, F_VALIDITY, F_METRIC_TYPE, F_VERSION, F_PROFILE)
-
-
-class UnsupportedVersionError(ValueError):
-    """The CPB's version field is not 1; it is not usable for routing."""
+_UINT_FIELDS = (F_TIMESTAMP, F_VALIDITY, F_METRIC_TYPE, F_VERSION)
 
 
 def _require_uint(value, field):
@@ -88,64 +72,34 @@ def _require_uint(value, field):
     return value
 
 
-def _require_fields(data):
-    if F_PRODUCER not in data:
-        raise ValueError("field 3 (producer node ID) is mandatory")
-    if F_VALIDITY in data and not data.get(F_TIMESTAMP):
-        raise ValueError("field 4 (validity) requires a nonzero field 2 (creation time)")
-    if F_METRIC_TYPE in data and data[F_METRIC_TYPE] > 255:
-        raise ValueError("field 5 (metric type) must be in 0..255")
+def _require_timestamp(data):
+    if F_VALIDITY in data and F_TIMESTAMP not in data:
+        raise ValueError("field 4 (validity) requires field 2 (timestamp)")
 
 
-def node_identity(eid):
-    """Return a hashable node identity for an RFC 9171 eid array.
+def _validate_next_hop(next_hop):
+    """Validate the wire identity; scheme-specific aliases need routing context.
 
-    ipn: (allocator, node number), decoded from either the 2-element SSP
-    [FQNN, service] or the 3-element SSP [allocator, node, service] of
-    RFC 9758 Section 6.1; the service number is ignored (Section 5.3) and
-    equivalent encodings compare equal (Section 6.4).
-    dtn: the node name of a "//node/demux" SSP.
-    Other schemes: the URI scheme code and the deterministic SSP encoding.
+    Integers carry packed IPN FQNNs. Text carries a non-IPN URI; validation of
+    its scheme-specific part and normalization for matching remain with the
+    routing layer. This codec rejects duplicate exact identities, preserving
+    the original spelling of text EIDs.
     """
-    code, ssp = eid
-    if code == URI_CODE_IPN:
-        if len(ssp) == 2:
-            fqnn, _service = ssp
-            return ("ipn", fqnn >> 32, fqnn & UINT32_MAX)
-        allocator, node, _service = ssp
-        return ("ipn", allocator, node)
-    if code == URI_CODE_DTN:
-        return ("dtn", ssp[2:].split("/", 1)[0])
-    return ("other", code, _core_dumps(ssp))
-
-
-def validate_eid(eid, field):
-    """Check that eid is a node-identifying RFC 9171 eid array.
-
-    Rejects dtn:none, the ipn LocalNode FQNN (RFC 9758 Section 5.4), and
-    malformed ipn SSPs. Returns the eid as a list.
-    """
-    if not isinstance(eid, (list, tuple)) or len(eid) != 2:
-        raise ValueError(f"{field} must be a 2-element eid array [uri-code, SSP]")
-    code, ssp = eid
-    _require_uint(code, f"{field} URI scheme code")
-    if code == URI_CODE_IPN:
-        if not isinstance(ssp, (list, tuple)) or len(ssp) not in (2, 3):
-            raise ValueError(f"{field}: ipn SSP must be an array of 2 or 3 uints")
-        for part in ssp:
-            _require_uint(part, f"{field} ipn SSP element")
-        if len(ssp) == 3 and (ssp[0] > UINT32_MAX or ssp[1] > UINT32_MAX):
-            raise ValueError(f"{field}: ipn allocator and node must be below 2**32")
-        if node_identity([code, ssp])[1:] == (0, IPN_LOCAL_NODE):
-            raise ValueError(f"{field}: the ipn LocalNode cannot be transmitted")
-        ssp = list(ssp)
-    elif code == URI_CODE_DTN:
-        if ssp == 0 and not isinstance(ssp, bool):
-            raise ValueError(f"{field}: dtn:none does not identify a node")
-        if (not isinstance(ssp, str) or not ssp.startswith("//")
-                or not ssp[2:].split("/", 1)[0]):
-            raise ValueError(f"{field}: dtn SSP must have the form //node-name/...")
-    return [code, ssp]
+    if isinstance(next_hop, int):
+        _require_uint(next_hop, "path-entry next-hop")
+        if next_hop == IPN_LOCAL_NODE:
+            raise ValueError("IPN LocalNode cannot be sent as a next-hop reference")
+    elif isinstance(next_hop, str):
+        scheme, colon, ssp = next_hop.partition(":")
+        if (not colon or not ssp
+                or re.fullmatch(r"[A-Za-z][A-Za-z0-9+.-]*", scheme) is None
+                or any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in next_hop)):
+            raise ValueError("text next-hop must be a full non-IPN EID URI")
+        if scheme.lower() == "ipn":
+            raise ValueError("IPN next-hop must be encoded as a packed uint FQNN")
+    else:
+        raise ValueError("path-entry next-hop must be uint or non-IPN EID text")
+    return next_hop
 
 
 class _CoreDeterministicEncoder(_PythonCBOREncoder):
@@ -229,13 +183,13 @@ def _encode_prob_float16(value: float, strict: bool = False) -> bytes:
 def encode_cpb(data: dict) -> bytes:
     """Encode a cpb-data dict to CBOR bytes per Spec Section 3.2.
 
-    The dict keys are the integer field numbers (0..8) plus optionally any
-    uint > 8 for future-extension fields. Field 3 (producer eid) is mandatory.
+    The dict keys are the integer field numbers (0..7) plus optionally any
+    uint > 7 for future-extension fields.
 
     Probability fields (0, 6, and the second element of each path-entry) are
     encoded as deterministic float16 per Spec Section 3.4.  All other fields
     use RFC 8949 Section 4.2.1 core deterministic ordering, including maps
-    nested in extension values. Field 4 requires a nonzero field 2.
+    nested in extension values. Field 4 requires field 2.
     """
     # cbor2 doesn't have a knob to force float16 only for selected values, so
     # we hand-build the map header + entries and let cbor2 handle the
@@ -245,12 +199,7 @@ def encode_cpb(data: dict) -> bytes:
 
     for key in data:
         _require_uint(key, "cpb-data key")
-    for k in _UINT_FIELDS:
-        if k in data:
-            _require_uint(data[k], f"field {k}")
-    _require_fields(data)
-    if data.get(F_VERSION, CPB_VERSION) != CPB_VERSION:
-        raise UnsupportedVersionError("this encoder produces version 1 only")
+    _require_timestamp(data)
     # UInt key order equals the bytewise order of the preferred CBOR encoding.
     keys = sorted(data.keys())
     pieces = [_container_head(5, len(keys))]
@@ -264,8 +213,10 @@ def encode_cpb(data: dict) -> bytes:
             pieces.append(_encode_path_entries(v))
         elif k in _UINT_FIELDS:
             pieces.append(cbor2.dumps(_require_uint(v, f"field {k}"), canonical=True))
-        elif k == F_PRODUCER:
-            pieces.append(_core_dumps(validate_eid(v, "field 3 (producer)")))
+        elif k == F_SOURCE_PCE:
+            if not isinstance(v, (bytes, bytearray)):
+                raise ValueError("field 3 (source PCE) must be bstr (bytes)")
+            pieces.append(cbor2.dumps(bytes(v), canonical=True))
         else:
             pieces.append(_core_dumps(v))
     return b"".join(pieces)
@@ -289,12 +240,11 @@ def _encode_path_entries(entries) -> bytes:
                 f"path-entry must be a 2-element [next-hop, prob] pair, got {entry!r}"
             )
         next_hop, prob = entry
-        next_hop = validate_eid(next_hop, "path-entry next-hop")
-        ident = node_identity(next_hop)
-        if ident in seen:
-            raise ValueError(f"duplicate path-entry next-hop node {ident!r}")
-        seen.add(ident)
-        pieces.extend((b"\x82", _core_dumps(next_hop),
+        _validate_next_hop(next_hop)
+        if next_hop in seen:
+            raise ValueError(f"duplicate path-entry next-hop {next_hop!r}")
+        seen.add(next_hop)
+        pieces.extend((b"\x82", cbor2.dumps(next_hop, canonical=True),
                        _encode_prob_float16(prob)))
     return b"".join(pieces)
 
@@ -408,44 +358,6 @@ class _WireReader:
         elif ai == 31 or (ai == 24 and argument < 32):
             raise ValueError("invalid CBOR simple value or unexpected break")
 
-    def _eid(self, label):
-        count = 0
-        code = None
-        for _ in self._members(4, label):
-            if count == 0:
-                code = self._uint(f"{label} URI scheme code")
-            elif count == 1:
-                if code == URI_CODE_IPN:
-                    n = 0
-                    for _ in self._members(4, f"{label} ipn SSP"):
-                        self._uint(f"{label} ipn SSP element")
-                        n += 1
-                    if n not in (2, 3):
-                        raise ValueError(f"{label}: ipn SSP must have 2 or 3 elements")
-                elif code == URI_CODE_DTN:
-                    self._typed_item((0, 3), f"{label} dtn SSP")
-                else:
-                    self._skip()
-            else:
-                raise ValueError(f"{label} must be a 2-element eid array")
-            count += 1
-        if count != 2:
-            raise ValueError(f"{label} must be a 2-element eid array")
-
-    def version(self):
-        """Structurally scan the map and return field 7, if present."""
-        start = self.pos
-        found = None
-        for _ in self._members(5, "cpb-data"):
-            key = self._uint("cpb-data key")
-            if key == F_VERSION and self.pos < len(self.buf) and self.buf[self.pos] >> 5 == 0:
-                found = self._uint("field 7")
-            else:
-                self._skip()
-        self.finish()
-        self.pos = start
-        return found
-
     def cpb(self):
         seen = set()
         for _ in self._members(5, "cpb-data"):
@@ -460,7 +372,7 @@ class _WireReader:
                     count = 0
                     for _ in self._members(4, "path-entry"):
                         if count == 0:
-                            self._eid("path-entry next-hop")
+                            self._typed_item((0, 3), "path-entry next-hop")
                         elif count == 1:
                             self._float("path-entry probability")
                         else:
@@ -470,8 +382,8 @@ class _WireReader:
                         raise ValueError("path-entry must have exactly two elements")
             elif key in _UINT_FIELDS:
                 self._uint(f"field {key}")
-            elif key == F_PRODUCER:
-                self._eid("field 3 (producer)")
+            elif key == F_SOURCE_PCE:
+                self._typed_item((2,), "field 3 (source PCE)")
             else:
                 self._skip()
         self.finish()
@@ -485,19 +397,13 @@ def decode_cpb(buf: bytes) -> dict:
     """Decode CBOR bytes into a cpb-data dict, validating per Spec 3.4.1.
 
     Probability values outside [0.0, 1.0], NaN, and +/-Inf raise
-    ValueError per Spec 3.4 / 3.4.1. Unknown extension fields (uint > 8) retain
-    cbor2's semantic values and carry no defined meaning. Rejects duplicate
-    keys, wrong known-field wire types, incomplete items, and trailing bytes
-    before semantic decoding. A version other than 1 raises
-    UnsupportedVersionError before the version-1 field checks are applied.
+    ValueError per Spec 3.4 / 3.4.1. Unknown extension fields (uint > 7) retain
+    cbor2's semantic values. Rejects duplicate keys, wrong known-field wire
+    types, incomplete items, and trailing bytes before semantic decoding.
     """
-    reader = _WireReader(buf)
-    version = reader.version()
-    if version is not None and version != CPB_VERSION:
-        raise UnsupportedVersionError(f"CPB version {version} is not supported")
-    reader.cpb()
+    _WireReader(buf).cpb()
     raw = cbor2.loads(buf)
-    _require_fields(raw)
+    _require_timestamp(raw)
 
     out = {}
     for k, v in raw.items():
@@ -505,8 +411,6 @@ def decode_cpb(buf: bytes) -> dict:
             out[k] = _validate_prob(v, field=k)
         elif k == F_PATH_ENTRIES:
             out[k] = _validate_path_entries(v)
-        elif k == F_PRODUCER:
-            out[k] = validate_eid(v, "field 3 (producer)")
         else:
             out[k] = v
     return out
@@ -539,11 +443,10 @@ def _validate_path_entries(entries):
         if not isinstance(entry, list) or len(entry) != 2:
             raise ValueError(f"path-entry must be a 2-element array, got {entry!r}")
         next_hop, prob = entry
-        next_hop = validate_eid(next_hop, "path-entry next-hop")
-        ident = node_identity(next_hop)
-        if ident in seen:
-            raise ValueError(f"duplicate path-entry next-hop node {ident!r}")
-        seen.add(ident)
+        _validate_next_hop(next_hop)
+        if next_hop in seen:
+            raise ValueError(f"duplicate path-entry next-hop {next_hop!r}")
+        seen.add(next_hop)
         out.append([next_hop, _validate_prob(prob, field="path-entry-prob")])
     return out
 
