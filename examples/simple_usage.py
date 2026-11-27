@@ -31,17 +31,20 @@ def main() -> None:
     print("=== CPB simple usage example ===\n")
 
     # 1. Build a CPB (default probability + two path entries).
-    # An actual consumer also needs the shared transmitter/contact-window
-    # context for metric 1; this example demonstrates wire handling only.
+    # Under the default profile (field 8 absent), a metric-1 path entry is the
+    # producer's confidence in its next planned contact to that next hop.
+    # This example demonstrates wire handling only.
     epoch = datetime(2000, 1, 1, tzinfo=timezone.utc)
     data = {
         cpb.F_DEFAULT_PROB: 0.82,
         cpb.F_PATH_ENTRIES: [
-            [300, 0.91],   # next-hop 300 (e.g. an orbiter) with high confidence
-            [100, 0.67],   # default-allocator IPN FQNN 100
+            [[2, [300, 0]], 0.91],   # next hop ipn:300.0 (e.g. an orbiter)
+            [[2, [100, 0]], 0.67],   # next hop ipn:100.0 (default allocator)
         ],
-        cpb.F_TIMESTAMP: int((datetime.now(timezone.utc) - epoch).total_seconds()),
-        cpb.F_VALIDITY: 3600,          # valid for one hour
+        # Creation time in DTN time: milliseconds since 2000-01-01T00:00:00Z.
+        cpb.F_TIMESTAMP: int((datetime.now(timezone.utc) - epoch).total_seconds() * 1000),
+        cpb.F_PRODUCER: [2, [200, 0]],  # producer node ID ipn:200.0 (mandatory)
+        cpb.F_VALIDITY: 3_600_000,      # valid for one hour, in milliseconds
         cpb.F_METRIC_TYPE: cpb.METRIC_CGR_CONFIDENCE,
         cpb.F_CONFIDENCE: 0.75,        # confidence in the probabilities themselves
     }

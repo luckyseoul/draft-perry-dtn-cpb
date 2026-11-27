@@ -28,8 +28,10 @@ from cpb import (  # noqa: E402
     F_DEFAULT_PROB,
     F_METRIC_TYPE,
     F_PATH_ENTRIES,
+    F_PRODUCER,
     F_VERSION,
     METRIC_CGR_CONFIDENCE,
+    node_identity,
     decode_btsd,
     decode_cpb,
     encode_btsd,
@@ -46,9 +48,18 @@ from config1_sim import (  # noqa: E402
 )
 
 
+def _ipn(node: int) -> list:
+    """Node ID eid ipn:<node>.0 (default allocator, administrative endpoint)."""
+    return [2, [node, 0]]
+
+
+def _node(eid: list) -> int:
+    return node_identity(eid)[2]
+
+
 def _path_entries_for_rover(rover: int) -> list[list]:
-    """One path entry per orbiter: [next-hop node number, confidence]."""
-    return [[o, ROVER_ORBITER_CONFIDENCE[rover][o]] for o in ORBITERS]
+    """One path entry per orbiter: [next-hop node ID eid, confidence]."""
+    return [[_ipn(o), ROVER_ORBITER_CONFIDENCE[rover][o]] for o in ORBITERS]
 
 
 def _cpb_for_rover(rover: int) -> dict:
@@ -58,6 +69,7 @@ def _cpb_for_rover(rover: int) -> dict:
     return {
         F_DEFAULT_PROB: default,
         F_PATH_ENTRIES: paths,
+        F_PRODUCER: _ipn(rover),
         F_METRIC_TYPE: METRIC_CGR_CONFIDENCE,
         F_VERSION: 1,
     }
@@ -71,9 +83,9 @@ def test_config1_confidences_roundtrip_as_cpb():
         assert back[F_METRIC_TYPE] == METRIC_CGR_CONFIDENCE
         assert back[F_VERSION] == 1
         # float16 snap: decoded probs close to originals
-        orig = {nh: p for nh, p in data[F_PATH_ENTRIES]}
+        orig = {_node(nh): p for nh, p in data[F_PATH_ENTRIES]}
         for nh, p in back[F_PATH_ENTRIES]:
-            assert abs(p - orig[nh]) < 0.002, (rover, nh, p, orig[nh])
+            assert abs(p - orig[_node(nh)]) < 0.002, (rover, nh, p, orig[_node(nh)])
         # BTSD form (what sits in the extension block)
         btsd = encode_btsd(data)
         back2 = decode_btsd(btsd)
@@ -87,7 +99,7 @@ def test_decoded_cpb_preserves_rate_aware_ranking():
     for rover in ROVERS:
         data = _cpb_for_rover(rover)
         back = decode_cpb(encode_cpb(data))
-        conf_by_orb = {nh: p for nh, p in back[F_PATH_ENTRIES]}
+        conf_by_orb = {_node(nh): p for nh, p in back[F_PATH_ENTRIES]}
 
         routes = [Route(rover, o, g) for o in ORBITERS for g in GROUNDS]
 

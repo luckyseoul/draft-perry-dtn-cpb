@@ -49,28 +49,32 @@ The reference encoder/decoder exercises:
 - CBOR encoding of CPB block-type-specific data (§3.4): float16 deterministic encoding, invalid-float handling (§3.4.1), hex encoding examples (§3.4.3)
 - BTSD wrapping of the CPB map as used in the extension block
 - per-path array (field 1): more than 8 entries are accepted at the encoder (SHOULD, not MUST; local enforcement on constrained nodes)
-- rejection of duplicate field keys, conflicting next-hop entries, wrong CBOR
-  types, invalid uint ranges, TTL without a timestamp, and trailing bytes
-- packed IPN FQNN handling and deterministic ordering of extension maps
+- rejection of duplicate field keys, duplicate next-hop node identities, wrong
+  CBOR types, invalid uint ranges, validity without a nonzero creation time,
+  a missing producer (field 3), unsupported versions, metric types above 255,
+  and trailing bytes
+- next hops and producer as RFC 9171 `eid` arrays: ipn two- and three-element
+  forms compared by (allocator, node) with the service number ignored, dtn
+  compared by node-name, and rejection of dtn:none and the ipn LocalNode EID
+- deterministic ordering of extension maps
 
 Probability encoding rounds finite values in [0,1] to binary16. Decoding
-requires a CBOR float, rejects NaN/infinity, clamps to [0,1], and flushes
-positive values below 2^-14 to zero. Unknown extension fields remain available
+requires a CBOR float, rejects NaN, infinity, and values outside [0,1] as
+malformed, and flushes positive values below 2^-14 to zero. Unknown extension fields remain available
 to the caller; this codec does not interpret their routing semantics.
 
-The codec rejects exact duplicate next-hop values. Scheme-specific EID
-validation, equivalent-identity normalization, bundle-scheme compatibility,
-and routing applicability require the consuming routing layer. Decoding a
+Bundle-scheme compatibility, the receiver's time limits, authentication,
+and routing use require the consuming routing layer. Decoding a
 map successfully does not establish that it is eligible for a routing
 decision. Forwarding a protected upstream CPB preserves its received bytes;
-decoding, clamping, and re-encoding is not a BIB-preserving operation.
+decoding and re-encoding is not a BIB-preserving operation.
 
-Routing, multi-CPB precedence, per-path matching algorithms, and cross-metric arithmetic prohibition are specified in the draft prose and are not separate unit tests in this package.
+Routing use, multi-CPB selection, and the default profile's meaning of each metric type are described in the draft prose and are not separate unit tests in this package.
 
 Byte-exact match is verified against:
 
 - Figure 2 (complete canonical-block structure with `prob=0.75`)
-- Figure 7 (per-path CPB wire encoding, §3.6)
+- Figure 7 (per-path CPB wire encoding)
 - The full hex encoding table in §3.4.3
 
 ## License

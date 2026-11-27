@@ -1,35 +1,32 @@
 ; Standalone copy of the CPB data schema in draft Figure "CPB Data Structure".
-; The RFC 9171 extension-block socket binding is specified in the draft and
-; intentionally omitted here because it depends on RFC 9171's complete schema.
+; The rules eid and dtn-time, and the extension-block binding in the draft's
+; Figure "CPB Extension Block Binding", come from RFC 9171 Appendix B and are
+; not repeated here.
 
 cpb-data = {
-    ? 0: probability,         ; Default/overall probability
-    ? 1: [* path-entry],      ; Per-path entries
-    ? 2: uint,                ; Timestamp (CPB epoch seconds)
-    ? 3: bstr,                ; Source PCE identifier (optional)
-    ? 4: uint,                ; Validity (seconds; requires field 2)
-    ? 5: metric-type,         ; Metric type identifier
-    ? 6: probability,         ; Profile-defined confidence
-    ? 7: uint,                ; Format version (1 = this specification)
-    * (int .gt 7) => any      ; Extensibility (future fields)
+    ? 0: probability,         ; Default probability
+    ? 1: [* path-entry],      ; Path probabilities (Sec 3.2)
+    ? 2: dtn-time,            ; Creation time (ms); 0 = unknown
+      3: eid,                 ; Producer node ID
+    ? 4: uint,                ; Validity (ms); needs nonzero field 2
+    ? 5: metric-type,         ; Metric type; absent = generic
+    ? 6: probability,         ; Confidence (profile-defined)
+    ? 7: uint,                ; Format version (1 = this document)
+    ? 8: uint,                ; Profile; absent = 0 (default)
+    * (uint .gt 8) => any     ; Future fields; ignored if unknown
 }
 
-probability = float           ; See the draft's CBOR Encoding section
+probability = 0.0..1.0
 
 path-entry = [
-    next-hop: eid-reference,
-    probability: float
+    next-hop: eid,            ; Next-hop node ID
+    probability: probability
 ]
 
-eid-reference = uint / tstr   ; packed IPN FQNN or non-IPN EID text
-
-; Additional prose constraints: unique map keys and normalized next hops;
-; field 4 requires field 2; IPN LocalNode cannot appear off-node.
-
 metric-type = &(
-    prophet-dp: 0,
-    cgr-confidence: 1,
-    maxprop-delivery-likelihood: 2,
-    rapid-utility: 3,
-    generic: 4,
-) / uint
+    prophet-dp:      0,       ; PRoPHET delivery predictability
+    cgr-confidence:  1,       ; CGR contact confidence
+    maxprop-delivery-likelihood: 2, ; MaxProp delivery likelihood
+    rapid-utility:   3,       ; RAPID utility, normalized
+    generic:         4,       ; Unspecified estimate
+) / (uint .le 255)

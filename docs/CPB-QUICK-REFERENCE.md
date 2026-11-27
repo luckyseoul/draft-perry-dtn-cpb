@@ -1,6 +1,6 @@
 # Contact Probability Block (CPB) — Quick Reference
 
-Short visual introduction to the unsubmitted CPB working draft
+Short visual introduction to the CPB Internet-Draft
 (*Probabilistic Contact Metadata for DTN Bundle Routing*): problem, wire
 format, lifecycle, experimental plan, and security defaults.
 
@@ -14,12 +14,13 @@ review copy (not on the IETF Internet-Drafts repository).
 DTN contacts are often **uncertain**, but BPv7 endpoint IDs must stay
 **immutable** — so probability must not be stuffed into the destination URI.
 
-### Why not `ipn:100.1?prob=0.75`?
+### Why not put it in the destination EID?
 
 ![Why extension block](images/01-why-extension-block.png)
 
-Routers that rewrite EIDs to carry metadata break integrity, security
-bindings, and the BPv7 model. CPB puts probability in an **extension block**
+The ipn URI has no query component (RFC 9758 §4.1), ipn elements must not
+carry routing information (RFC 9758 §7.5), and rewriting the primary block
+breaks BIBs that cover it. CPB puts estimates in an **extension block**
 instead.
 
 ---
@@ -31,7 +32,8 @@ confidence metadata between nodes. It is a **transport for estimates**, not
 a replacement for CGR, PRoPHET, MaxProp, or similar protocols.
 
 Those protocols can **produce or consume** CPB data while keeping their own
-algorithms. CPB is only the **in-bundle scalar** ([0,1] plus metric-type).
+algorithms. CPB is only the **in-bundle scalar** ([0,1] labelled with producer, metric
+type, and profile).
 Encounter tables, contact plans, summary vectors, Spray copy-count **L**,
 and MaxProp hop-lists stay in each protocol’s control plane (draft §5).
 
@@ -44,7 +46,7 @@ and MaxProp hop-lists stay in each protocol’s control plane (draft §5).
 
 ---
 
-## 3. What’s inside a CPB (fields 0–7)
+## 3. What’s inside a CPB (fields 0–8)
 
 The block-type-specific data is a **CBOR map**:
 
@@ -52,24 +54,23 @@ The block-type-specific data is a **CBOR map**:
 
 | Key | Meaning |
 |-----|---------|
-| 0 | Default probability, with the subject defined by its metric and applicability context |
-| 1 | Per-path `[next-hop, probability]` list with unique normalized next hops (senders **SHOULD NOT** exceed 8 on constrained links) |
-| 2 | Timestamp in whole seconds since 2000-01-01 00:00:00 UTC |
-| 3 | Claimed producer identifier (optional); authentication and authorization establish its authority |
-| 4 | Validity duration in seconds (TTL); requires field 2 |
-| 5 | Metric type (0 PRoPHET · 1 CGR · 2 MaxProp · 3 RAPID · 4 generic) |
-| 6 | Confidence in the estimate, calibrated by the shared profile |
-| 7 | Format version (1 = this specification) |
+| 0 | Default probability: the producer's estimate for the bundle destination |
+| 1 | Per-path `[next-hop, probability]` list; next hops are RFC 9171 `eid` node IDs, one entry per node (senders **SHOULD NOT** exceed 8) |
+| 2 | Creation time: DTN time in milliseconds; absent or 0 means undated |
+| 3 | Producer node ID (`eid`), **mandatory**; a claim until a BIB authenticates it |
+| 4 | Validity in milliseconds after field 2; requires a nonzero field 2 |
+| 5 | Metric type (0 PRoPHET · 1 CGR · 2 MaxProp · 3 RAPID · 4 generic), 0–255 |
+| 6 | Confidence, defined by the profile (unused in the default profile) |
+| 7 | Format version (1 = this specification; other versions are unusable) |
+| 8 | Profile; absent or 0 = the default profile defined in the draft |
 
-**Important rule:** do **not** mix metric types in arithmetic (e.g. do not
-average a PRoPHET DP with a CGR confidence).
+Unknown keys above 8 are ignored. Under the **default profile**, values are the
+producer's own estimates, field 0 is about the destination, a path entry for N
+is about forwarding from the producer to N, and higher is better. Values of
+different metric types or profiles have no common scale.
 
-The same metric type also requires compatible applicability and normalization
-profiles before numerical comparison. For metric 1, shared context identifies
-the transmitting node, next hop, direction, and contact window or aggregate.
-For metric 0, field 0 describes the producer's predictability and cannot supply
-missing evidence about an arbitrary next hop. IPN next hops use the packed
-64-bit FQNN; other schemes use full EID text.
+Next hops match by node: ipn by (allocator, node) with the service number
+ignored, dtn by node-name. `dtn:none` and the ipn LocalNode EID are not allowed.
 
 ---
 
@@ -78,16 +79,19 @@ missing evidence about an arbitrary next hop. IPN next hops use the packed
 ![Lifecycle](images/07-cpb-lifecycle.png)
 
 1. **Create or receive** a bundle that may carry one or more CPBs.
-2. **Check** format, age, applicability, and trust/BIB policy before consuming
-   default or per-path probabilities. Select a whole CPB within each compatible
-   metric/context/profile group using the draft's precedence rules.
+2. **Check** format, version, metric type, profile, time limits, and trust/BIB
+   policy. An unusable CPB is treated as absent for routing and forwarded
+   unchanged. Among CPBs from the same producer, metric type, and profile, the
+   latest creation time wins.
 3. **Decide** next hop using your routing policy.
-4. **Optionally update** a nonfragment bundle with fresher local estimates,
-   using the draft's append-only or authorized strip-and-replace model.
+4. **Optionally add** a CPB naming yourself as producer to a nonfragment
+   bundle, using the draft's append-only or security-acceptor
+   strip-and-replace model. Never modify another producer's CPB.
    Protected fragment CPBs retain their authenticated bytes; when they cannot
    be authenticated before reassembly, routing falls back to local state.
-5. **Forward**; a node that does not understand CPB discards that block and
-   continues bundle processing under BPv7 rules.
+5. **Forward**; a node that does not implement CPB keeps the block and
+   forwards it unchanged when bit 4 (discard if unprocessable) is clear.
+   Producers must not set bit 4 on a CPB that is or will be a BIB target.
 
 ---
 
@@ -103,7 +107,7 @@ check commands are documented in the repository README.
 
 ---
 
-## 6. Security (draft §8)
+## 6. Security (draft §7)
 
 Threats include false probabilities (sinkhole / blackhole), stale CPBs,
 semi-trusted relays biasing routes, and inter-domain trust gaps.
@@ -111,7 +115,11 @@ semi-trusted relays biasing routes, and inter-domain trust gaps.
 - Prefer **BPSec BIB** authentication on CPBs used for routing. Authenticated
   use requires binding the CPB to its bundle and authorizing the credential
   to assert the producer identity. HMAC protection uses effective scope **7**.
-- **Do not** encrypt CPB with BCB if intermediates must read it to route.
+- Field 3 must name the BIB's security source. Shared HMAC keys only prove
+  group membership; per-producer attribution needs per-producer or pairwise
+  keys, or signatures.
+- **Should not** encrypt a CPB with BCB when forwarding nodes must read it.
+- Only the security acceptor may remove a protected CPB.
 - Unauthorized or unverifiable CPBs: prefer **strict** handling (ignore the
   estimate for routing and use local state). Core BP/BPSec validation and
   security policy still govern the bundle's processing outcome.
@@ -124,18 +132,19 @@ semi-trusted relays biasing routes, and inter-domain trust gaps.
 ## 7. Recap
 
 **Why is probability not allowed in the destination EID?**
-BPv7 EIDs must stay immutable. Stuffing `?prob=…` into the URI invites
-rewrites that break integrity bindings and the endpoint model. Put estimates
-in an extension block instead.
+The ipn URI has no query, its elements must not carry routing information,
+and rewriting the primary block breaks BIBs. Put estimates in an extension
+block instead.
 
 **Name three CPB map fields and what they mean.**
 Examples: **0** default probability; **1** per-path `[next-hop, probability]`
 list; **5** metric-type (which semantic family the scalar belongs to). Also
-common: **2** timestamp, **4** validity TTL, **7** format version.
+common: **2** creation time (ms), **3** producer, **4** validity (ms),
+**7** format version, **8** profile.
 
-**What does metric-type forbid between families?**
-Cross-metric arithmetic — e.g. averaging a PRoPHET delivery predictability
-with a CGR confidence. Consume only matching metric-types (draft §3.5).
+**Can values of different metric types be compared?**
+No. A PRoPHET predictability and a CGR confidence have no common scale, and
+the draft defines no way to combine them (draft §3.5).
 
 **What is still open?**
 Noisy or adversarial estimates, multi-domain trust, partial deployment
