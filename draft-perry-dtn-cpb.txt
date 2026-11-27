@@ -2,10 +2,10 @@
 
 
 
-Independent                                                     N. Perry
+Delay/Disruption Tolerant Networking                            N. Perry
 Internet-Draft                                               Independent
-Intended status: Experimental                            12 October 2026
-Expires: 15 April 2027
+Intended status: Experimental                           27 November 2026
+Expires: 31 May 2027
 
 
          Probabilistic Contact Metadata for DTN Bundle Routing
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 April 2027.
+   This Internet-Draft will expire on 31 May 2027.
 
 Copyright Notice
 
@@ -53,16 +53,19 @@ Copyright Notice
 
 
 
-Perry                     Expires 15 April 2027                 [Page 1]
+Perry                      Expires 31 May 2027                  [Page 1]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents (https://trustee.ietf.org/
    license-info) in effect on the date of publication of this document.
    Please review these documents carefully, as they describe your rights
-   and restrictions with respect to this document.
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
 
 Table of Contents
 
@@ -103,17 +106,17 @@ Table of Contents
      5.2.  MaxProp . . . . . . . . . . . . . . . . . . . . . . . . .  28
      5.3.  RAPID . . . . . . . . . . . . . . . . . . . . . . . . . .  28
      5.4.  Spray-and-Wait Family . . . . . . . . . . . . . . . . . .  29
+
+
+
+Perry                      Expires 31 May 2027                  [Page 2]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
      5.5.  Epidemic and Summary-Vector Protocols . . . . . . . . . .  29
      5.6.  Contact Graph Routing (CGR) . . . . . . . . . . . . . . .  29
      5.7.  Social and Hybrid Metrics . . . . . . . . . . . . . . . .  30
-
-
-
-Perry                     Expires 15 April 2027                 [Page 2]
-
-Internet-Draft                   DTN CPB                    October 2026
-
-
      5.8.  DTNMA (RFC 9675)  . . . . . . . . . . . . . . . . . . . .  30
      5.9.  Neighborhood Advertisement and Scheduled Topology . . . .  30
      5.10. Relationship to Updates of BPv7 . . . . . . . . . . . . .  31
@@ -162,12 +165,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-
-
-
-Perry                     Expires 15 April 2027                 [Page 3]
+Perry                      Expires 31 May 2027                  [Page 3]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 1.  Introduction
@@ -221,9 +221,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                 [Page 4]
+Perry                      Expires 31 May 2027                  [Page 4]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    The Contact Probability Block defined here is precisely such a
@@ -277,9 +277,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                 [Page 5]
+Perry                      Expires 31 May 2027                  [Page 5]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    By embedding probability estimates directly in bundles as a standard
@@ -333,9 +333,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                 [Page 6]
+Perry                      Expires 31 May 2027                  [Page 6]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
       representations of CBOR data per [RFC8610] Appendix G.  Listings
@@ -389,9 +389,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                 [Page 7]
+Perry                      Expires 31 May 2027                  [Page 7]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *  EID-based duplicate detection would fail when the same logical
@@ -445,9 +445,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                 [Page 8]
+Perry                      Expires 31 May 2027                  [Page 8]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *  Legacy nodes safely ignore unknown extension blocks without
@@ -501,9 +501,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                 [Page 9]
+Perry                      Expires 31 May 2027                  [Page 9]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    The following annotated hex shows a CPB with default probability 0.75
@@ -534,7 +534,7 @@ Internet-Draft                   DTN CPB                    October 2026
    The CBOR data structure in the block-data field is defined as
    follows.  The BTSD is byte-string-embedded per RFC 9171's canonical
    block structure, using the CDDL socket and generic rules from RFC
-   9171 Section 4.3.2:
+   9171 Appendix B:
 
    <CODE BEGINS>
    ; Integration with RFC 9171 canonical block structure.
@@ -557,9 +557,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 10]
+Perry                      Expires 31 May 2027                 [Page 10]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    <CODE BEGINS>
@@ -613,9 +613,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 11]
+Perry                      Expires 31 May 2027                 [Page 11]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
       per-path data is unavailable.  Range [0.0, 1.0].
@@ -669,9 +669,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 12]
+Perry                      Expires 31 May 2027                 [Page 12]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
       timestamp during which this probability estimate remains usable.
@@ -725,9 +725,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 13]
+Perry                      Expires 31 May 2027                 [Page 13]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *  *Bit 0 (0x01): Replicate in all fragments:* Implementers MUST set
@@ -781,9 +781,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 14]
+Perry                      Expires 31 May 2027                 [Page 14]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    this restriction.  Deployments needing authenticated metadata on each
@@ -837,9 +837,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 15]
+Perry                      Expires 31 May 2027                 [Page 15]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *  Production deployments SHOULD use the IANA-assigned code
@@ -855,8 +855,12 @@ Internet-Draft                   DTN CPB                    October 2026
    2.  If bit 4 (0x10) is set, as this specification requires, discard
        the unrecognized CPB and continue the bundle.
 
-   3.  There is no BPv7 flag meaning "remove if can't process" (that
-       language is from BPv6).  Do not invent one.
+   3.  This is the flag that [RFC9171] Section 4.2.4 names "Discard
+       block if it can't be processed" and that the RFC 9171 Appendix B
+       CDDL names "block-must-be-removed-from-bundle-if-it-cannot-be-
+       processed".  Both names refer to the same bit; where they differ
+       in wording, the Section 4.2.4 text governs, as Appendix B itself
+       states.
 
    Consequently:
 
@@ -886,17 +890,18 @@ Internet-Draft                   DTN CPB                    October 2026
    [RFC8949] Section 4.2.1's deterministic encoding requirement ensures
    it will be encoded in 3 bytes.
 
+
+
+
+Perry                      Expires 31 May 2027                 [Page 16]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
    *  *Range:* [0.0, 1.0], sufficient for all probability values
 
    *  *Precision:* Approximately 3 decimal digits, adequate for routing
       decisions
-
-
-
-Perry                     Expires 15 April 2027                [Page 16]
-
-Internet-Draft                   DTN CPB                    October 2026
-
 
    *  *Overhead:* 3 bytes per value when float16 is used
 
@@ -942,17 +947,16 @@ Internet-Draft                   DTN CPB                    October 2026
 
    *  *NaN (0xF97E00):*MUST be rejected as malformed.
 
+
+
+Perry                      Expires 31 May 2027                 [Page 17]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
    *  *+/-Infinity (0xF97C00, 0xF9FC00):*MUST be rejected as malformed.
 
    *  *Negative values:*MUST be rejected as malformed.
-
-
-
-
-Perry                     Expires 15 April 2027                [Page 17]
-
-Internet-Draft                   DTN CPB                    October 2026
-
 
    *  *Values > 1.0:*MUST be rejected as malformed.
 
@@ -998,18 +1002,18 @@ Internet-Draft                   DTN CPB                    October 2026
                | 0.5         | 0x3800   | 0xF93800 | 3     |
                +-------------+----------+----------+-------+
                | 0.75        | 0x3A00   | 0xF93A00 | 3     |
+
+
+
+Perry                      Expires 31 May 2027                 [Page 18]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
                +-------------+----------+----------+-------+
                | 0.95        | 0x3B9A   | 0xF93B9A | 3     |
                +-------------+----------+----------+-------+
                | 1.0         | 0x3C00   | 0xF93C00 | 3     |
-
-
-
-Perry                     Expires 15 April 2027                [Page 18]
-
-Internet-Draft                   DTN CPB                    October 2026
-
-
                +-------------+----------+----------+-------+
 
                      Table 1: CBOR Encodings for Common
@@ -1054,18 +1058,18 @@ Internet-Draft                   DTN CPB                    October 2026
       edge).  Reflects forward-looking confidence that a planned contact
       occurs as scheduled (link availability, weather, pointing).
       Contact start/end times, one-way light time, and residual volume
+
+
+
+Perry                      Expires 31 May 2027                 [Page 19]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
       remain in the contact plan, not in CPB; CPB carries only the
       scalar confidence the plan or local estimator associates with a
       hop or default path.  Before importing such a value, the
       deployment MUST establish a documented applicability profile that
-
-
-
-Perry                     Expires 15 April 2027                [Page 19]
-
-Internet-Draft                   DTN CPB                    October 2026
-
-
       identifies the transmitting node, next hop, direction, and contact
       interval to which it applies, or a defined aggregate over
       identified contacts.  The profile MAY obtain this context from a
@@ -1110,18 +1114,18 @@ Internet-Draft                   DTN CPB                    October 2026
    sets, consumers MUST establish a common interpretation through a
    documented deployment profile.  For metric types 2 and 3, that
    profile specifies the cost or utility objective, normalization
+
+
+
+Perry                      Expires 31 May 2027                 [Page 20]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
    function and parameters, and the reference set over which scores are
    normalized.  Rank-normalized values are only ordinal within that
    reference set unless the profile defines a common scale.  Consumers
    MUST NOT apply shared numerical thresholds, cross-context magnitude
-
-
-
-Perry                     Expires 15 April 2027                [Page 20]
-
-Internet-Draft                   DTN CPB                    October 2026
-
-
    comparisons, or arithmetic to values whose scales have not been
    established as compatible.  Producer-relative ranking within its
    defined reference set remains possible.  The same requirement applies
@@ -1165,19 +1169,20 @@ Internet-Draft                   DTN CPB                    October 2026
    Types registry exists precisely to keep semantically distinct values
    separable on the wire.
 
+
+
+
+
+Perry                      Expires 31 May 2027                 [Page 21]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
    *Calibration and normalization:* This document does not specify
    normalization between metric types because cross-metric equivalence
    has no rigorous theoretical foundation in the published DTN
    literature.  Implementations that wish to combine evidence from
    multiple metrics for ranking purposes SHOULD do so using a
-
-
-
-Perry                     Expires 15 April 2027                [Page 21]
-
-Internet-Draft                   DTN CPB                    October 2026
-
-
    documented, deployment-specific policy and SHOULD NOT rely on
    numerical comparability across types.  This remains an open research
    question.
@@ -1222,18 +1227,17 @@ Internet-Draft                   DTN CPB                    October 2026
    instead, but SHOULD NOT do so where route poisoning is a concern
    (Section 7.2.4).
 
+
+
+Perry                      Expires 31 May 2027                 [Page 22]
+
+Internet-Draft                   DTN CPB                   November 2026
+
+
    Selection applies to the whole CPB, not independently to each field
    or path entry.  A consumer MUST NOT fill gaps in the selected CPB
    with fields from superseded CPBs in that group.  It applies
    Section 3.6.1 to the selected block and falls back to local routing
-
-
-
-Perry                     Expires 15 April 2027                [Page 22]
-
-Internet-Draft                   DTN CPB                    October 2026
-
-
    state when that block supplies no applicable value.  If there is no
    eligible CPB for a routing operation, the receiver MUST continue
    using local routing state.  A deployment using an alternative
@@ -1281,13 +1285,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-
-
-
-
-Perry                     Expires 15 April 2027                [Page 23]
+Perry                      Expires 31 May 2027                 [Page 23]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    3.  Otherwise, use default probability (field 0) only when its
@@ -1313,17 +1313,18 @@ Internet-Draft                   DTN CPB                    October 2026
    scheme.  Path-entry schemes need not match the bundle destination EID
    scheme.  For an IPN next-hop, the reference MUST be a CBOR unsigned
    integer encoding the Fully Qualified Node Number (FQNN) defined in
-   [RFC9758] Section 6.1.1: (allocator_identifier << 32) | node_number.
-   Each component is in the range 0 through 2^32 - 1.  The LocalNode
-   value (allocator 0, node number 2^32 - 1) MUST NOT be transmitted in
-   a CPB.  The service number is not part of an IPN next-hop key.
-   Matching MUST compare decoded allocator and node components against
-   the local next-hop identity, treating equivalent two- and three-
-   component textual forms and binary encodings as the same identity.
-   For example, ipn:977000.100.1 has next-hop key 0x000EE86800000064,
-   whereas ipn:100.1 has next-hop key 100.  A text-string reference MUST
-   contain a full EID using a non-IPN URI scheme.  Implementations MUST
-   NOT encode an IPN next-hop as a text-string EID.
+   [RFC9758] Section 3.3.1, using the 64-bit encoding of Section 6.1.1:
+   (allocator_identifier << 32) | node_number.  Each component is in the
+   range 0 through 2^32 - 1.  The LocalNode value (allocator 0, node
+   number 2^32 - 1) MUST NOT be transmitted in a CPB.  The service
+   number is not part of an IPN next-hop key.  Matching MUST compare
+   decoded allocator and node components against the local next-hop
+   identity, treating equivalent two- and three-component textual forms
+   and binary encodings as the same identity.  For example,
+   ipn:977000.100.1 has next-hop key 0x000EE86800000064, whereas
+   ipn:100.1 has next-hop key 100.  A text-string reference MUST contain
+   a full EID using a non-IPN URI scheme.  Implementations MUST NOT
+   encode an IPN next-hop as a text-string EID.
 
    *Scheme Mismatch Handling:* When the next-hop scheme does not match
    the CPB's path-entry scheme, implementations apply the same metric-
@@ -1340,10 +1341,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-
-Perry                     Expires 15 April 2027                [Page 24]
+Perry                      Expires 31 May 2027                 [Page 24]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *  The source application (using historical or predicted contact
@@ -1397,9 +1397,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 25]
+Perry                      Expires 31 May 2027                 [Page 25]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    4.  *Forward:* Transmit the bundle with the CPB(s) to the next hop.
@@ -1453,9 +1453,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 26]
+Perry                      Expires 31 May 2027                 [Page 26]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
       reaction by many routers to the same CPB update can produce
@@ -1509,9 +1509,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 27]
+Perry                      Expires 31 May 2027                 [Page 27]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 5.1.  PRoPHET (RFC 6693)
@@ -1565,9 +1565,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 28]
+Perry                      Expires 31 May 2027                 [Page 28]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *What CPB carries:* metric-type 3 only after the producer normalizes
@@ -1621,9 +1621,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 29]
+Perry                      Expires 31 May 2027                 [Page 29]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *What stays in the contact plan:* time windows, rates, OWLT, and
@@ -1677,9 +1677,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 30]
+Perry                      Expires 31 May 2027                 [Page 30]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 5.10.  Relationship to Updates of BPv7
@@ -1733,9 +1733,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 31]
+Perry                      Expires 31 May 2027                 [Page 31]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 6.  Operational Considerations
@@ -1789,9 +1789,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 32]
+Perry                      Expires 31 May 2027                 [Page 32]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    Route recomputation triggered by new CPB observations can be bounded
@@ -1845,9 +1845,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 33]
+Perry                      Expires 31 May 2027                 [Page 33]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 6.7.  Clock Considerations
@@ -1901,9 +1901,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 34]
+Perry                      Expires 31 May 2027                 [Page 34]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 7.2.1.  Who is Authorized to Append CPBs
@@ -1957,9 +1957,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 35]
+Perry                      Expires 31 May 2027                 [Page 35]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    *  *Permissive:* Use the unverified CPB advisorily only when local
@@ -2013,9 +2013,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 36]
+Perry                      Expires 31 May 2027                 [Page 36]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 7.2.5.  Inter-Domain Trust
@@ -2069,9 +2069,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 37]
+Perry                      Expires 31 May 2027                 [Page 37]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 7.3.  Integrity Protection
@@ -2125,9 +2125,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 38]
+Perry                      Expires 31 May 2027                 [Page 38]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    invalidate another security operation that it is not authorized to
@@ -2181,9 +2181,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 39]
+Perry                      Expires 31 May 2027                 [Page 39]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
            +=======+===========================+===============+
@@ -2237,9 +2237,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 40]
+Perry                      Expires 31 May 2027                 [Page 40]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 8.1.  Guidance for Designated Experts
@@ -2293,9 +2293,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 41]
+Perry                      Expires 31 May 2027                 [Page 41]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
     +========================+===============+=======================+
@@ -2349,9 +2349,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 42]
+Perry                      Expires 31 May 2027                 [Page 42]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
       identifier lengths, decoder implementation, and floating-point
@@ -2405,9 +2405,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 43]
+Perry                      Expires 31 May 2027                 [Page 43]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 10.  Implementation Status
@@ -2461,9 +2461,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 44]
+Perry                      Expires 31 May 2027                 [Page 44]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
       independent implementations interoperate on the wire format and
@@ -2517,9 +2517,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 45]
+Perry                      Expires 31 May 2027                 [Page 45]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
@@ -2573,9 +2573,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 46]
+Perry                      Expires 31 May 2027                 [Page 46]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
               Hoc Networks, Volume 123, Article 102663,
@@ -2609,9 +2609,9 @@ Internet-Draft                   DTN CPB                    October 2026
    [I-D.ietf-dtn-bpsec-cose]
               Sipos, B., "Bundle Protocol Security (BPSec) COSE
               Context", Work in Progress, Internet-Draft, draft-ietf-
-              dtn-bpsec-cose-17, 3 August 2026,
+              dtn-bpsec-cose-19, 19 November 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-dtn-
-              bpsec-cose-17>.
+              bpsec-cose-19>.
 
    [I-D.ietf-dtn-bp-sand]
               Sipos, B. and J. Deaton, "Bundle Protocol (BP) Secure
@@ -2629,9 +2629,9 @@ Internet-Draft                   DTN CPB                    October 2026
 
 
 
-Perry                     Expires 15 April 2027                [Page 47]
+Perry                      Expires 31 May 2027                 [Page 47]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
    [I-D.ietf-tvr-schedule-yang]
@@ -2644,7 +2644,7 @@ Internet-Draft                   DTN CPB                    October 2026
 
    [I-D.taylor-dtn-dpp]
               Taylor, R., "DTN Peering Protocol", Work in Progress,
-              Internet-Draft, draft-taylor-dtn-dpp-01, July 2026,
+              Internet-Draft, draft-taylor-dtn-dpp-02, 23 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-taylor-dtn-
               dpp>.
 
@@ -2685,9 +2685,9 @@ Appendix A.  Mars Mission Scenario
 
 
 
-Perry                     Expires 15 April 2027                [Page 48]
+Perry                      Expires 31 May 2027                 [Page 48]
 
-Internet-Draft                   DTN CPB                    October 2026
+Internet-Draft                   DTN CPB                   November 2026
 
 
 Appendix B.  Acknowledgements
@@ -2741,4 +2741,4 @@ Author's Address
 
 
 
-Perry                     Expires 15 April 2027                [Page 49]
+Perry                      Expires 31 May 2027                 [Page 49]
