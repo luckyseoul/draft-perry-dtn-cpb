@@ -24,7 +24,8 @@ This requires `xml2rfc` and the standard build dependencies.
 
 ## Experimental Scope
 
-This is an unsubmitted GitHub presubmission with intended status Experimental.
+This is an individual Internet-Draft for the IETF DTN Working Group, with
+intended status Experimental.
 The draft contains a plan for future routing, robustness, and interoperability
 experiments. It reports no experimental results or demonstrated performance
 improvement. Reference-code development checks do not execute that plan.
